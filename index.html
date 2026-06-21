@@ -1,0 +1,3022 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador de Vehículos - Comparativa</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        /* ============================================================
+                   VARIABLES Y RESET
+                   ============================================================ */
+        :root {
+            --bg-primary: #f0f4f8;
+            --bg-card: #ffffff;
+            --bg-card2: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --bev: #16a34a;
+            --bev-bg: rgba(22, 163, 74, 0.10);
+            --phev: #2563eb;
+            --phev-bg: rgba(37, 99, 235, 0.10);
+            --ice: #ea580c;
+            --ice-bg: rgba(234, 88, 12, 0.10);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, .08);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, .10);
+            --radius: 12px;
+            --transition: .25s ease;
+        }
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card2: #162032;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, .3);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, .4);
+        }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background var(--transition), color var(--transition);
+            min-height: 100vh;
+            padding: 0 16px 40px;
+        }
+
+        /* ============================================================
+                   HEADER
+                   ============================================================ */
+        .header {
+            background: linear-gradient(135deg, #1a3a2a 0%, #16a34a 50%, #0d7a34 100%);
+            color: #fff;
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-md);
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .logo-text h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .logo-text p {
+            font-size: .7rem;
+            opacity: .8;
+            font-weight: 400;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .theme-toggle {
+            background: rgba(255, 255, 255, .15);
+            border: 1px solid rgba(255, 255, 255, .3);
+            border-radius: 50px;
+            padding: 5px 14px;
+            cursor: pointer;
+            color: #fff;
+            font-size: .8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background var(--transition);
+        }
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, .25);
+        }
+
+        /* ============================================================
+                   SECCIONES
+                   ============================================================ */
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 18px;
+            overflow: hidden;
+        }
+        .section:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .section-header {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 1px solid var(--border);
+            gap: 10px;
+            transition: background var(--transition);
+        }
+        .section-header:hover {
+            background: var(--bg-card2);
+        }
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: .95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .section-icon {
+            font-size: 1.2rem;
+        }
+        .step-badge {
+            background: var(--bev);
+            color: #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .section-toggle {
+            background: var(--bg-card2);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            transition: transform var(--transition);
+            flex-shrink: 0;
+        }
+        .section-body {
+            padding: 20px;
+            display: block;
+        }
+        .section-body.collapsed {
+            display: none;
+        }
+
+        /* ============================================================
+                   GRID
+                   ============================================================ */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 14px;
+        }
+        @media(max-width:768px) {
+            .grid-2,
+            .grid-3,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media(min-width:769px) and (max-width:900px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+            .grid-4 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* ============================================================
+                   FORMULARIOS
+                   ============================================================ */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-label {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .form-label .optional {
+            font-weight: 400;
+            text-transform: none;
+            font-size: .65rem;
+            color: var(--text-muted);
+        }
+        .form-input,
+        .form-select {
+            padding: 8px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-card2);
+            color: var(--text-primary);
+            font-size: .88rem;
+            transition: border-color var(--transition), box-shadow var(--transition);
+            width: 100%;
+        }
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--bev);
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, .12);
+        }
+        .form-input[type="range"] {
+            padding: 4px 0;
+            cursor: pointer;
+            accent-color: var(--bev);
+        }
+        .range-value {
+            font-size: .82rem;
+            font-weight: 700;
+            color: var(--bev);
+            text-align: right;
+        }
+        .form-hint {
+            font-size: .7rem;
+            color: var(--text-muted);
+        }
+        .form-hint .tag {
+            display: inline-block;
+            padding: 0 6px;
+            border-radius: 4px;
+            font-size: .65rem;
+            font-weight: 600;
+        }
+        .tag-beV {
+            background: var(--bev-bg);
+            color: var(--bev);
+        }
+        .tag-phev {
+            background: var(--phev-bg);
+            color: var(--phev);
+        }
+        .tag-ice {
+            background: var(--ice-bg);
+            color: var(--ice);
+        }
+
+        /* ============================================================
+                   TOGGLES
+                   ============================================================ */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 8px 0;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform var(--transition);
+        }
+        .toggle-switch input:checked+.toggle-slider {
+            background: var(--bev);
+        }
+        .toggle-switch input:checked+.toggle-slider::before {
+            transform: translateX(20px);
+        }
+        .toggle-label {
+            font-size: .85rem;
+            color: var(--text-secondary);
+        }
+        .toggle-label strong {
+            color: var(--text-primary);
+        }
+
+        /* ============================================================
+                   BOTONES
+                   ============================================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: .88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition);
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: var(--bev);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #15803d;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, .3);
+        }
+        .btn-secondary {
+            background: var(--phev);
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-outline:hover {
+            border-color: var(--bev);
+            color: var(--bev);
+        }
+        .btn-whatsapp {
+            background: #25d366;
+            color: #fff;
+        }
+        .btn-whatsapp:hover {
+            background: #1ebe58;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, .35);
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: .78rem;
+        }
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 14px;
+        }
+
+        /* ============================================================
+                   RESULTADOS
+                   ============================================================ */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: transform var(--transition);
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+        }
+        .result-card .rc-label {
+            font-size: .68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            font-weight: 600;
+        }
+        .result-card .rc-value {
+            font-size: 1.3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin: 2px 0;
+        }
+        .result-card .rc-sub {
+            font-size: .65rem;
+            color: var(--text-muted);
+        }
+        .rc-value.green {
+            color: var(--bev);
+        }
+        .rc-value.blue {
+            color: var(--phev);
+        }
+        .rc-value.orange {
+            color: var(--ice);
+        }
+        .rc-value.purple {
+            color: #7c3aed;
+        }
+
+        .trip-card {
+            background: var(--bg-card2);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin-top: 12px;
+        }
+        .trip-result-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .trip-result-row:last-child {
+            border-bottom: none;
+        }
+        .trip-label {
+            font-size: .82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .trip-value {
+            font-size: .88rem;
+            font-weight: 700;
+        }
+        .trip-detail {
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
+
+        /* ============================================================
+                   CHARTS
+                   ============================================================ */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        @media(max-width:768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+        .chart-title {
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+        .chart-full {
+            grid-column: 1 / -1;
+        }
+
+        /* ============================================================
+                   TABLA AÑOS
+                   ============================================================ */
+        .year-table-wrap {
+            overflow-x: auto;
+            margin-top: 12px;
+        }
+        .year-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .78rem;
+        }
+        .year-table th {
+            background: var(--bev);
+            color: #fff;
+            padding: 6px 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .year-table td {
+            padding: 5px 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .year-table tr:hover td {
+            background: var(--bg-card2);
+        }
+        .year-table .positive {
+            color: var(--bev);
+            font-weight: 700;
+        }
+        .year-table .highlight-row td {
+            background: rgba(22, 163, 74, .07);
+            font-weight: 600;
+        }
+
+        /* ============================================================
+                   ALERTAS
+                   ============================================================ */
+        .alert {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: .8rem;
+            margin-top: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .alert.info {
+            background: var(--phev-bg);
+            border: 1px solid rgba(37, 99, 235, .25);
+            color: var(--phev);
+        }
+        .alert.success {
+            background: var(--bev-bg);
+            border: 1px solid rgba(22, 163, 74, .25);
+            color: var(--bev);
+        }
+        .alert.warning {
+            background: rgba(234, 179, 8, .12);
+            border: 1px solid rgba(234, 179, 8, .3);
+            color: #92400e;
+        }
+
+        /* ============================================================
+                   MODAL
+                   ============================================================ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            max-width: 560px;
+            width: 100%;
+            padding: 24px;
+            box-shadow: var(--shadow-lg);
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+        .modal h3 {
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        .modal .form-group {
+            margin-bottom: 12px;
+        }
+        .modal .btn-row {
+            margin-top: 16px;
+        }
+        .modal .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            float: right;
+            line-height: 1;
+        }
+
+        /* ============================================================
+                   DIVIDER
+                   ============================================================ */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 16px 0;
+        }
+        .divider-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: .72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin: 14px 0 10px;
+        }
+        .divider-label::before,
+        .divider-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ============================================================
+                   FOOTER
+                   ============================================================ */
+        .footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: var(--radius);
+            text-align: center;
+            font-size: .9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .footer strong {
+            color: var(--text-primary);
+        }
+
+        /* ============================================================
+                   MISC
+                   ============================================================ */
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .flex {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .flex-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: var(--text-muted);
+        }
+        .fw-bold {
+            font-weight: 700;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        .model-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .model-tab {
+            padding: 6px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            background: var(--bg-card2);
+            color: var(--text-secondary);
+            font-size: .78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .model-tab.active {
+            background: var(--bev);
+            border-color: var(--bev);
+            color: #fff;
+        }
+        .model-tab:hover:not(.active) {
+            border-color: var(--bev);
+            color: var(--bev);
+        }
+
+        .sub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        @media(max-width:480px) {
+            .sub-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-phone {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .input-phone .prefix {
+            background: var(--bg-card2);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: .88rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+        .input-phone .form-input {
+            flex: 1;
+        }
+
+        .preview-container canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+        .preview-container {
+            background: var(--bg-card2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: .75rem;
+            color: var(--text-muted);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, var(--bev-bg), var(--phev-bg));
+            border: 1px solid rgba(22, 163, 74, .15);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <!-- ============================================================
+    HEADER
+    ============================================================ -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <div class="logo-text">
+                    <h1>Simulador de Vehículos</h1>
+                    <p>Comparativa · Eléctrico · Híbrido · Combustión</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙 Modo oscuro</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================================
+    MAIN
+    ============================================================ -->
+    <main class="main">
+
+        <!-- ============================================================
+        SECCIÓN 1: PRECIOS
+        ============================================================ -->
+        <div class="section" id="secPrecios">
+            <div class="section-header" onclick="toggleSection('secPrecios')">
+                <div class="section-title">
+                    <span class="step-badge">1</span>
+                    <span class="section-icon">💲</span>
+                    Configuración de Precios
+                </div>
+                <span class="section-toggle" id="toggleSecPrecios">▼</span>
+            </div>
+            <div class="section-body" id="bodySecPrecios">
+                <div class="divider-label">⚡ Electricidad</div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Tarifa residencial ($/kWh)</label>
+                        <input type="number" class="form-input" id="tarifaResidencial" value="0.10" step="0.001" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Electrolinera rápida ($/kWh)</label>
+                        <input type="number" class="form-input" id="tarifaElectroRapida" value="0.35" step="0.001" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Electrolinera semi-rápida ($/kWh)</label>
+                        <input type="number" class="form-input" id="tarifaElectroSemirrapida" value="0.25" step="0.001" min="0" />
+                    </div>
+                </div>
+                <div class="grid-2 mt-8">
+                    <div class="form-group">
+                        <label class="form-label">Cargo fijo mensual electricidad ($)</label>
+                        <input type="number" class="form-input" id="cargoFijo" value="1.50" step="0.01" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Inflación eléctrica anual (%)</label>
+                        <input type="number" class="form-input" id="inflacionElectrica" value="2" step="0.5" min="0" />
+                    </div>
+                </div>
+
+                <div class="divider-label">⛽ Combustibles</div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Gasolina Extra ($/galón)</label>
+                        <input type="number" class="form-input" id="precioExtra" value="3.31" step="0.001" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gasolina Súper ($/galón)</label>
+                        <input type="number" class="form-input" id="precioSuper" value="5.70" step="0.001" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Diésel ($/galón)</label>
+                        <input type="number" class="form-input" id="precioDiesel" value="3.25" step="0.001" min="0" />
+                    </div>
+                </div>
+                <div class="grid-2 mt-8">
+                    <div class="form-group">
+                        <label class="form-label">Inflación combustibles anual (%)</label>
+                        <input type="number" class="form-input" id="inflacionCombustibles" value="5" step="0.5" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Año actual (para matrícula)</label>
+                        <input type="number" class="form-input" id="anioActual" value="2026" step="1" min="2020" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        SECCIÓN 2: VEHÍCULOS
+        ============================================================ -->
+        <div class="section" id="secVehiculos">
+            <div class="section-header" onclick="toggleSection('secVehiculos')">
+                <div class="section-title">
+                    <span class="step-badge">2</span>
+                    <span class="section-icon">🚗</span>
+                    Configuración de Vehículos
+                </div>
+                <span class="section-toggle" id="toggleSecVehiculos">▼</span>
+            </div>
+            <div class="section-body" id="bodySecVehiculos">
+
+                <!-- VEHÍCULO ELÉCTRICO (BEV) -->
+                <div class="divider-label">🔋 Vehículo Eléctrico (BEV)</div>
+                <div class="model-tabs" id="bevTabs">
+                    <button class="model-tab active" data-model="ex2" onclick="cargarBEV('ex2')">Geely EX2</button>
+                    <button class="model-tab" data-model="ex5" onclick="cargarBEV('ex5')">Geely EX5</button>
+                    <button class="model-tab" data-model="custom" onclick="cargarBEV('custom')">Personalizado</button>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Nombre del modelo</label>
+                        <input type="text" class="form-input" id="bevNombre" value="Geely EX2" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select" id="bevCategoria">
+                            <option value="Moto">Moto</option>
+                            <option value="Auto compacto">Auto compacto</option>
+                            <option value="SUV" selected>SUV</option>
+                            <option value="Pickup/Bus">Pickup / Bus</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tracción</label>
+                        <select class="form-select" id="bevTraccion">
+                            <option value="RWD" selected>RWD</option>
+                            <option value="FWD">FWD</option>
+                            <option value="AWD">AWD</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Consumo base (kWh/100km)</label>
+                        <input type="number" class="form-input" id="bevConsumo" value="12.5" step="0.1" min="1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Batería (kWh)</label>
+                        <input type="number" class="form-input" id="bevBateria" value="39.4" step="0.1" min="1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Autonomía declarada (km)</label>
+                        <input type="number" class="form-input" id="bevAutonomia" value="395" step="5" min="10" />
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Ciclo de homologación</label>
+                        <select class="form-select" id="bevCiclo">
+                            <option value="nedc" selected>NEDC (factor 0.78)</option>
+                            <option value="wltp">WLTP (factor 0.92)</option>
+                            <option value="epa">EPA (factor 0.95)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Torque (Nm)</label>
+                        <input type="number" class="form-input" id="bevTorque" value="150" step="5" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Potencia (kW / HP)</label>
+                        <input type="text" class="form-input" id="bevPotencia" value="85 / 115" />
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Precio de compra ($)</label>
+                        <input type="number" class="form-input" id="bevPrecio" value="18990" step="10" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Año de fabricación</label>
+                        <input type="number" class="form-input" id="bevAnio" value="2027" step="1" min="2010" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label optional">Mantenimiento (cada X km)</label>
+                        <div class="sub-grid">
+                            <input type="number" class="form-input" id="bevMantKm" value="12000" step="500" min="0" placeholder="km" />
+                            <input type="number" class="form-input" id="bevMantCosto" value="0" step="5" min="0" placeholder="$ costo" />
+                        </div>
+                        <span class="form-hint">Ej: cada 12,000 km cuesta $150. Dejar 0 si no se conoce.</span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- VEHÍCULO DE COMBUSTIÓN (ICE) con segmentos -->
+                <div class="divider-label">⛽ Vehículo de Combustión (ICE) - Referencia</div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Segmento del vehículo</label>
+                        <select class="form-select" id="iceSegmento" onchange="cargarSegmentoICE()">
+                            <option value="compacto">Compacto</option>
+                            <option value="sedan">Sedán mediano</option>
+                            <option value="suv_mediano" selected>SUV mediano</option>
+                            <option value="suv_grande">SUV grande</option>
+                            <option value="pickup">Pickup / 4x4</option>
+                            <option value="van">Van / Furgoneta</option>
+                            <option value="personalizado">Personalizado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rendimiento ciudad (km/gal)</label>
+                        <input type="number" class="form-input" id="iceRendCiudad" value="24" step="0.5" min="1" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rendimiento carretera (km/gal)</label>
+                        <input type="number" class="form-input" id="iceRendCarretera" value="30" step="0.5" min="1" />
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de combustible</label>
+                        <select class="form-select" id="iceCombustible">
+                            <option value="Extra" selected>Extra ($3.31)</option>
+                            <option value="Super">Súper ($5.70)</option>
+                            <option value="Diesel">Diésel ($3.25)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cilindrada (L)</label>
+                        <select class="form-select" id="iceCilindrada">
+                            <option value="1.0">1.0</option>
+                            <option value="1.5">1.5</option>
+                            <option value="2.0" selected>2.0</option>
+                            <option value="2.5">2.5</option>
+                            <option value="3.0+">3.0+</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Turbo</label>
+                        <select class="form-select" id="iceTurbo">
+                            <option value="no" selected>No</option>
+                            <option value="si">Sí (+8% rendimiento)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Tracción</label>
+                        <select class="form-select" id="iceTraccion">
+                            <option value="4x2" selected>4x2</option>
+                            <option value="4x4">4x4 (-12% rendimiento)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Precio de compra ($)</label>
+                        <input type="number" class="form-input" id="icePrecio" value="25000" step="100" min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Año de fabricación</label>
+                        <input type="number" class="form-input" id="iceAnio" value="2023" step="1" min="2010" />
+                    </div>
+                </div>
+                <div class="grid-2 mt-8">
+                    <div class="form-group">
+                        <label class="form-label optional">Mantenimiento (cada X km)</label>
+                        <div class="sub-grid">
+                            <input type="number" class="form-input" id="iceMantKm" value="5000" step="500" min="0" placeholder="km" />
+                            <input type="number" class="form-input" id="iceMantCosto" value="0" step="5" min="0" placeholder="$ costo" />
+                        </div>
+                        <span class="form-hint">ICE: 5,000 km (estándar en Ecuador). Dejar 0 si no se conoce.</span>
+                    </div>
+                    <div class="form-group">
+                        <!-- espacio -->
+                    </div>
+                </div>
+
+                <!-- ============================================================
+                TOGGLES: PHEV y BLOQUES MODULARES
+                ============================================================ -->
+                <div class="divider"></div>
+                <div class="toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="togglePHEV" onchange="togglePHEV()" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Incluir <strong>Híbrido Enchufable (Starray EM-i)</strong> en la comparación</span>
+                </div>
+
+                <div id="phevSection" class="hidden" style="margin-top:12px;">
+                    <div class="divider-label">🔌 Híbrido Enchufable (PHEV) - Starray EM-i</div>
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label class="form-label">Nombre del modelo</label>
+                            <input type="text" class="form-input" id="phevNombre" value="Starray EM-i" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Categoría</label>
+                            <select class="form-select" id="phevCategoria">
+                                <option value="Moto">Moto</option>
+                                <option value="Auto compacto">Auto compacto</option>
+                                <option value="SUV" selected>SUV</option>
+                                <option value="Pickup/Bus">Pickup / Bus</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tracción</label>
+                            <select class="form-select" id="phevTraccion">
+                                <option value="RWD" selected>RWD</option>
+                                <option value="FWD">FWD</option>
+                                <option value="AWD">AWD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label class="form-label">Motor combustión</label>
+                            <input type="text" class="form-input" id="phevMotorICE" value="1.5L 4 cilindros" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Potencia combinada (HP / Nm)</label>
+                            <input type="text" class="form-input" id="phevPotencia" value="312 / 387" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Motor eléctrico (kW/HP)</label>
+                            <input type="text" class="form-input" id="phevPotenciaElec" value="73 / 97" />
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label class="form-label">Batería (kWh)</label>
+                            <input type="number" class="form-input" id="phevBateria" value="18.4" step="0.1" min="1" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Autonomía eléctrica pura (km)</label>
+                            <input type="number" class="form-input" id="phevAutonomiaEV" value="105" step="5" min="10" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Consumo eléctrico (kWh/100km)</label>
+                            <input type="number" class="form-input" id="phevConsumoEV" value="4.3" step="0.1" min="0.5" />
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label class="form-label">Consumo híbrido (L/100km)</label>
+                            <input type="number" class="form-input" id="phevConsumoHEV" value="3.8" step="0.1" min="0.5" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Combustible</label>
+                            <select class="form-select" id="phevCombustible">
+                                <option value="Extra" selected>Extra ($3.31)</option>
+                                <option value="Super">Súper ($5.70)</option>
+                                <option value="Diesel">Diésel ($3.25)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">% viajes en modo eléctrico</label>
+                            <input type="number" class="form-input" id="phevPctElectrico" value="70" step="5" min="0" max="100" />
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label class="form-label">Precio de compra ($)</label>
+                            <input type="number" class="form-input" id="phevPrecio" value="29990" step="10" min="0" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Año de fabricación</label>
+                            <input type="number" class="form-input" id="phevAnio" value="2027" step="1" min="2010" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label optional">Mantenimiento (cada X km)</label>
+                            <div class="sub-grid">
+                                <input type="number" class="form-input" id="phevMantKm" value="8000" step="500" min="0" placeholder="km" />
+                                <input type="number" class="form-input" id="phevMantCosto" value="0" step="5" min="0" placeholder="$ costo" />
+                            </div>
+                            <span class="form-hint">PHEV: 8,000 km. Dejar 0 si no se conoce.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+                <div class="toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleComercial" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Activar modo <strong>Transporte Comercial</strong> (taxi / aplicaciones)</span>
+                </div>
+
+                <div id="comercialSection" class="hidden" style="margin-top:12px;">
+                    <div class="divider-label">🚕 Datos del Conductor</div>
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label class="form-label">Distancia por carrera (km)</label>
+                            <input type="number" class="form-input" id="comKmCarrera" value="3" step="0.5" min="0.5" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tarifa que cobras por carrera ($)</label>
+                            <input type="number" class="form-input" id="comTarifaCarrera" value="2.00" step="0.10" min="0.50" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Carreras por día</label>
+                            <input type="number" class="form-input" id="comCarrerasDia" value="15" step="1" min="1" />
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label class="form-label">Días laborables al mes</label>
+                            <input type="number" class="form-input" id="comDiasMes" value="25" step="1" min="1" max="31" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Comisión de la aplicación (%)</label>
+                            <input type="number" class="form-input" id="comComision" value="25" step="1" min="0" max="50" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Propinas</label>
+                            <select class="form-select" id="comPropinas">
+                                <option value="si">Sí (+$1/día)</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOGGLES BLOQUES MODULARES -->
+                <div class="divider"></div>
+                <div class="grid-2">
+                    <div class="toggle-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleCarga" checked />
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Bloque: <strong>Calculadora de carga</strong></span>
+                    </div>
+                    <div class="toggle-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleProyecciones" checked />
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Bloque: <strong>Proyecciones a largo plazo</strong></span>
+                    </div>
+                    <div class="toggle-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleEmisiones" checked />
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Bloque: <strong>Emisiones de CO₂</strong></span>
+                    </div>
+                    <div class="toggle-row">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggleAutonomia" />
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Bloque: <strong>Autonomía real estimada</strong></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============================================================
+        SECCIÓN 3: PARÁMETROS DE USO
+        ============================================================ -->
+        <div class="section" id="secUso">
+            <div class="section-header" onclick="toggleSection('secUso')">
+                <div class="section-title">
+                    <span class="step-badge">3</span>
+                    <span class="section-icon">📊</span>
+                    Parámetros de Uso
+                </div>
+                <span class="section-toggle" id="toggleSecUso">▼</span>
+            </div>
+            <div class="section-body" id="bodySecUso">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Kilómetros mensuales</label>
+                        <input type="range" class="form-input" id="kmSlider" min="200" max="6000" step="50" value="1500" oninput="syncKm()" />
+                        <div class="flex-between">
+                            <span class="form-hint">200 km — 6,000 km/mes</span>
+                            <span class="range-value" id="kmDisplay">1,500 km</span>
+                        </div>
+                        <input type="number" class="form-input mt-8" id="kmMes" value="1500" step="50" min="200" onchange="syncKmInput()" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">% Ciudad vs Carretera</label>
+                        <input type="range" class="form-input" id="pctCiudadSlider" min="0" max="100" step="5" value="70" oninput="syncPctCiudad()" />
+                        <div class="flex-between">
+                            <span class="form-hint" id="pctLabel">70% Ciudad · 30% Carretera</span>
+                            <span class="range-value" id="pctDisplay">70%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Factor geográfico</label>
+                        <select class="form-select" id="factorGeo">
+                            <option value="costa">🌊 Costa (0% consumo, 0% mant.)</option>
+                            <option value="sierra" selected>⛰️ Sierra (+12% ICE, +5% BEV, +8% mant.)</option>
+                            <option value="oriente">🌳 Oriente / Amazonía (+5% consumo, +15% mant.)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Factor tráfico (ICE)</label>
+                        <select class="form-select" id="factorTrafico">
+                            <option value="1.00">Fluido</option>
+                            <option value="1.05" selected>Moderado (+5%)</option>
+                            <option value="1.10">Denso (+10%)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Uso de A/C</label>
+                        <select class="form-select" id="factorAC">
+                            <option value="1.00">Sin A/C</option>
+                            <option value="1.05" selected>Intermitente (+5%)</option>
+                            <option value="1.12">Constante (+12%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <!-- espacio -->
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="calcular()">⚡ Calcular comparación</button>
+                    <button class="btn btn-outline" onclick="resetDefaults()">↺ Restaurar valores</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        SECCIÓN 4: RESULTADOS
+        ============================================================ -->
+        <div class="section" id="secResultados" style="display:none;">
+            <div class="section-header" onclick="toggleSection('secResultados')">
+                <div class="section-title">
+                    <span class="step-badge">4</span>
+                    <span class="section-icon">📈</span>
+                    Resultados
+                </div>
+                <span class="section-toggle" id="toggleSecResultados">▼</span>
+            </div>
+            <div class="section-body" id="bodySecResultados">
+
+                <!-- Cards resumen -->
+                <div class="cards-grid" id="cardsResultados"></div>
+
+                <!-- Autonomía real (bloque toggle) -->
+                <div id="autonomiaContainer" class="hidden" style="margin-top:16px;">
+                    <div class="divider-label">🔍 Autonomía Real Estimada</div>
+                    <div id="autonomiaContent" class="trip-card"></div>
+                </div>
+
+                <!-- Desglose mensual -->
+                <div class="divider-label" style="margin-top:16px;">📋 Desglose mensual</div>
+                <div id="desgloseHTML"></div>
+
+                <!-- Módulo comercial -->
+                <div id="comercialResultados" class="hidden"></div>
+
+                <!-- Proyecciones (bloque separado al final) -->
+                <div id="proyeccionesContainer">
+                    <div class="divider-label">📈 Proyección de ahorro acumulado</div>
+                    <div id="proyeccionesHTML"></div>
+                </div>
+
+                <!-- Emisiones -->
+                <div id="emisionesContainer">
+                    <div class="divider-label">🌿 Emisiones de CO₂</div>
+                    <div id="emisionesHTML"></div>
+                </div>
+
+                <!-- Calculadora de carga -->
+                <div id="cargaContainer">
+                    <div class="divider-label">⚡ Calculadora de Carga</div>
+                    <div id="cargaHTML"></div>
+                </div>
+
+                <!-- Gráficos -->
+                <div class="charts-grid" id="chartsContainer">
+                    <div class="chart-card">
+                        <div class="chart-title">💰 Costo mensual comparativo</div>
+                        <div class="chart-container"><canvas id="chartBarras"></canvas></div>
+                    </div>
+                    <div class="chart-card" id="chartUtilidadContainer">
+                        <div class="chart-title">📊 Utilidad mensual</div>
+                        <div class="chart-container"><canvas id="chartUtilidad"></canvas></div>
+                    </div>
+                    <div class="chart-card chart-full" id="chartLineasContainer">
+                        <div class="chart-title">📈 Ahorro acumulado vs Combustión</div>
+                        <div class="chart-container" style="height:220px;"><canvas id="chartLineas"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">🥧 Distribución costos - Eléctrico</div>
+                        <div class="chart-container"><canvas id="chartDoughnutBEV"></canvas></div>
+                    </div>
+                    <div class="chart-card" id="chartDoughnutPHEVContainer">
+                        <div class="chart-title">🥧 Distribución costos - Híbrido</div>
+                        <div class="chart-container"><canvas id="chartDoughnutPHEV"></canvas></div>
+                    </div>
+                    <div class="chart-card" id="chartCargaContainer">
+                        <div class="chart-title">⚡ Costo de carga (por 100 km)</div>
+                        <div class="chart-container"><canvas id="chartCarga"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Tabla años -->
+                <div id="tablaContainer">
+                    <div class="divider-label">📅 Proyección año a año</div>
+                    <div class="year-table-wrap" id="tablaAnos"></div>
+                </div>
+
+                <!-- Resumen ejecutivo -->
+                <div class="divider-label">📝 Resumen Ejecutivo</div>
+                <div id="resumenHTML" class="trip-card"></div>
+
+                <!-- Botones de acción -->
+                <div class="divider"></div>
+                <div class="btn-row" style="justify-content:center;gap:16px;">
+                    <button class="btn btn-primary" onclick="abrirModalResumen()">📤 Enviar resumen</button>
+                    <button class="btn btn-whatsapp" onclick="contactarAsesor()">💬 Contactar asesor</button>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================================
+    MODAL PARA ENVIAR RESUMEN
+    ============================================================ -->
+    <div class="modal-overlay" id="resumenModal">
+        <div class="modal">
+            <button class="close-modal" onclick="cerrarModalResumen()">&times;</button>
+            <h3>📤 Enviar resumen al prospecto</h3>
+            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:12px;">
+                Genera una imagen con el resumen de la simulación (2080×2080px) para enviar por WhatsApp.
+            </p>
+            <div class="form-group">
+                <label class="form-label">Número de teléfono del prospecto <span style="color:red;">*</span></label>
+                <div class="input-phone">
+                    <span class="prefix">+593</span>
+                    <input type="text" class="form-input" id="clienteTelefono" placeholder="99 123 4567" />
+                </div>
+                <span class="form-hint">Ej: 99 123 4567</span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nombre del prospecto (opcional)</label>
+                <input type="text" class="form-input" id="clienteNombre" placeholder="Ej: Carlos" />
+            </div>
+            <div class="preview-container">
+                <p style="margin-bottom:8px;">📷 Vista previa del resumen:</p>
+                <canvas id="previewCanvas" width="400" height="400"></canvas>
+                <p style="margin-top:6px;font-size:.7rem;">La imagen se generará al hacer clic en "Generar y enviar"</p>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="generarYEnviar()">📤 Generar y enviar</button>
+                <button class="btn btn-outline" onclick="cerrarModalResumen()">Cancelar</button>
+            </div>
+            <div id="resumenMensaje" style="margin-top:12px;"></div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    FOOTER (SOLO NOMBRE + TELÉFONO)
+    ============================================================ -->
+    <footer class="footer">
+        <p><strong>Jonathan</strong> | +593 97 918 9728</p>
+    </footer>
+
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+        // ============================================================
+        // ESTADO GLOBAL
+        // ============================================================
+        const state = {
+            charts: {},
+            bevModelo: 'ex2',
+            phevActivo: false,
+            comercialActivo: false,
+            datosSimulacion: null
+        };
+
+        // ============================================================
+        // DATOS DE MODELOS GEELY
+        // ============================================================
+        const modelosBEV = {
+            ex2: {
+                nombre: 'Geely EX2',
+                categoria: 'SUV',
+                traccion: 'RWD',
+                consumo: 12.5,
+                bateria: 39.4,
+                autonomia: 395,
+                ciclo: 'nedc',
+                torque: 150,
+                potencia: '85 / 115',
+                precio: 18990,
+                anio: 2027,
+                mantKm: 12000,
+                mantCosto: 0,
+                segmentoICE: 'compacto'
+            },
+            ex5: {
+                nombre: 'Geely EX5',
+                categoria: 'SUV',
+                traccion: 'FWD',
+                consumo: 14.2,
+                bateria: 60.22,
+                autonomia: 495,
+                ciclo: 'nedc',
+                torque: 320,
+                potencia: '160 / 218',
+                precio: 27990,
+                anio: 2027,
+                mantKm: 12000,
+                mantCosto: 0,
+                segmentoICE: 'suv_mediano'
+            }
+        };
+
+        const modeloPHEV = {
+            nombre: 'Starray EM-i',
+            categoria: 'SUV',
+            traccion: 'RWD',
+            motorICE: '1.5L 4 cilindros',
+            potenciaComb: '312 / 387',
+            potenciaElec: '73 / 97',
+            bateria: 18.4,
+            autonomiaEV: 105,
+            consumoEV: 4.3,
+            consumoHEV: 3.8,
+            combustible: 'Extra',
+            pctElectrico: 70,
+            precio: 29990,
+            anio: 2027,
+            mantKm: 8000,
+            mantCosto: 0,
+            segmentoICE: 'suv_mediano'
+        };
+
+        // Segmentos ICE con valores predefinidos realistas (Ecuador)
+        const segmentosICE = {
+            compacto: {
+                label: 'Compacto',
+                rendCiudad: 10, // km/L
+                rendCarretera: 14,
+                precio: 19000,
+                anio: 2024,
+                mantKm: 5000,
+                mantCosto: 75
+            },
+            sedan: {
+                label: 'Sedán mediano',
+                rendCiudad: 9,
+                rendCarretera: 13,
+                precio: 24000,
+                anio: 2024,
+                mantKm: 5000,
+                mantCosto: 85
+            },
+            suv_mediano: {
+                label: 'SUV mediano',
+                rendCiudad: 8,
+                rendCarretera: 12,
+                precio: 28000,
+                anio: 2024,
+                mantKm: 5000,
+                mantCosto: 105
+            },
+            suv_grande: {
+                label: 'SUV grande',
+                rendCiudad: 7,
+                rendCarretera: 10,
+                precio: 36000,
+                anio: 2024,
+                mantKm: 5000,
+                mantCosto: 130
+            },
+            pickup: {
+                label: 'Pickup / 4x4',
+                rendCiudad: 7,
+                rendCarretera: 10,
+                precio: 35000,
+                anio: 2024,
+                mantKm: 5000,
+                mantCosto: 120
+            },
+            van: {
+                label: 'Van / Furgoneta',
+                rendCiudad: 8,
+                rendCarretera: 11,
+                precio: 28000,
+                anio: 2024,
+                mantKm: 5000,
+                mantCosto: 115
+            }
+        };
+
+        // ============================================================
+        // FUNCIONES DE CARGA
+        // ============================================================
+        function cargarBEV(modelo) {
+            state.bevModelo = modelo;
+            document.querySelectorAll('#bevTabs .model-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`#bevTabs .model-tab[data-model="${modelo}"]`).classList.add('active');
+
+            if (modelo === 'custom') return;
+
+            const data = modelosBEV[modelo];
+            if (!data) return;
+
+            setVal('bevNombre', data.nombre);
+            setValSelect('bevCategoria', data.categoria);
+            setValSelect('bevTraccion', data.traccion);
+            setVal('bevConsumo', data.consumo);
+            setVal('bevBateria', data.bateria);
+            setVal('bevAutonomia', data.autonomia);
+            setValSelect('bevCiclo', data.ciclo);
+            setVal('bevTorque', data.torque);
+            setVal('bevPotencia', data.potencia);
+            setVal('bevPrecio', data.precio);
+            setVal('bevAnio', data.anio);
+            setVal('bevMantKm', data.mantKm);
+            setVal('bevMantCosto', data.mantCosto);
+
+            // Seleccionar segmento ICE correspondiente
+            if (data.segmentoICE) {
+                document.getElementById('iceSegmento').value = data.segmentoICE;
+                cargarSegmentoICE();
+            }
+        }
+
+        function cargarSegmentoICE() {
+            const seg = document.getElementById('iceSegmento').value;
+            if (seg === 'personalizado') return;
+            const data = segmentosICE[seg];
+            if (!data) return;
+
+            // Convertir km/L a km/gal (1 gal = 3.785 L)
+            const factor = 3.785;
+            setVal('iceRendCiudad', Math.round(data.rendCiudad * factor * 10) / 10);
+            setVal('iceRendCarretera', Math.round(data.rendCarretera * factor * 10) / 10);
+            setVal('icePrecio', data.precio);
+            setVal('iceAnio', data.anio);
+            setVal('iceMantKm', data.mantKm);
+            setVal('iceMantCosto', data.mantCosto);
+        }
+
+        function togglePHEV() {
+            state.phevActivo = document.getElementById('togglePHEV').checked;
+            document.getElementById('phevSection').classList.toggle('hidden', !state.phevActivo);
+            if (state.phevActivo) {
+                // Seleccionar segmento ICE correspondiente para Starray
+                document.getElementById('iceSegmento').value = 'suv_mediano';
+                cargarSegmentoICE();
+            }
+        }
+
+        document.getElementById('toggleComercial').addEventListener('change', function() {
+            state.comercialActivo = this.checked;
+            document.getElementById('comercialSection').classList.toggle('hidden', !state.comercialActivo);
+        });
+
+        // ============================================================
+        // HELPERS
+        // ============================================================
+        function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+        function getValStr(id) { return document.getElementById(id).value || ''; }
+
+        function setVal(id, v) { const el = document.getElementById(id); if (el) el.value = v; }
+
+        function setValSelect(id, v) { const el = document.getElementById(id); if (el) el.value = v; }
+
+        function fmt(v, d = 2) { return '$' + Number(v).toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+        function fmtNum(v, d = 1) { return Number(v).toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+        function getPrecioCombustible(tipo) {
+            const m = { Extra: getVal('precioExtra'), Super: getVal('precioSuper'), Diesel: getVal('precioDiesel') };
+            return m[tipo] || m.Extra;
+        }
+
+        function getFactorCiclo(ciclo) {
+            const f = { nedc: 0.78, wltp: 0.92, epa: 0.95 };
+            return f[ciclo] || 0.92;
+        }
+
+        function getMantMensual(kmMensuales, mantKm, mantCosto) {
+            if (!mantKm || mantKm <= 0 || !mantCosto || mantCosto <= 0) return 0;
+            return (kmMensuales / mantKm) * mantCosto;
+        }
+
+        function getFactoresGeograficos(region) {
+            // Retorna factores para consumo BEV, consumo ICE, mantenimiento
+            const map = {
+                costa: { bev: 1.00, ice: 1.00, mant: 1.00 },
+                sierra: { bev: 1.05, ice: 1.12, mant: 1.08 },
+                oriente: { bev: 1.02, ice: 1.05, mant: 1.15 }
+            };
+            return map[region] || map.costa;
+        }
+
+        // ============================================================
+        // SLIDERS
+        // ============================================================
+        function syncKm() {
+            const v = parseInt(document.getElementById('kmSlider').value);
+            document.getElementById('kmMes').value = v;
+            document.getElementById('kmDisplay').textContent = v.toLocaleString('es') + ' km';
+        }
+
+        function syncKmInput() {
+            const v = parseInt(document.getElementById('kmMes').value) || 1500;
+            document.getElementById('kmSlider').value = v;
+            document.getElementById('kmDisplay').textContent = v.toLocaleString('es') + ' km';
+        }
+
+        function syncPctCiudad() {
+            const v = parseInt(document.getElementById('pctCiudadSlider').value);
+            document.getElementById('pctDisplay').textContent = v + '%';
+            document.getElementById('pctLabel').textContent = v + '% Ciudad · ' + (100 - v) + '% Carretera';
+        }
+
+        function syncAnos() {
+            const v = parseInt(document.getElementById('anosSlider').value);
+            document.getElementById('anosDisplay').textContent = v + ' año' + (v > 1 ? 's' : '');
+        }
+
+        // ============================================================
+        // TOGGLE SECCIÓN
+        // ============================================================
+        function toggleSection(id) {
+            const body = document.getElementById('body' + id.charAt(0).toUpperCase() + id.slice(1));
+            const toggle = document.getElementById('toggle' + id.charAt(0).toUpperCase() + id.slice(1));
+            if (!body) return;
+            const isOpen = body.style.display !== 'none';
+            body.style.display = isOpen ? 'none' : 'block';
+            if (toggle) toggle.textContent = isOpen ? '▶' : '▼';
+        }
+
+        // ============================================================
+        // TEMA OSCURO
+        // ============================================================
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('themeToggle');
+            if (body.dataset.theme === 'light') {
+                body.dataset.theme = 'dark';
+                btn.textContent = '☀️ Modo claro';
+            } else {
+                body.dataset.theme = 'light';
+                btn.textContent = '🌙 Modo oscuro';
+            }
+            localStorage.setItem('theme', body.dataset.theme);
+            if (state.datosSimulacion) calcular();
+        }
+
+        // ============================================================
+        // MATRÍCULA ECUADOR
+        // ============================================================
+        function calcularMatricula(tipo, precioOriginal, anioFabricacion, anioActual) {
+            if (tipo === 'BEV') {
+                return { total: 10, sri: 0, ant: 0, sppat: 0, rodaje: 0, detalle: 'Exonerado $10 para eléctricos' };
+            }
+            const antiguedad = Math.max(0, anioActual - anioFabricacion);
+            let valorBase = precioOriginal * Math.pow(0.80, antiguedad);
+            valorBase = Math.max(valorBase, precioOriginal * 0.10);
+
+            let sri = 0,
+                fraccionBase = 0,
+                tarifaFija = 0,
+                porcentaje = 0;
+            if (valorBase <= 4000) { tarifaFija = 0;
+                fraccionBase = 0;
+                porcentaje = 0.005; } else if (valorBase <= 8000) { tarifaFija = 20;
+                fraccionBase = 4000;
+                porcentaje = 0.01; } else if (valorBase <= 12000) { tarifaFija = 60;
+                fraccionBase = 8000;
+                porcentaje = 0.02; } else if (valorBase <= 16000) { tarifaFija = 140;
+                fraccionBase = 12000;
+                porcentaje = 0.03; } else if (valorBase <= 20000) { tarifaFija = 260;
+                fraccionBase = 16000;
+                porcentaje = 0.04; } else if (valorBase <= 24000) { tarifaFija = 420;
+                fraccionBase = 20000;
+                porcentaje = 0.05; } else { tarifaFija = 620;
+                fraccionBase = 24000;
+                porcentaje = 0.06; }
+
+            sri = tarifaFija + ((valorBase - fraccionBase) * porcentaje);
+            const ant = 36,
+                sppat = 35,
+                rodaje = 10;
+            const total = sri + ant + sppat + rodaje;
+            return { total: Math.round(total * 100) / 100, sri: Math.round(sri * 100) / 100, ant, sppat, rodaje,
+                valorBase: Math.round(valorBase * 100) / 100, antiguedad, detalle: 'Cálculo estándar' };
+        }
+
+        // ============================================================
+        // CÁLCULO PRINCIPAL
+        // ============================================================
+        function calcular() {
+            const kmMes = getVal('kmMes') || 1500;
+            const pctCiudad = parseInt(document.getElementById('pctCiudadSlider').value) / 100;
+            const pctCarretera = 1 - pctCiudad;
+            const anos = parseInt(document.getElementById('anosSlider').value);
+            const anioActual = getVal('anioActual') || 2026;
+            const region = document.getElementById('factorGeo').value;
+            const fGeo = getFactoresGeograficos(region);
+            const fTrafico = getVal('factorTrafico');
+            const fAC = getVal('factorAC');
+            const tarifaResidencial = getVal('tarifaResidencial');
+            const tarifaElectroRapida = getVal('tarifaElectroRapida');
+            const tarifaElectroSemirrapida = getVal('tarifaElectroSemirrapida');
+            const cargoFijo = getVal('cargoFijo');
+            const inflComb = getVal('inflacionCombustibles') / 100;
+            const inflElec = getVal('inflacionElectrica') / 100;
+
+            const showCarga = document.getElementById('toggleCarga').checked;
+            const showProyecciones = document.getElementById('toggleProyecciones').checked;
+            const showEmisiones = document.getElementById('toggleEmisiones').checked;
+            const showAutonomia = document.getElementById('toggleAutonomia').checked;
+
+            // ============================================================
+            // BEV
+            // ============================================================
+            const bevConsumoBase = getVal('bevConsumo');
+            const bevBateria = getVal('bevBateria');
+            const bevAutonomiaDeclarada = getVal('bevAutonomia');
+            const bevCiclo = document.getElementById('bevCiclo').value;
+            const bevFactorCiclo = getFactorCiclo(bevCiclo);
+            const bevAutonomiaReal = bevAutonomiaDeclarada * bevFactorCiclo;
+
+            const regenBEV = (pctCiudad * 0.15) + (pctCarretera * 0.08);
+            const factorTraficoBEV = fTrafico <= 1.05 ? 1.0 : 0.97;
+            const consumoRealBEV = bevConsumoBase * fGeo.bev * fAC * (1 - regenBEV) * factorTraficoBEV;
+
+            const kwhMesBEV = (kmMes * consumoRealBEV) / 100;
+            const costoEnergiaBEV = kwhMesBEV * tarifaResidencial + cargoFijo;
+            const mantBEV = getMantMensual(kmMes, getVal('bevMantKm'), getVal('bevMantCosto')) * fGeo.mant;
+            const costoTotalBEV = costoEnergiaBEV + mantBEV;
+
+            const bevPrecio = getVal('bevPrecio');
+            const bevAnio = getVal('bevAnio');
+            const matriculaBEV = calcularMatricula('BEV', bevPrecio, bevAnio, anioActual);
+
+            // ============================================================
+            // ICE
+            // ============================================================
+            const iceRendCiudad = getVal('iceRendCiudad');
+            const iceRendCarretera = getVal('iceRendCarretera');
+            const iceTurbo = document.getElementById('iceTurbo').value === 'si' ? 1.08 : 1.0;
+            const iceTraccion = document.getElementById('iceTraccion').value === '4x4' ? 0.88 : 1.0;
+            const factorTraficoICE = fTrafico;
+
+            const rendCiudadAdj = iceRendCiudad * (1 / fGeo.ice) * iceTurbo * iceTraccion / factorTraficoICE;
+            const rendCarreteraAdj = iceRendCarretera * (1 / fGeo.ice) * iceTurbo * iceTraccion / factorTraficoICE;
+            const rendPonderadoICE = 1 / ((pctCiudad / rendCiudadAdj) + (pctCarretera / rendCarreteraAdj));
+            const galonesMesICE = kmMes / rendPonderadoICE;
+
+            const iceCombustible = document.getElementById('iceCombustible').value;
+            const icePrecioComb = getPrecioCombustible(iceCombustible);
+            const costoCombustibleICE = galonesMesICE * icePrecioComb;
+            const mantICE = getMantMensual(kmMes, getVal('iceMantKm'), getVal('iceMantCosto')) * fGeo.mant;
+            const costoTotalICE = costoCombustibleICE + mantICE;
+
+            const icePrecio = getVal('icePrecio');
+            const iceAnio = getVal('iceAnio');
+            const matriculaICE = calcularMatricula('ICE', icePrecio, iceAnio, anioActual);
+
+            // ============================================================
+            // PHEV (opcional)
+            // ============================================================
+            let phevActivo = state.phevActivo;
+            let phevCostoTotal = 0,
+                phevCostoElectrico = 0,
+                phevCostoCombustible = 0,
+                phevMant = 0,
+                phevGalonesMes = 0,
+                phevKwhMes = 0,
+                phevMatricula = null,
+                phevPrecio = 0,
+                phevAutonomiaReal = 0;
+
+            if (phevActivo) {
+                const phevBateria = getVal('phevBateria');
+                const phevAutonomiaEV = getVal('phevAutonomiaEV');
+                const phevConsumoEVbase = getVal('phevConsumoEV');
+                const phevConsumoHEVbase = getVal('phevConsumoHEV');
+                const phevPctElectrico = getVal('phevPctElectrico') / 100;
+                const phevCombustible = document.getElementById('phevCombustible').value;
+                const phevPrecioComb = getPrecioCombustible(phevCombustible);
+
+                const regenPHEV = (pctCiudad * 0.12) + (pctCarretera * 0.06);
+                const factorTraficoPHEV = fTrafico <= 1.05 ? 1.0 : 0.98;
+                const consumoRealEV_PHEV = phevConsumoEVbase * fGeo.bev * fAC * (1 - regenPHEV) * factorTraficoPHEV;
+                const consumoRealHEV_PHEV = phevConsumoHEVbase * fGeo.ice * fAC * (1 + (fTrafico - 1) * 0.5);
+
+                const kmElectricosDisponibles = phevAutonomiaEV * (kmMes / 1500);
+                const kmElectricosMes = Math.min(kmMes * phevPctElectrico, kmElectricosDisponibles);
+                const kmHibridoMes = Math.max(0, kmMes - kmElectricosMes);
+
+                phevKwhMes = (kmElectricosMes * consumoRealEV_PHEV) / 100;
+                phevCostoElectrico = phevKwhMes * tarifaResidencial;
+
+                phevGalonesMes = (kmHibridoMes / 100) * (consumoRealHEV_PHEV / 3.785);
+                phevCostoCombustible = phevGalonesMes * phevPrecioComb;
+
+                phevMant = getMantMensual(kmMes, getVal('phevMantKm'), getVal('phevMantCosto')) * fGeo.mant;
+                phevCostoTotal = phevCostoElectrico + phevCostoCombustible + phevMant;
+
+                phevPrecio = getVal('phevPrecio');
+                const phevAnio = getVal('phevAnio');
+                phevMatricula = calcularMatricula('PHEV', phevPrecio, phevAnio, anioActual);
+
+                phevAutonomiaReal = phevBateria / (consumoRealEV_PHEV / 100);
+            }
+
+            // ============================================================
+            // COMPARATIVOS
+            // ============================================================
+            const ahorroMensualBEV = costoTotalICE - costoTotalBEV;
+            const ahorroMensualPHEV = phevActivo ? costoTotalICE - phevCostoTotal : 0;
+            const pctAhorroBEV = costoTotalICE > 0 ? (ahorroMensualBEV / costoTotalICE) * 100 : 0;
+            const pctAhorroPHEV = (phevActivo && costoTotalICE > 0) ? (ahorroMensualPHEV / costoTotalICE) * 100 : 0;
+
+            const diffPrecioBEV = bevPrecio - icePrecio;
+            const diffPrecioPHEV = phevActivo ? phevPrecio - icePrecio : 0;
+
+            let mesesROI_BEV = 9999,
+                mesesROI_PHEV = 9999;
+            let diasROI_BEV = 9999,
+                diasROI_PHEV = 9999;
+            if (ahorroMensualBEV > 0 && diffPrecioBEV > 0) {
+                mesesROI_BEV = diffPrecioBEV / ahorroMensualBEV;
+                diasROI_BEV = mesesROI_BEV * 30;
+                // Validación: si es menor a 1 mes, forzar 1 mes
+                if (mesesROI_BEV < 1) mesesROI_BEV = 1;
+                if (diasROI_BEV < 30) diasROI_BEV = 30;
+                // Si es menor a 3 meses, mostrar advertencia
+            } else if (diffPrecioBEV <= 0) {
+                mesesROI_BEV = 0;
+                diasROI_BEV = 0;
+            }
+
+            if (phevActivo && ahorroMensualPHEV > 0 && diffPrecioPHEV > 0) {
+                mesesROI_PHEV = diffPrecioPHEV / ahorroMensualPHEV;
+                diasROI_PHEV = mesesROI_PHEV * 30;
+                if (mesesROI_PHEV < 1) mesesROI_PHEV = 1;
+                if (diasROI_PHEV < 30) diasROI_PHEV = 30;
+            } else if (phevActivo && diffPrecioPHEV <= 0) {
+                mesesROI_PHEV = 0;
+                diasROI_PHEV = 0;
+            }
+
+            const emisionesBEV = kwhMesBEV * 0.38;
+            const emisionesICE = galonesMesICE * 3.785 * 2.31;
+            const emisionesPHEV = phevActivo ? (phevKwhMes * 0.38 + phevGalonesMes * 3.785 * 2.31) : 0;
+
+            const costoKmBEV = costoTotalBEV / kmMes;
+            const costoKmICE = costoTotalICE / kmMes;
+            const costoKmPHEV = phevActivo ? phevCostoTotal / kmMes : 0;
+
+            // Proyecciones
+            const proyecciones = [];
+            let ahorroAcumBEV = 0,
+                ahorroAcumPHEV = 0;
+            for (let a = 1; a <= Math.min(anos, 15); a++) {
+                const fComb = Math.pow(1 + inflComb, a - 1);
+                const fElec = Math.pow(1 + inflElec, a - 1);
+
+                const cBEV = costoEnergiaBEV * 12 * fElec + mantBEV * 12 + (matriculaBEV.total * 1);
+                const cICE = costoCombustibleICE * 12 * fComb + mantICE * 12 + (matriculaICE.total * 1);
+                const cPHEV = phevActivo ?
+                    (phevCostoElectrico * 12 * fElec + phevCostoCombustible * 12 * fComb + phevMant * 12 + (phevMatricula ?
+                        phevMatricula.total : 0)) :
+                    0;
+
+                const ahorroBEV = cICE - cBEV;
+                const ahorroPHEV = phevActivo ? cICE - cPHEV : 0;
+                ahorroAcumBEV += ahorroBEV;
+                ahorroAcumPHEV += ahorroPHEV;
+
+                proyecciones.push({
+                    año: a,
+                    costoBEV: cBEV / 12,
+                    costoICE: cICE / 12,
+                    costoPHEV: phevActivo ? cPHEV / 12 : 0,
+                    ahorroBEV: ahorroBEV / 12,
+                    ahorroPHEV: phevActivo ? ahorroPHEV / 12 : 0,
+                    ahorroAcumBEV,
+                    ahorroAcumPHEV,
+                    roiBEV: (ahorroBEV / 12 > 0 && diffPrecioBEV > 0) ? diffPrecioBEV / (ahorroBEV / 12) : 0,
+                    roiPHEV: (phevActivo && ahorroPHEV / 12 > 0 && diffPrecioPHEV > 0) ? diffPrecioPHEV / (ahorroPHEV /
+                    12) : 0
+                });
+            }
+
+            // Comercial
+            let comercialData = null;
+            if (state.comercialActivo) {
+                const kmCarrera = getVal('comKmCarrera');
+                const tarifaCarrera = getVal('comTarifaCarrera');
+                const carrerasDia = getVal('comCarrerasDia');
+                const diasMes = getVal('comDiasMes');
+                const comision = getVal('comComision') / 100;
+                const propinas = document.getElementById('comPropinas').value === 'si' ? diasMes * 1.0 : 0;
+
+                const carrerasMes = carrerasDia * diasMes;
+                const ingresoBruto = carrerasMes * tarifaCarrera;
+                const comisionApp = ingresoBruto * comision;
+                const ingresoNeto = ingresoBruto - comisionApp;
+                const ingresoTotal = ingresoNeto + propinas;
+
+                const costoPorCarreraBEV = (costoTotalBEV / kmMes) * kmCarrera;
+                const costoPorCarreraICE = (costoTotalICE / kmMes) * kmCarrera;
+                const costoPorCarreraPHEV = phevActivo ? (phevCostoTotal / kmMes) * kmCarrera : 0;
+
+                const utilidadPorCarreraBEV = tarifaCarrera - costoPorCarreraBEV;
+                const utilidadPorCarreraICE = tarifaCarrera - costoPorCarreraICE;
+                const utilidadPorCarreraPHEV = phevActivo ? tarifaCarrera - costoPorCarreraPHEV : 0;
+
+                const utilidadMensualBEV = ingresoTotal - costoTotalBEV;
+                const utilidadMensualICE = ingresoTotal - costoTotalICE;
+                const utilidadMensualPHEV = phevActivo ? ingresoTotal - phevCostoTotal : 0;
+
+                const ahorroPorCarreraBEV = utilidadPorCarreraBEV - utilidadPorCarreraICE;
+                const ahorroPorCarreraPHEV = phevActivo ? utilidadPorCarreraPHEV - utilidadPorCarreraICE : 0;
+                const ahorroDiarioBEV = ahorroPorCarreraBEV * carrerasDia;
+                const ahorroDiarioPHEV = phevActivo ? ahorroPorCarreraPHEV * carrerasDia : 0;
+
+                let diasROI_BEV_comercial = 9999,
+                    diasROI_PHEV_comercial = 9999;
+                if (ahorroDiarioBEV > 0 && diffPrecioBEV > 0) {
+                    diasROI_BEV_comercial = diffPrecioBEV / ahorroDiarioBEV;
+                    if (diasROI_BEV_comercial < 1) diasROI_BEV_comercial = 1;
+                } else if (diffPrecioBEV <= 0) { diasROI_BEV_comercial = 0; }
+
+                if (phevActivo && ahorroDiarioPHEV > 0 && diffPrecioPHEV > 0) {
+                    diasROI_PHEV_comercial = diffPrecioPHEV / ahorroDiarioPHEV;
+                    if (diasROI_PHEV_comercial < 1) diasROI_PHEV_comercial = 1;
+                } else if (phevActivo && diffPrecioPHEV <= 0) { diasROI_PHEV_comercial = 0; }
+
+                comercialData = {
+                    tarifaCarrera,
+                    kmCarrera,
+                    carrerasDia,
+                    diasMes,
+                    carrerasMes,
+                    ingresoTotal,
+                    costoPorCarreraBEV,
+                    costoPorCarreraICE,
+                    costoPorCarreraPHEV,
+                    utilidadPorCarreraBEV,
+                    utilidadPorCarreraICE,
+                    utilidadPorCarreraPHEV,
+                    utilidadMensualBEV,
+                    utilidadMensualICE,
+                    utilidadMensualPHEV,
+                    ahorroPorCarreraBEV,
+                    ahorroPorCarreraPHEV,
+                    ahorroDiarioBEV,
+                    ahorroDiarioPHEV,
+                    diasROI_BEV: diasROI_BEV_comercial,
+                    diasROI_PHEV: diasROI_PHEV_comercial,
+                    mesesROI_BEV: diasROI_BEV_comercial > 0 ? diasROI_BEV_comercial / 30 : 0,
+                    mesesROI_PHEV: diasROI_PHEV_comercial > 0 ? diasROI_PHEV_comercial / 30 : 0
+                };
+            }
+
+            // ============================================================
+            // GUARDAR
+            // ============================================================
+            state.datosSimulacion = {
+                kmMes,
+                pctCiudad,
+                pctCarretera,
+                anos,
+                anioActual,
+                region,
+                fGeo,
+                fTrafico,
+                fAC,
+                tarifaResidencial,
+                tarifaElectroRapida,
+                tarifaElectroSemirrapida,
+                cargoFijo,
+                inflComb,
+                inflElec,
+                bevNombre: getValStr('bevNombre'),
+                bevCategoria: document.getElementById('bevCategoria').value,
+                bevConsumoBase,
+                consumoRealBEV,
+                bevBateria,
+                bevAutonomiaDeclarada,
+                bevCiclo,
+                bevFactorCiclo,
+                bevAutonomiaReal,
+                bevKwhMes: kwhMesBEV,
+                bevCostoEnergia: costoEnergiaBEV,
+                bevMant: mantBEV,
+                bevCostoTotal: costoTotalBEV,
+                bevPrecio,
+                bevMatricula: matriculaBEV,
+                bevTorque: getVal('bevTorque'),
+                bevPotencia: getValStr('bevPotencia'),
+                bevTraccion: document.getElementById('bevTraccion').value,
+                iceSegmento: document.getElementById('iceSegmento').value,
+                iceRendCiudad,
+                iceRendCarretera,
+                iceCombustible,
+                iceGalonesMes: galonesMesICE,
+                iceCostoCombustible: costoCombustibleICE,
+                iceMant: mantICE,
+                iceCostoTotal: costoTotalICE,
+                icePrecio,
+                iceMatricula: matriculaICE,
+                phevActivo,
+                phevNombre: getValStr('phevNombre'),
+                phevCostoTotal,
+                phevCostoElectrico,
+                phevCostoCombustible,
+                phevMant,
+                phevPrecio,
+                phevMatricula,
+                phevGalonesMes,
+                phevKwhMes,
+                phevAutonomiaReal,
+                phevAutonomiaDeclarada: getVal('phevAutonomiaEV'),
+                ahorroMensualBEV,
+                ahorroMensualPHEV,
+                pctAhorroBEV,
+                pctAhorroPHEV,
+                diffPrecioBEV,
+                diffPrecioPHEV,
+                mesesROI_BEV,
+                mesesROI_PHEV,
+                diasROI_BEV,
+                diasROI_PHEV,
+                emisionesBEV,
+                emisionesICE,
+                emisionesPHEV,
+                costoKmBEV,
+                costoKmICE,
+                costoKmPHEV,
+                proyecciones,
+                comercialData,
+                showCarga,
+                showProyecciones,
+                showEmisiones,
+                showAutonomia,
+                consumoEV: consumoRealBEV,
+                bateriaEV: bevBateria
+            };
+
+            renderResultados(state.datosSimulacion);
+            document.getElementById('secResultados').style.display = 'block';
+            document.getElementById('secResultados').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            guardarPreferencias();
+        }
+
+        // ============================================================
+        // RENDERIZAR RESULTADOS
+        // ============================================================
+        function renderResultados(d) {
+            // CARDS
+            let cardsHTML = `
+                    <div class="result-card"><div class="rc-label">⚡ Eléctrico</div><div class="rc-value green">${fmt(d.bevCostoTotal)}</div><div class="rc-sub">${d.bevNombre}</div></div>
+                    <div class="result-card"><div class="rc-label">⛽ Combustión</div><div class="rc-value orange">${fmt(d.iceCostoTotal)}</div><div class="rc-sub">${d.iceCombustible}</div></div>
+                `;
+            if (d.phevActivo) {
+                cardsHTML +=
+                    `<div class="result-card"><div class="rc-label">🔌 Híbrido</div><div class="rc-value blue">${fmt(d.phevCostoTotal)}</div><div class="rc-sub">${d.phevNombre}</div></div>`;
+            }
+            cardsHTML += `
+                    <div class="result-card"><div class="rc-label">💰 Ahorro BEV</div><div class="rc-value ${d.ahorroMensualBEV>=0?'green':'orange'}">${fmt(Math.abs(d.ahorroMensualBEV))}</div><div class="rc-sub">${d.ahorroMensualBEV>=0?'a favor del eléctrico':'a favor del combustión'}</div></div>
+                    <div class="result-card"><div class="rc-label">📋 Matrícula BEV</div><div class="rc-value green">${fmt(d.bevMatricula.total)}</div><div class="rc-sub">${d.bevMatricula.detalle}</div></div>
+                    <div class="result-card"><div class="rc-label">📋 Matrícula ICE</div><div class="rc-value orange">${fmt(d.iceMatricula.total)}</div><div class="rc-sub">${d.iceMatricula.detalle}</div></div>
+                    <div class="result-card"><div class="rc-label">💰 Costo / km</div><div class="rc-value purple">BEV: ${fmt(d.costoKmBEV,3)}</div><div class="rc-sub">ICE: ${fmt(d.costoKmICE,3)}</div></div>
+                `;
+            if (d.phevActivo && d.phevMatricula) {
+                cardsHTML +=
+                    `<div class="result-card"><div class="rc-label">📋 Matrícula PHEV</div><div class="rc-value blue">${fmt(d.phevMatricula.total)}</div><div class="rc-sub">${d.phevMatricula.detalle}</div></div>`;
+            }
+            document.getElementById('cardsResultados').innerHTML = cardsHTML;
+
+            // AUTONOMÍA
+            const autContainer = document.getElementById('autonomiaContainer');
+            if (d.showAutonomia) {
+                autContainer.classList.remove('hidden');
+                let html =
+                    `<div><p style="font-weight:700;color:var(--bev);">⚡ ${d.bevNombre}</p>
+                        <div class="flex-between"><span>Autonomía declarada (${d.bevCiclo.toUpperCase()})</span><span><strong>${d.bevAutonomiaDeclarada} km</strong></span></div>
+                        <div class="flex-between"><span>Factor conversión</span><span>${d.bevFactorCiclo}</span></div>
+                        <div class="flex-between" style="font-weight:700;color:var(--bev);"><span>Autonomía real estimada</span><span><strong>${fmtNum(d.bevAutonomiaReal,0)} km</strong></span></div>`;
+                if (d.phevActivo) {
+                    html += `<div style="border-top:1px solid var(--border);margin:10px 0;"></div>
+                            <p style="font-weight:700;color:var(--phev);">🔌 ${d.phevNombre}</p>
+                            <div class="flex-between"><span>Autonomía eléctrica declarada</span><span><strong>${d.phevAutonomiaDeclarada} km</strong></span></div>
+                            <div class="flex-between" style="font-weight:700;color:var(--phev);"><span>Autonomía real estimada (EV)</span><span><strong>${fmtNum(d.phevAutonomiaReal,0)} km</strong></span></div>`;
+                }
+                html += `<div style="font-size:.75rem;color:var(--text-muted);margin-top:8px;">ℹ️ La autonomía real puede variar según topografía, tráfico, uso de A/C y estilo de manejo.</div></div>`;
+                document.getElementById('autonomiaContent').innerHTML = html;
+            } else {
+                autContainer.classList.add('hidden');
+            }
+
+            // DESGLOSE
+            let desgloseHTML = `
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="trip-card">
+                            <div class="trip-result-row"><span class="trip-label" style="color:var(--bev);">⚡ ${d.bevNombre}</span></div>
+                            <div class="trip-result-row"><span class="trip-label">Energía mensual</span><span class="trip-value">${fmt(d.bevCostoEnergia)}</span></div>
+                            ${d.bevMant>0?`<div class="trip-result-row"><span class="trip-label">Mantenimiento</span><span class="trip-value">${fmt(d.bevMant)}</span></div>`:''}
+                            <div class="trip-result-row"><span class="trip-label" style="font-weight:800;">Total mensual</span><span class="trip-value" style="color:var(--bev);font-size:1.1rem;">${fmt(d.bevCostoTotal)}</span></div>
+                            <div class="trip-detail">${fmtNum(d.bevKwhMes)} kWh × $${d.tarifaResidencial}/kWh + cargo $${d.cargoFijo}</div>
+                            <div class="trip-detail">Matrícula: ${fmt(d.bevMatricula.total)} (ahorro ${fmt(d.iceMatricula.total - d.bevMatricula.total)})</div>
+                        </div>
+                        <div class="trip-card">
+                            <div class="trip-result-row"><span class="trip-label" style="color:var(--ice);">⛽ ${d.iceCombustible}</span></div>
+                            <div class="trip-result-row"><span class="trip-label">Combustible mensual</span><span class="trip-value">${fmt(d.iceCostoCombustible)}</span></div>
+                            ${d.iceMant>0?`<div class="trip-result-row"><span class="trip-label">Mantenimiento</span><span class="trip-value">${fmt(d.iceMant)}</span></div>`:''}
+                            <div class="trip-result-row"><span class="trip-label" style="font-weight:800;">Total mensual</span><span class="trip-value" style="color:var(--ice);font-size:1.1rem;">${fmt(d.iceCostoTotal)}</span></div>
+                            <div class="trip-detail">${fmtNum(d.iceGalonesMes,1)} gal × $${getPrecioCombustible(d.iceCombustible).toFixed(3)}/gal</div>
+                            <div class="trip-detail">Matrícula: ${fmt(d.iceMatricula.total)}</div>
+                        </div>
+                    </div>
+                `;
+            if (d.phevActivo) {
+                desgloseHTML += `
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+                            <div class="trip-card" style="grid-column:1/-1;">
+                                <div class="trip-result-row"><span class="trip-label" style="color:var(--phev);">🔌 ${d.phevNombre}</span></div>
+                                <div class="trip-result-row"><span class="trip-label">Electricidad</span><span class="trip-value">${fmt(d.phevCostoElectrico)}</span></div>
+                                <div class="trip-result-row"><span class="trip-label">Combustible</span><span class="trip-value">${fmt(d.phevCostoCombustible)}</span></div>
+                                ${d.phevMant>0?`<div class="trip-result-row"><span class="trip-label">Mantenimiento</span><span class="trip-value">${fmt(d.phevMant)}</span></div>`:''}
+                                <div class="trip-result-row"><span class="trip-label" style="font-weight:800;">Total mensual</span><span class="trip-value" style="color:var(--phev);font-size:1.1rem;">${fmt(d.phevCostoTotal)}</span></div>
+                                <div class="trip-detail">${fmtNum(d.phevKwhMes)} kWh + ${fmtNum(d.phevGalonesMes,1)} gal</div>
+                                ${d.phevMatricula?`<div class="trip-detail">Matrícula: ${fmt(d.phevMatricula.total)}</div>`:''}
+                            </div>
+                        </div>
+                    `;
+            }
+            document.getElementById('desgloseHTML').innerHTML = desgloseHTML;
+
+            // COMERCIAL
+            const comercialEl = document.getElementById('comercialResultados');
+            if (d.comercialData) {
+                const c = d.comercialData;
+                comercialEl.classList.remove('hidden');
+                comercialEl.innerHTML = `
+                        <div class="divider-label">🚕 Transporte Comercial - Rentabilidad</div>
+                        <div class="cards-grid">
+                            <div class="result-card"><div class="rc-label">💰 Ingreso mensual</div><div class="rc-value purple">${fmt(c.ingresoTotal)}</div><div class="rc-sub">${c.carrerasMes} carreras</div></div>
+                            <div class="result-card"><div class="rc-label">⚡ Utilidad BEV</div><div class="rc-value green">${fmt(c.utilidadMensualBEV)}</div><div class="rc-sub">${fmt(c.utilidadPorCarreraBEV,2)}/carrera</div></div>
+                            <div class="result-card"><div class="rc-label">⛽ Utilidad ICE</div><div class="rc-value orange">${fmt(c.utilidadMensualICE)}</div><div class="rc-sub">${fmt(c.utilidadPorCarreraICE,2)}/carrera</div></div>
+                            ${d.phevActivo?`<div class="result-card"><div class="rc-label">🔌 Utilidad PHEV</div><div class="rc-value blue">${fmt(c.utilidadMensualPHEV)}</div><div class="rc-sub">${fmt(c.utilidadPorCarreraPHEV,2)}/carrera</div></div>`:''}
+                        </div>
+                        <div class="trip-card">
+                            <div class="trip-result-row"><span class="trip-label">💰 Ahorro por carrera (BEV vs ICE)</span><span class="trip-value green">${fmt(c.ahorroPorCarreraBEV)}</span></div>
+                            <div class="trip-result-row"><span class="trip-label">📊 Ahorro diario (BEV vs ICE)</span><span class="trip-value green">${fmt(c.ahorroDiarioBEV)}</span></div>
+                            <div class="trip-result-row"><span class="trip-label">📈 Ahorro mensual (BEV vs ICE)</span><span class="trip-value green">${fmt(c.utilidadMensualBEV - c.utilidadMensualICE)}</span></div>
+                            ${d.phevActivo?`
+                            <div class="trip-result-row"><span class="trip-label">💰 Ahorro por carrera (PHEV vs ICE)</span><span class="trip-value blue">${fmt(c.ahorroPorCarreraPHEV)}</span></div>
+                            <div class="trip-result-row"><span class="trip-label">📊 Ahorro diario (PHEV vs ICE)</span><span class="trip-value blue">${fmt(c.ahorroDiarioPHEV)}</span></div>
+                            `:''}
+                            <div class="trip-result-row"><span class="trip-label" style="font-weight:800;">⏱️ ROI en días (BEV)</span><span class="trip-value" style="color:var(--bev);font-size:1.1rem;">${c.diasROI_BEV>0?fmtNum(c.diasROI_BEV,0)+' días':'Inmediato'}</span></div>
+                            ${c.diasROI_BEV>0&&c.diasROI_BEV<365?`<div class="alert success" style="margin-top:8px;">✅ ¡En ${fmtNum(c.diasROI_BEV,0)} días de trabajo, el vehículo eléctrico se paga solo!</div>`:''}
+                            ${c.diasROI_BEV>0&&c.diasROI_BEV<90?`<div class="alert warning" style="margin-top:8px;">⚠️ El ROI es muy corto (${fmtNum(c.diasROI_BEV,0)} días). Verifica los datos ingresados.</div>`:''}
+                        </div>
+                    `;
+            } else {
+                comercialEl.classList.add('hidden');
+            }
+
+            // PROYECCIONES (BLOQUE SEPARADO AL FINAL)
+            const proyContainer = document.getElementById('proyeccionesContainer');
+            if (d.showProyecciones) {
+                proyContainer.style.display = 'block';
+                const ahorro5BEV = d.proyecciones[4] ? d.proyecciones[4].ahorroAcumBEV : d.ahorroMensualBEV * 60;
+                const ahorro10BEV = d.proyecciones[9] ? d.proyecciones[9].ahorroAcumBEV : d.ahorroMensualBEV * 120;
+                const ahorro5PHEV = d.phevActivo ? (d.proyecciones[4] ? d.proyecciones[4].ahorroAcumPHEV : d
+                    .ahorroMensualPHEV * 60) : 0;
+                const ahorro10PHEV = d.phevActivo ? (d.proyecciones[9] ? d.proyecciones[9].ahorroAcumPHEV : d
+                    .ahorroMensualPHEV * 120) : 0;
+
+                // Matrícula acumulada como ahorro
+                const ahorroMatriculaAnual = d.iceMatricula.total - d.bevMatricula.total;
+                const ahorroMatricula5 = ahorroMatriculaAnual * 5;
+                const ahorroMatricula10 = ahorroMatriculaAnual * 10;
+
+                let proyHTML = `
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px;">
+                            <div class="trip-card text-center" style="background:var(--bev-bg);">
+                                <div style="font-size:.7rem;color:var(--text-muted);">AHORRO ACUMULADO</div>
+                                <div style="font-size:1.4rem;font-weight:800;color:var(--bev);">${fmt(ahorro5BEV + ahorroMatricula5)}</div>
+                                <div style="font-size:.75rem;color:var(--text-muted);">en 5 años (BEV vs ICE)</div>
+                                <div style="font-size:.7rem;color:var(--text-muted);">incluye ahorro en matrícula</div>
+                            </div>
+                            <div class="trip-card text-center" style="background:var(--bev-bg);">
+                                <div style="font-size:.7rem;color:var(--text-muted);">AHORRO ACUMULADO</div>
+                                <div style="font-size:1.4rem;font-weight:800;color:var(--bev);">${fmt(ahorro10BEV + ahorroMatricula10)}</div>
+                                <div style="font-size:.75rem;color:var(--text-muted);">en 10 años (BEV vs ICE)</div>
+                                <div style="font-size:.7rem;color:var(--text-muted);">incluye ahorro en matrícula</div>
+                            </div>
+                            <div class="trip-card text-center">
+                                <div style="font-size:.7rem;color:var(--text-muted);">AHORRO EN MATRÍCULA</div>
+                                <div style="font-size:1.2rem;font-weight:800;color:var(--bev);">${fmt(ahorroMatriculaAnual)}/año</div>
+                                <div style="font-size:.75rem;color:var(--text-muted);">${fmt(ahorroMatricula5)} en 5 años</div>
+                                <div style="font-size:.7rem;color:var(--text-muted);">${fmt(ahorroMatricula10)} en 10 años</div>
+                            </div>
+                        </div>
+                    `;
+
+                // ROI (solo si aplica)
+                if (d.diffPrecioBEV > 0) {
+                    const roiMeses = d.mesesROI_BEV > 0 && d.mesesROI_BEV < 9999 ? d.mesesROI_BEV : 0;
+                    const roiDias = d.diasROI_BEV > 0 && d.diasROI_BEV < 9999 ? d.diasROI_BEV : 0;
+                    const roiAnos = Math.floor(roiMeses / 12);
+                    const roiMesesRest = Math.round(roiMeses % 12);
+                    let roiStr = '';
+                    if (roiMeses > 0) {
+                        if (roiAnos > 0) roiStr = `${roiAnos} año${roiAnos>1?'s':''} y ${roiMesesRest} meses`;
+                        else if (roiMeses > 0) roiStr = `${Math.round(roiMeses)} meses`;
+                    } else {
+                        roiStr = 'Inversión inicial menor — ROI inmediato desde el día 1';
+                    }
+
+                    proyHTML += `
+                            <div class="trip-card" style="margin-top:12px;background:var(--bg-card2);">
+                                <div class="flex-between"><span class="trip-label" style="color:var(--bev);font-weight:800;">⏱️ RETORNO DE INVERSIÓN (BEV vs ICE)</span></div>
+                                <div class="flex-between"><span>Diferencia de precio</span><span>${fmt(d.diffPrecioBEV)}</span></div>
+                                <div class="flex-between"><span>Ahorro mensual</span><span>${fmt(d.ahorroMensualBEV)}</span></div>
+                                <div class="flex-between" style="font-weight:700;color:var(--bev);font-size:1.1rem;"><span>Tiempo de recuperación</span><span>${roiStr}</span></div>
+                                ${roiMeses > 0 && roiMeses < 3 ? `<div class="alert warning" style="margin-top:8px;">⚠️ El ROI es muy corto (${Math.round(roiMeses)} meses). Verifica los datos ingresados.</div>` : ''}
+                                ${roiMeses > 0 && roiMeses > 120 ? `<div class="alert info" style="margin-top:8px;">ℹ️ El ROI supera los 10 años. Considera el valor residual del vehículo.</div>` : ''}
+                            </div>
+                        `;
+                } else if (d.diffPrecioBEV <= 0) {
+                    proyHTML += `
+                            <div class="trip-card" style="margin-top:12px;background:var(--bg-card2);">
+                                <div class="alert success">✅ El vehículo eléctrico es más económico desde el día 1 — inversión inicial menor.</div>
+                            </div>
+                        `;
+                }
+
+                if (d.phevActivo && d.diffPrecioPHEV > 0) {
+                    const roiMesesP = d.mesesROI_PHEV > 0 && d.mesesROI_PHEV < 9999 ? d.mesesROI_PHEV : 0;
+                    const roiAnosP = Math.floor(roiMesesP / 12);
+                    const roiMesesRestP = Math.round(roiMesesP % 12);
+                    let roiStrP = '';
+                    if (roiMesesP > 0) {
+                        if (roiAnosP > 0) roiStrP = `${roiAnosP} año${roiAnosP>1?'s':''} y ${roiMesesRestP} meses`;
+                        else if (roiMesesP > 0) roiStrP = `${Math.round(roiMesesP)} meses`;
+                    } else {
+                        roiStrP = 'Inversión inicial menor — ROI inmediato desde el día 1';
+                    }
+
+                    proyHTML += `
+                            <div class="trip-card" style="margin-top:12px;background:var(--bg-card2);">
+                                <div class="flex-between"><span class="trip-label" style="color:var(--phev);font-weight:800;">⏱️ RETORNO DE INVERSIÓN (PHEV vs ICE)</span></div>
+                                <div class="flex-between"><span>Diferencia de precio</span><span>${fmt(d.diffPrecioPHEV)}</span></div>
+                                <div class="flex-between"><span>Ahorro mensual</span><span>${fmt(d.ahorroMensualPHEV)}</span></div>
+                                <div class="flex-between" style="font-weight:700;color:var(--phev);font-size:1.1rem;"><span>Tiempo de recuperación</span><span>${roiStrP}</span></div>
+                                ${roiMesesP > 0 && roiMesesP < 3 ? `<div class="alert warning" style="margin-top:8px;">⚠️ El ROI es muy corto (${Math.round(roiMesesP)} meses). Verifica los datos ingresados.</div>` : ''}
+                                ${roiMesesP > 120 ? `<div class="alert info" style="margin-top:8px;">ℹ️ El ROI supera los 10 años. Considera el valor residual del vehículo.</div>` : ''}
+                            </div>
+                        `;
+                } else if (d.phevActivo && d.diffPrecioPHEV <= 0) {
+                    proyHTML += `
+                            <div class="trip-card" style="margin-top:12px;background:var(--bg-card2);">
+                                <div class="alert success">✅ El híbrido es más económico desde el día 1 — inversión inicial menor.</div>
+                            </div>
+                        `;
+                }
+
+                document.getElementById('proyeccionesHTML').innerHTML = proyHTML;
+            } else {
+                proyContainer.style.display = 'none';
+            }
+
+            // EMISIONES
+            const emiContainer = document.getElementById('emisionesContainer');
+            if (d.showEmisiones) {
+                emiContainer.style.display = 'block';
+                const reduccionBEV = d.emisionesICE - d.emisionesBEV;
+                const arboles = Math.round(reduccionBEV * 12 * 45);
+                document.getElementById('emisionesHTML').innerHTML = `
+                        <div class="cards-grid">
+                            <div class="result-card"><div class="rc-label">⚡ Emisiones BEV</div><div class="rc-value green">${fmtNum(d.emisionesBEV,1)} kg/mes</div><div class="rc-sub">Factor 0.38 kg/kWh</div></div>
+                            <div class="result-card"><div class="rc-label">⛽ Emisiones ICE</div><div class="rc-value orange">${fmtNum(d.emisionesICE,1)} kg/mes</div><div class="rc-sub">${fmtNum(d.iceGalonesMes,1)} gal/mes</div></div>
+                            ${d.phevActivo?`<div class="result-card"><div class="rc-label">🔌 Emisiones PHEV</div><div class="rc-value blue">${fmtNum(d.emisionesPHEV,1)} kg/mes</div><div class="rc-sub">Modo mixto</div></div>`:''}
+                            <div class="result-card"><div class="rc-label">🌿 Reducción BEV</div><div class="rc-value green">${fmtNum(reduccionBEV,1)} kg/mes</div><div class="rc-sub">≈ ${arboles} árboles/año</div></div>
+                        </div>
+                    `;
+            } else {
+                emiContainer.style.display = 'none';
+            }
+
+            // CARGA
+            const cargaContainer = document.getElementById('cargaContainer');
+            if (d.showCarga) {
+                cargaContainer.style.display = 'block';
+                const costo100Casa = (d.consumoEV / 100) * d.tarifaResidencial;
+                const costo100Rapida = (d.consumoEV / 100) * d.tarifaElectroRapida;
+                const costo100Semirrapida = (d.consumoEV / 100) * d.tarifaElectroSemirrapida;
+                const costo100ICE = d.costoKmICE * 100;
+                document.getElementById('cargaHTML').innerHTML = `
+                        <div class="trip-card">
+                            <div class="grid-3">
+                                <div class="form-group">
+                                    <label class="form-label">Carga al %</label>
+                                    <input type="range" class="form-input" id="cargaSlider" min="0" max="100" value="80" step="1" oninput="actualizarCarga()" />
+                                    <div class="flex-between"><span>0%</span><span class="range-value" id="cargaPctDisplay">80%</span><span>100%</span></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">kWh a cargar</label>
+                                    <div class="trip-value" id="cargaKwh">0.0 kWh</div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Autonomía adicional</label>
+                                    <div class="trip-value" id="cargaKm">0 km</div>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="grid-2">
+                                <div><span class="trip-label">🏠 En casa</span><br><span class="trip-value green" id="cargaCostoCasa">$0.00</span> <span class="trip-detail">($${d.tarifaResidencial}/kWh)</span></div>
+                                <div><span class="trip-label">⚡ Electrolinera rápida</span><br><span class="trip-value" id="cargaCostoRapida">$0.00</span> <span class="trip-detail">($${d.tarifaElectroRapida}/kWh)</span></div>
+                                <div><span class="trip-label">⚡ Electrolinera semi-rápida</span><br><span class="trip-value" id="cargaCostoSemirrapida">$0.00</span> <span class="trip-detail">($${d.tarifaElectroSemirrapida}/kWh)</span></div>
+                                <div><span class="trip-label">⛽ Combustible (100 km)</span><br><span class="trip-value orange">${fmt(costo100ICE)}</span> <span class="trip-detail">/${d.iceCombustible}</span></div>
+                            </div>
+                            <div class="alert info mt-8">💡 Cargar en casa es <strong>${fmtNum(((costo100Rapida-costo100Casa)/costo100Rapida)*100,0)}%</strong> más barato que en electrolinera rápida.</div>
+                        </div>
+                    `;
+                actualizarCarga();
+            } else {
+                cargaContainer.style.display = 'none';
+            }
+
+            // GRÁFICOS
+            renderCharts(d);
+
+            // TABLA AÑOS
+            const tablaContainer = document.getElementById('tablaContainer');
+            if (d.showProyecciones) {
+                tablaContainer.style.display = 'block';
+                renderTablaAnos(d);
+            } else {
+                tablaContainer.style.display = 'none';
+            }
+
+            // RESUMEN
+            renderResumen(d);
+            generarPreviewImagen(d);
+        }
+
+        // ============================================================
+        // CALCULADORA DE CARGA (actualizar)
+        // ============================================================
+        function actualizarCarga() {
+            const d = state.datosSimulacion;
+            if (!d) return;
+            const pct = parseInt(document.getElementById('cargaSlider').value) / 100;
+            const kwh = d.bateriaEV * pct;
+            const km = (kwh / (d.consumoEV / 100));
+            document.getElementById('cargaPctDisplay').textContent = Math.round(pct * 100) + '%';
+            document.getElementById('cargaKwh').textContent = fmtNum(kwh, 1) + ' kWh';
+            document.getElementById('cargaKm').textContent = fmtNum(km, 0) + ' km';
+            document.getElementById('cargaCostoCasa').textContent = fmt(kwh * d.tarifaResidencial);
+            document.getElementById('cargaCostoRapida').textContent = fmt(kwh * d.tarifaElectroRapida);
+            document.getElementById('cargaCostoSemirrapida').textContent = fmt(kwh * d.tarifaElectroSemirrapida);
+        }
+
+        // ============================================================
+        // GRÁFICOS (simplificado, igual que antes)
+        // ============================================================
+        function renderCharts(d) {
+            const isDark = document.body.dataset.theme === 'dark';
+            const textColor = isDark ? '#cbd5e1' : '#4a5568';
+            const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+            const defaults = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor,
+                            font: { size: 10 } } } } };
+
+            Object.values(state.charts).forEach(c => { try { c.destroy(); } catch (e) {} });
+            state.charts = {};
+
+            // Barras costos
+            const datasets = [{ label: 'Eléctrico', data: [d.bevCostoTotal], backgroundColor: 'rgba(22,163,74,0.8)',
+                borderRadius: 6 }, { label: 'Combustión', data: [d.iceCostoTotal], backgroundColor: 'rgba(234,88,12,0.8)',
+                borderRadius: 6 }];
+            if (d.phevActivo) datasets.push({ label: 'Híbrido', data: [d.phevCostoTotal],
+                backgroundColor: 'rgba(37,99,235,0.8)', borderRadius: 6 });
+            state.charts.barras = new Chart(document.getElementById('chartBarras'), {
+                type: 'bar',
+                data: { labels: ['Costo mensual'], datasets },
+                options: { ...defaults, scales: { y: { ticks: { color: textColor, callback: v => '$' + v },
+                            grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { color: gridColor } } } }
+            });
+
+            // Utilidad (comercial)
+            const utilContainer = document.getElementById('chartUtilidadContainer');
+            if (d.comercialData) {
+                utilContainer.style.display = 'block';
+                const uds = [{ label: 'Eléctrico', data: [d.comercialData.utilidadMensualBEV],
+                    backgroundColor: 'rgba(22,163,74,0.8)', borderRadius: 6 }, { label: 'Combustión', data: [
+                        d.comercialData.utilidadMensualICE
+                    ], backgroundColor: 'rgba(234,88,12,0.8)', borderRadius: 6 }];
+                if (d.phevActivo) uds.push({ label: 'Híbrido', data: [d.comercialData.utilidadMensualPHEV],
+                    backgroundColor: 'rgba(37,99,235,0.8)', borderRadius: 6 });
+                state.charts.utilidad = new Chart(document.getElementById('chartUtilidad'), {
+                    type: 'bar',
+                    data: { labels: ['Utilidad mensual'], datasets: uds },
+                    options: { ...defaults, scales: { y: { ticks: { color: textColor, callback: v => '$' + v },
+                                grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { color: gridColor } } } }
+                });
+            } else {
+                utilContainer.style.display = 'none';
+            }
+
+            // Líneas ahorro acumulado
+            const lineContainer = document.getElementById('chartLineasContainer');
+            if (d.showProyecciones) {
+                lineContainer.style.display = 'block';
+                const anos = Math.min(d.anos, d.proyecciones.length);
+                const labelsAnos = [],
+                    dataBEV = [],
+                    dataPHEV = [];
+                for (let i = 0; i < anos; i++) { labelsAnos.push('Año ' + (i + 1));
+                    dataBEV.push(d.proyecciones[i].ahorroAcumBEV); if (d.phevActivo) dataPHEV.push(d.proyecciones[i]
+                        .ahorroAcumPHEV); }
+                const lds = [{ label: 'Ahorro BEV', data: dataBEV, borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22,163,74,0.1)', fill: true, tension: 0.4, borderWidth: 2.5, pointRadius: 3 }];
+                if (d.phevActivo) lds.push({ label: 'Ahorro PHEV', data: dataPHEV, borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,0.1)', fill: true, tension: 0.4, borderWidth: 2.5,
+                    pointRadius: 3, borderDash: [5, 3] });
+                state.charts.lineas = new Chart(document.getElementById('chartLineas'), {
+                    type: 'line',
+                    data: { labels: labelsAnos, datasets: lds },
+                    options: { ...defaults, interaction: { intersect: false, mode: 'index' }, scales: { x: { ticks: { color: textColor },
+                                grid: { color: gridColor } }, y: { ticks: { color: textColor, callback: v => '$' +
+                                        v.toLocaleString('es') }, grid: { color: gridColor } } } }
+                });
+            } else {
+                lineContainer.style.display = 'none';
+            }
+
+            // Doughnuts
+            state.charts.doughnutBEV = new Chart(document.getElementById('chartDoughnutBEV'), {
+                type: 'doughnut',
+                data: { labels: ['Energía', 'Mantenimiento'], datasets: [{ data: [d.bevCostoEnergia, d.bevMant || 0.01],
+                        backgroundColor: ['rgba(22,163,74,0.8)', 'rgba(22,163,74,0.3)'], borderWidth: 2,
+                        borderColor: isDark ? '#1e293b' : '#fff' }] },
+                options: { ...defaults }
+            });
+            const phevContainer = document.getElementById('chartDoughnutPHEVContainer');
+            if (d.phevActivo) {
+                phevContainer.style.display = 'block';
+                state.charts.doughnutPHEV = new Chart(document.getElementById('chartDoughnutPHEV'), {
+                    type: 'doughnut',
+                    data: { labels: ['Electricidad', 'Combustible', 'Mantenimiento'], datasets: [{ data: [d
+                                .phevCostoElectrico || 0.01, d.phevCostoCombustible || 0.01, d.phevMant || 0.01],
+                            backgroundColor: ['rgba(37,99,235,0.8)', 'rgba(37,99,235,0.5)', 'rgba(37,99,235,0.2)'],
+                            borderWidth: 2, borderColor: isDark ? '#1e293b' : '#fff' }] },
+                    options: { ...defaults }
+                });
+            } else {
+                phevContainer.style.display = 'none';
+            }
+
+            // Carga
+            const cargaChartContainer = document.getElementById('chartCargaContainer');
+            if (d.showCarga) {
+                cargaChartContainer.style.display = 'block';
+                const costo100Casa = (d.consumoEV / 100) * d.tarifaResidencial;
+                const costo100Rapida = (d.consumoEV / 100) * d.tarifaElectroRapida;
+                const costo100Semirrapida = (d.consumoEV / 100) * d.tarifaElectroSemirrapida;
+                const costo100ICE = d.costoKmICE * 100;
+                state.charts.carga = new Chart(document.getElementById('chartCarga'), {
+                    type: 'bar',
+                    data: { labels: ['Casa', 'Semi-rápida', 'Rápida', 'Combustión'], datasets: [{ label: 'Costo por 100 km',
+                            data: [costo100Casa, costo100Semirrapida, costo100Rapida, costo100ICE],
+                            backgroundColor: ['rgba(22,163,74,0.8)', 'rgba(37,99,235,0.6)',
+                                'rgba(37,99,235,0.8)', 'rgba(234,88,12,0.8)'
+                            ], borderRadius: 6 }] },
+                    options: { ...defaults, scales: { y: { ticks: { color: textColor, callback: v => '$' + v },
+                                grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { color: gridColor } } } }
+                });
+            } else {
+                cargaChartContainer.style.display = 'none';
+            }
+        }
+
+        // ============================================================
+        // TABLA AÑOS
+        // ============================================================
+        function renderTablaAnos(d) {
+            const anos = Math.min(d.anos, d.proyecciones.length);
+            let html =
+                `<table class="year-table"><thead><tr><th>Año</th><th>Costo BEV</th><th>Costo ICE</th>`;
+            if (d.phevActivo) html += `<th>Costo PHEV</th>`;
+            html += `<th>Ahorro BEV</th>`;
+            if (d.phevActivo) html += `<th>Ahorro PHEV</th>`;
+            html += `<th>ROI BEV</th></tr></thead><tbody>`;
+            for (let i = 0; i < anos; i++) {
+                const p = d.proyecciones[i];
+                html += `<tr><td><strong>Año ${i+1}</strong></td><td>${fmt(p.costoBEV)}/mes</td><td>${fmt(p.costoICE)}/mes</td>`;
+                if (d.phevActivo) html += `<td>${fmt(p.costoPHEV)}/mes</td>`;
+                html += `<td class="positive">${fmt(p.ahorroBEV)}/mes</td>`;
+                if (d.phevActivo) html += `<td class="positive">${fmt(p.ahorroPHEV)}/mes</td>`;
+                html += `<td>${p.roiBEV>0&&p.roiBEV<9999?fmtNum(p.roiBEV,0)+' meses':'—'}</td></tr>`;
+            }
+            html += `</tbody></table>`;
+            document.getElementById('tablaAnos').innerHTML = html;
+        }
+
+        // ============================================================
+        // RESUMEN EJECUTIVO
+        // ============================================================
+        function renderResumen(d) {
+            let html = `<div style="font-size:.9rem;line-height:1.8;">`;
+            html += `<p><strong>📊 RESUMEN DE SIMULACIÓN</strong></p>`;
+            html +=
+                `<p style="font-size:.8rem;color:var(--text-muted);">Perfil: ${d.kmMes} km/mes, ${Math.round(d.pctCiudad*100)}% ciudad, ${d.anos} años.</p>`;
+
+            html += `<div style="margin:10px 0;padding:12px;background:var(--bg-card2);border-radius:8px;">`;
+            html += `<p><strong>⚡ ${d.bevNombre}</strong> (Eléctrico):</p><ul style="font-size:.82rem;color:var(--text-secondary);list-style:none;padding:0;">`;
+            html += `<li>💰 Ahorras <strong style="color:var(--bev);">${fmt(d.ahorroMensualBEV)}/mes</strong> vs combustión</li>`;
+            html += `<li>📊 Pagas <strong>${fmt(d.costoKmBEV,3)}/km</strong> (vs ${fmt(d.costoKmICE,3)}/km del ICE)</li>`;
+            html += `<li>📋 Matrícula: <strong style="color:var(--bev);">${fmt(d.bevMatricula.total)}</strong> (ahorro ${fmt(d.iceMatricula.total-d.bevMatricula.total)})</li>`;
+            html +=
+                `<li>⏱️ ROI: <strong>${d.mesesROI_BEV>0&&d.mesesROI_BEV<9999?fmtNum(d.mesesROI_BEV,1)+' meses':'Inmediato'}</strong></li>`;
+            html +=
+                `<li>💰 Ahorro 5 años: <strong style="color:var(--bev);">${fmt((d.proyecciones[4]?d.proyecciones[4].ahorroAcumBEV:d.ahorroMensualBEV*60)+(d.iceMatricula.total-d.bevMatricula.total))}</strong></li>`;
+            html += `</ul></div>`;
+
+            if (d.phevActivo) {
+                html += `<div style="margin:10px 0;padding:12px;background:var(--bg-card2);border-radius:8px;">`;
+                html += `<p><strong>🔌 ${d.phevNombre}</strong> (Híbrido Enchufable):</p><ul style="font-size:.82rem;color:var(--text-secondary);list-style:none;padding:0;">`;
+                html += `<li>💰 Ahorras <strong style="color:var(--phev);">${fmt(d.ahorroMensualPHEV)}/mes</strong> vs combustión</li>`;
+                html += `<li>📊 Pagas <strong>${fmt(d.costoKmPHEV,3)}/km</strong> (vs ${fmt(d.costoKmICE,3)}/km del ICE)</li>`;
+                if (d.phevMatricula) html +=
+                    `<li>📋 Matrícula: <strong style="color:var(--phev);">${fmt(d.phevMatricula.total)}</strong></li>`;
+                html +=
+                    `<li>⏱️ ROI: <strong>${d.mesesROI_PHEV>0&&d.mesesROI_PHEV<9999?fmtNum(d.mesesROI_PHEV,1)+' meses':'Inmediato'}</strong></li>`;
+                html +=
+                    `<li>💰 Ahorro 5 años: <strong style="color:var(--phev);">${fmt((d.proyecciones[4]?d.proyecciones[4].ahorroAcumPHEV:d.ahorroMensualPHEV*60)+(d.iceMatricula.total-(d.phevMatricula?.total||0)))}</strong></li>`;
+                html += `</ul></div>`;
+            }
+
+            html += `<div style="margin:12px 0;padding:12px;background:linear-gradient(135deg,var(--bev-bg),var(--phev-bg));border-radius:8px;">`;
+            html += `<p><strong>💡 Recomendación:</strong> `;
+            if (d.ahorroMensualBEV > d.ahorroMensualPHEV * 1.2) {
+                html += `Para tu perfil, el <strong>ELÉCTRICO</strong> es la mejor opción. Ahorras <strong>${fmt(d.ahorroMensualBEV)}/mes</strong>.`;
+            } else if (d.phevActivo && d.ahorroMensualPHEV > 0) {
+                html +=
+                    `El <strong>HÍBRIDO ENCHUFABLE</strong> es una excelente transición con ahorro de <strong>${fmt(d.ahorroMensualPHEV)}/mes</strong>.`;
+            } else {
+                html += `El <strong>ELÉCTRICO</strong> sigue siendo la mejor opción a largo plazo.`;
+            }
+            html += `</p></div>`;
+
+            if (d.comercialData) {
+                const c = d.comercialData;
+                html += `<div style="margin:12px 0;padding:12px;background:var(--bg-card2);border-radius:8px;">`;
+                html += `<p><strong>🚕 Para conductor de aplicaciones:</strong></p><ul style="font-size:.82rem;color:var(--text-secondary);list-style:none;padding:0;">`;
+                html +=
+                    `<li>💰 Costo por carrera: BEV <strong style="color:var(--bev);">${fmt(c.costoPorCarreraBEV)}</strong> | ICE ${fmt(c.costoPorCarreraICE)}</li>`;
+                html +=
+                    `<li>📊 Utilidad por carrera: BEV <strong style="color:var(--bev);">${fmt(c.utilidadPorCarreraBEV)}</strong> | ICE ${fmt(c.utilidadPorCarreraICE)}</li>`;
+                html +=
+                    `<li>📈 Ahorro por carrera: <strong style="color:var(--bev);">${fmt(c.ahorroPorCarreraBEV)}</strong> (${fmt(c.ahorroDiarioBEV)}/día)</li>`;
+                html +=
+                    `<li>⏱️ ROI en días: <strong style="color:var(--bev);">${c.diasROI_BEV>0?fmtNum(c.diasROI_BEV,0)+' días':'Inmediato'}</strong></li>`;
+                if (c.diasROI_BEV > 0 && c.diasROI_BEV < 365) html +=
+                    `<li>✅ ¡En <strong>${fmtNum(c.diasROI_BEV,0)} días</strong> de trabajo, el vehículo eléctrico se paga solo!</li>`;
+                html += `</ul></div>`;
+            }
+
+            html += `</div>`;
+            document.getElementById('resumenHTML').innerHTML = html;
+        }
+
+        // ============================================================
+        // IMAGEN RESUMEN 2080×2080
+        // ============================================================
+        function generarPreviewImagen(d) {
+            const canvas = document.getElementById('previewCanvas');
+            const ctx = canvas.getContext('2d');
+            // Previsualización a 400x400 (escala)
+            canvas.width = 400;
+            canvas.height = 400;
+
+            ctx.fillStyle = '#0f2a1a';
+            ctx.fillRect(0, 0, 400, 400);
+
+            // Título
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 14px Segoe UI';
+            ctx.fillText('⚡ SIMULADOR DE VEHÍCULOS', 200, 24);
+            ctx.font = '8px Segoe UI';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('Comparativa Eléctrico · Híbrido · Combustión', 200, 36);
+
+            // Línea
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(15, 42);
+            ctx.lineTo(385, 42);
+            ctx.stroke();
+
+            let y = 52;
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 8px Segoe UI';
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillText('📊 RESUMEN', 15, y);
+            y += 12;
+            ctx.font = '7px Segoe UI';
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillText(`🔹 ${d.kmMes} km/mes · ${Math.round(d.pctCiudad*100)}% ciudad · ${d.anos} años`, 20, y);
+            y += 14;
+
+            // Costos
+            ctx.font = 'bold 8px Segoe UI';
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillText('💰 COSTO MENSUAL', 15, y);
+            y += 12;
+            ctx.font = '7px Segoe UI';
+            ctx.fillStyle = '#86efac';
+            ctx.fillText(`⚡ ${d.bevNombre}: ${fmt(d.bevCostoTotal)}/mes`, 20, y);
+            y += 10;
+            ctx.fillStyle = '#fca5a5';
+            ctx.fillText(`⛽ ${d.iceCombustible}: ${fmt(d.iceCostoTotal)}/mes`, 20, y);
+            y += 10;
+            if (d.phevActivo) { ctx.fillStyle = '#93c5fd';
+                ctx.fillText(`🔌 ${d.phevNombre}: ${fmt(d.phevCostoTotal)}/mes`, 20, y);
+                y += 10; }
+
+            // Ahorro
+            ctx.font = 'bold 8px Segoe UI';
+            ctx.fillStyle = '#86efac';
+            ctx.fillText(`💰 Ahorro BEV: ${fmt(d.ahorroMensualBEV)}/mes`, 15, y);
+            y += 14;
+
+            // Matrícula
+            ctx.font = 'bold 8px Segoe UI';
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillText('📋 MATRÍCULA', 15, y);
+            y += 12;
+            ctx.font = '7px Segoe UI';
+            ctx.fillStyle = '#86efac';
+            ctx.fillText(`⚡ Eléctrico: ${fmt(d.bevMatricula.total)} (ahorro ${fmt(d.iceMatricula.total-d.bevMatricula.total)})`,
+                20, y);
+            y += 10;
+            ctx.fillStyle = '#fca5a5';
+            ctx.fillText(`⛽ Combustión: ${fmt(d.iceMatricula.total)}`, 20, y);
+            y += 10;
+            if (d.phevActivo && d.phevMatricula) { ctx.fillStyle = '#93c5fd';
+                ctx.fillText(`🔌 Híbrido: ${fmt(d.phevMatricula.total)}`, 20, y);
+                y += 10; }
+
+            // Proyección 5 años
+            const ahorro5 = (d.proyecciones[4] ? d.proyecciones[4].ahorroAcumBEV : d.ahorroMensualBEV * 60) + (d.iceMatricula
+                .total - d.bevMatricula.total);
+            ctx.font = 'bold 9px Segoe UI';
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillText(`💰 AHORRO 5 AÑOS (BEV): ${fmt(ahorro5)}`, 15, y);
+            y += 16;
+
+            // ROI
+            if (d.diffPrecioBEV > 0) {
+                const roiStr = d.mesesROI_BEV > 0 && d.mesesROI_BEV < 9999 ? `${fmtNum(d.mesesROI_BEV,0)} meses` :
+                    'Inversión inicial menor';
+                ctx.font = 'bold 8px Segoe UI';
+                ctx.fillStyle = '#86efac';
+                ctx.fillText(`⏱️ ROI BEV: ${roiStr}`, 15, y);
+                y += 14;
+            }
+
+            // Separador
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(15, y);
+            ctx.lineTo(385, y);
+            ctx.stroke();
+            y += 14;
+
+            // Mensaje Jonathan
+            ctx.textAlign = 'center';
+            ctx.font = '8px Segoe UI';
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillText('📱 ¡Hola! Soy Jonathan, asesor comercial de Geely.', 200, y);
+            y += 12;
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('Aquí el resumen de lo que vimos. ¡Estamos en contacto!', 200, y);
+            y += 14;
+
+            ctx.font = 'bold 10px Segoe UI';
+            ctx.fillStyle = '#fff';
+            ctx.fillText('📞 +593 97 918 9728', 200, y);
+
+            state.previewCanvas = canvas;
+        }
+
+        // ============================================================
+        // MODAL RESUMEN
+        // ============================================================
+        function abrirModalResumen() {
+            document.getElementById('resumenModal').classList.add('active');
+            document.getElementById('resumenMensaje').innerHTML = '';
+            if (state.datosSimulacion) generarPreviewImagen(state.datosSimulacion);
+        }
+
+        function cerrarModalResumen() {
+            document.getElementById('resumenModal').classList.remove('active');
+            document.getElementById('resumenMensaje').innerHTML = '';
+        }
+
+        function generarYEnviar() {
+            const telefono = document.getElementById('clienteTelefono').value.trim();
+            const nombre = document.getElementById('clienteNombre').value.trim() || 'cliente';
+
+            if (!telefono || telefono.length < 7) {
+                document.getElementById('resumenMensaje').innerHTML =
+                    `<div class="alert warning">⚠️ Ingresa un número válido (ej: 99 123 4567).</div>`;
+                return;
+            }
+
+            const telefonoLimpio = telefono.replace(/\D/g, '');
+            const telefonoCompleto = '593' + telefonoLimpio;
+
+            // Generar imagen 2080x2080
+            const fullCanvas = document.createElement('canvas');
+            fullCanvas.width = 2080;
+            fullCanvas.height = 2080;
+            const ctx = fullCanvas.getContext('2d');
+
+            // Escalar el preview proporcionalmente
+            const scale = 2080 / 400;
+            ctx.scale(scale, scale);
+            ctx.drawImage(state.previewCanvas, 0, 0, 400, 400);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+            const link = document.createElement('a');
+            link.download = `resumen_${nombre.replace(/\s/g,'_')}.png`;
+            link.href = fullCanvas.toDataURL('image/png');
+            link.click();
+
+            const mensaje = encodeURIComponent(
+                `Hola, soy ${nombre}. He usado el simulador de vehículos y me gustaría recibir más información.`
+            );
+
+            document.getElementById('resumenMensaje').innerHTML = `
+                    <div class="alert success">
+                        ✅ Resumen generado (2080×2080px).<br>
+                        📷 Imagen descargada.<br>
+                        <a href="https://wa.me/${telefonoCompleto}?text=${mensaje}" target="_blank" class="btn btn-whatsapp" style="margin-top:8px;display:inline-flex;">💬 Enviar por WhatsApp</a>
+                    </div>
+                `;
+        }
+
+        // ============================================================
+        // CONTACTAR ASESOR
+        // ============================================================
+        function contactarAsesor() {
+            const d = state.datosSimulacion;
+            if (!d) { window.open('https://wa.me/593979189728?text=Hola%20Jonathan%2C%20me%20interesa%20conocer%20m%C3%A1s%20sobre%20veh%C3%ADculos%20el%C3%A9ctricos.',
+                    '_blank'); return; }
+            const tipo = d.phevActivo && d.ahorroMensualPHEV > d.ahorroMensualBEV * 0.7 ? 'Híbrido Enchufable' : 'Eléctrico';
+            const msg = encodeURIComponent(
+                `¡Hola Jonathan! He usado tu simulador y me interesa comprar un vehículo ${tipo}.
+
+Mi simulación:
+- Vehículo recomendado: ${d.bevNombre}${d.phevActivo?` / ${d.phevNombre}`:''}
+- Kilómetros mensuales: ${d.kmMes} km
+- Ahorro mensual estimado: ${fmt(d.ahorroMensualBEV)}
+- Ahorro anual estimado: ${fmt(d.ahorroMensualBEV*12)}
+- Retorno de inversión: ${d.mesesROI_BEV>0&&d.mesesROI_BEV<9999?fmtNum(d.mesesROI_BEV,1)+' meses':'Inmediato'}
+
+Me gustaría agendar una cita para conocer los modelos y hacer una prueba de manejo.
+
+¡Gracias!`
+            );
+            window.open(`https://wa.me/593979189728?text=${msg}`, '_blank');
+        }
+
+        // ============================================================
+        // RESET
+        // ============================================================
+        function resetDefaults() {
+            setVal('tarifaResidencial', 0.10);
+            setVal('tarifaElectroRapida', 0.35);
+            setVal('tarifaElectroSemirrapida', 0.25);
+            setVal('cargoFijo', 1.50);
+            setVal('precioExtra', 3.31);
+            setVal('precioSuper', 5.70);
+            setVal('precioDiesel', 3.25);
+            setVal('inflacionElectrica', 2);
+            setVal('inflacionCombustibles', 5);
+            setVal('anioActual', 2026);
+            cargarBEV('ex2');
+            document.getElementById('iceSegmento').value = 'compacto';
+            cargarSegmentoICE();
+            setValSelect('iceCombustible', 'Extra');
+            setValSelect('iceCilindrada', '2.0');
+            setValSelect('iceTurbo', 'no');
+            setValSelect('iceTraccion', '4x2');
+            setVal('icePrecio', 19000);
+            setVal('iceAnio', 2024);
+            setVal('iceMantKm', 5000);
+            setVal('iceMantCosto', 75);
+            setVal('phevNombre', 'Starray EM-i');
+            setValSelect('phevCategoria', 'SUV');
+            setValSelect('phevTraccion', 'RWD');
+            setVal('phevMotorICE', '1.5L 4 cilindros');
+            setVal('phevPotencia', '312 / 387');
+            setVal('phevPotenciaElec', '73 / 97');
+            setVal('phevBateria', 18.4);
+            setVal('phevAutonomiaEV', 105);
+            setVal('phevConsumoEV', 4.3);
+            setVal('phevConsumoHEV', 3.8);
+            setValSelect('phevCombustible', 'Extra');
+            setVal('phevPctElectrico', 70);
+            setVal('phevPrecio', 29990);
+            setVal('phevAnio', 2027);
+            setVal('phevMantKm', 8000);
+            setVal('phevMantCosto', 0);
+            setVal('comKmCarrera', 3);
+            setVal('comTarifaCarrera', 2.00);
+            setVal('comCarrerasDia', 15);
+            setVal('comDiasMes', 25);
+            setVal('comComision', 25);
+            document.getElementById('comPropinas').value = 'si';
+            setVal('kmMes', 1500);
+            document.getElementById('kmSlider').value = 1500;
+            document.getElementById('kmDisplay').textContent = '1,500 km';
+            document.getElementById('pctCiudadSlider').value = 70;
+            syncPctCiudad();
+            document.getElementById('anosSlider').value = 5;
+            syncAnos();
+            document.getElementById('factorGeo').value = 'sierra';
+            document.getElementById('factorTrafico').value = '1.05';
+            document.getElementById('factorAC').value = '1.05';
+            document.getElementById('togglePHEV').checked = false;
+            state.phevActivo = false;
+            document.getElementById('phevSection').classList.add('hidden');
+            document.getElementById('toggleComercial').checked = false;
+            state.comercialActivo = false;
+            document.getElementById('comercialSection').classList.add('hidden');
+            document.getElementById('toggleCarga').checked = true;
+            document.getElementById('toggleProyecciones').checked = true;
+            document.getElementById('toggleEmisiones').checked = true;
+            document.getElementById('toggleAutonomia').checked = false;
+            document.getElementById('secResultados').style.display = 'none';
+        }
+
+        // ============================================================
+        // PREFERENCIAS
+        // ============================================================
+        function guardarPreferencias() {
+            try {
+                const prefs = { tarifaResidencial: getVal('tarifaResidencial'), precioExtra: getVal('precioExtra'),
+                    precioDiesel: getVal('precioDiesel'), kmMes: getVal('kmMes') };
+                localStorage.setItem('simulador_prefs', JSON.stringify(prefs));
+            } catch (e) {}
+        }
+
+        function cargarPreferencias() {
+            try {
+                const p = JSON.parse(localStorage.getItem('simulador_prefs') || '{}');
+                if (p.tarifaResidencial) setVal('tarifaResidencial', p.tarifaResidencial);
+                if (p.precioExtra) setVal('precioExtra', p.precioExtra);
+                if (p.precioDiesel) setVal('precioDiesel', p.precioDiesel);
+                if (p.kmMes) { setVal('kmMes', p.kmMes);
+                    document.getElementById('kmSlider').value = p.kmMes;
+                    document.getElementById('kmDisplay').textContent = parseInt(p.kmMes).toLocaleString('es') + ' km'; }
+            } catch (e) {}
+            const t = localStorage.getItem('theme') || 'light';
+            document.body.dataset.theme = t;
+            document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️ Modo claro' : '🌙 Modo oscuro';
+        }
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarPreferencias();
+            cargarBEV('ex2');
+            syncKm();
+            syncPctCiudad();
+            syncAnos();
+            togglePHEV();
+            document.getElementById('toggleComercial').dispatchEvent(new Event('change'));
+        });
+
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+        });
+    </script>
+</body>
+</html>
