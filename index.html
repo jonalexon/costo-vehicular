@@ -8,52 +8,39 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root{--ev:#00C896;--phev:#4A90E2;--mdc:#E57373;--positive:#00C896}
-[data-theme="dark"]{
---bg:#0a0f1c;--card:#131b2e;--card2:#182032;--input-bg:#0c1422;
---text:#F1F5F9;--text2:#94A3B8;--border:#263148;
---glow:0 0 20px rgba(0,200,150,0.12);
---bg-grad1:radial-gradient(ellipse at 30% 20%,rgba(0,200,150,0.03) 0%,transparent 60%);
---bg-grad2:radial-gradient(ellipse at 70% 70%,rgba(74,144,226,0.04) 0%,transparent 60%);
-}
-[data-theme="light"]{
---bg:#f0f4f8;--card:#ffffff;--card2:#f7f9fc;--input-bg:#ffffff;
---text:#1a202c;--text2:#4a5568;--border:#e2e8f0;
---glow:0 0 20px rgba(0,200,150,0.15);
---bg-grad1:radial-gradient(ellipse at 30% 20%,rgba(0,200,150,0.06) 0%,transparent 60%);
---bg-grad2:radial-gradient(ellipse at 70% 70%,rgba(74,144,226,0.06) 0%,transparent 60%);
-}
+[data-theme="dark"]{--bg:#0a0f1c;--card:#131b2e;--card2:#182032;--input-bg:#0c1422;--text:#F1F5F9;--text2:#94A3B8;--border:#263148;--glow:0 0 20px rgba(0,200,150,0.12)}
+[data-theme="light"]{--bg:#f0f4f8;--card:#ffffff;--card2:#f7f9fc;--input-bg:#ffffff;--text:#1a202c;--text2:#4a5568;--border:#e2e8f0;--glow:0 0 20px rgba(0,200,150,0.15)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;background-image:var(--bg-grad1),var(--bg-grad2);transition:background 0.3s,color 0.3s}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;transition:background 0.3s,color 0.3s}
 .container{max-width:920px;margin:0 auto;padding:12px 14px 80px}
 header{text-align:center;padding:24px 0 6px}
-header h1{font-size:clamp(1.4rem,3.5vw,1.9rem);font-weight:800;letter-spacing:-0.4px;background:linear-gradient(135deg,#00C896,#4A90E2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+header h1{font-size:clamp(1.4rem,3.5vw,1.9rem);font-weight:800;background:linear-gradient(135deg,#00C896,#4A90E2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 header .sub{font-size:0.85rem;color:var(--text2);margin-top:2px}
 .theme-toggle{position:fixed;top:16px;right:16px;z-index:100;background:var(--card);border:1px solid var(--border);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.3rem;box-shadow:0 4px 12px rgba(0,0,0,0.2);transition:all 0.3s}
 .theme-toggle:hover{transform:scale(1.1)}
 .wa-float{position:fixed;bottom:20px;right:20px;z-index:100;background:#25D366;border-radius:50%;width:60px;height:60px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 20px rgba(37,211,102,0.4);transition:all 0.3s;text-decoration:none}
-.wa-float:hover{transform:scale(1.1);box-shadow:0 8px 28px rgba(37,211,102,0.5)}
+.wa-float:hover{transform:scale(1.1)}
 .wa-float svg{width:32px;height:32px;fill:#fff}
 .step-indicator{display:flex;gap:8px;justify-content:center;margin:18px 0 22px;flex-wrap:wrap}
 .step-dot{padding:8px 16px;border-radius:30px;font-size:0.75rem;font-weight:600;background:var(--card);color:var(--text2);cursor:pointer;border:1.5px solid transparent;transition:all 0.3s;white-space:nowrap}
-.step-dot.active{background:rgba(0,200,150,0.12);border-color:var(--ev);color:var(--ev);box-shadow:var(--glow)}
+.step-dot.active{background:rgba(0,200,150,0.12);border-color:var(--ev);color:var(--ev)}
 .step-dot.done{background:rgba(13,122,95,0.18);color:#0d7a5f;border-color:#0d7a5f}
 .step{display:none;animation:fadeSlide 0.4s ease}
 .step.active{display:block}
 @keyframes fadeSlide{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.card{background:var(--card);border-radius:16px;padding:20px 18px;margin-bottom:14px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.15);transition:all 0.3s}
-.card:hover{box-shadow:0 4px 24px rgba(0,0,0,0.25)}
+.card{background:var(--card);border-radius:16px;padding:20px 18px;margin-bottom:14px;border:1px solid var(--border)}
 .card h3{font-size:1.05rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .card h4{font-size:0.9rem;font-weight:600;color:var(--text2);margin:10px 0 6px}
 label{display:block;font-size:0.8rem;font-weight:500;color:var(--text2);margin-bottom:4px;margin-top:10px}
-select,input[type="number"],input[type="text"],input[type="tel"]{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);font-size:0.88rem;font-family:'Inter',sans-serif;transition:all 0.25s;-moz-appearance:textfield;appearance:textfield}
+select,input[type="number"],input[type="text"],input[type="tel"]{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);font-size:0.88rem;font-family:'Inter',sans-serif;transition:all 0.25s}
 select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
-input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3px rgba(0,200,150,0.1)}
+input:focus,select:focus{outline:none;border-color:var(--ev)}
 .slider-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .slider-row input[type="range"]{flex:1;min-width:120px;-webkit-appearance:none;height:8px;border-radius:10px;background:var(--border);outline:none;cursor:pointer}
-.slider-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--ev);cursor:pointer;border:3px solid var(--bg);box-shadow:0 0 12px rgba(0,200,150,0.5)}
+.slider-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--ev);cursor:pointer;border:3px solid var(--bg)}
 .slider-row input[type="number"]{width:72px;text-align:center;flex-shrink:0}
-.context-text{font-size:0.73rem;color:var(--text2);margin-top:3px;min-height:18px}
-.toggle-wrap{display:flex;align-items:center;gap:10px;margin:8px 0;cursor:pointer;user-select:none}
+.context-text{font-size:0.73rem;color:var(--text2);margin-top:3px}
+.toggle-wrap{display:flex;align-items:center;gap:10px;margin:8px 0;cursor:pointer}
 .toggle-wrap input{display:none}
 .toggle-switch{width:44px;height:26px;border-radius:30px;background:var(--border);position:relative;cursor:pointer;transition:background 0.3s;flex-shrink:0}
 .toggle-switch::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform 0.3s}
@@ -61,21 +48,21 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 .toggle-wrap input:checked+.toggle-switch::after{transform:translateX(18px)}
 .toggle-label{font-size:0.82rem;color:var(--text);font-weight:500}
 .btn{display:inline-block;padding:12px 22px;border-radius:30px;font-weight:700;font-size:0.88rem;cursor:pointer;border:none;transition:all 0.3s;font-family:'Inter',sans-serif;text-align:center}
-.btn-primary{background:var(--ev);color:#0a0f1c;width:100%;font-size:1rem;padding:14px;box-shadow:0 8px 28px rgba(0,200,150,0.25)}
+.btn-primary{background:var(--ev);color:#0a0f1c;width:100%;font-size:1rem;padding:14px}
 .btn-primary:hover{filter:brightness(1.1);transform:translateY(-2px)}
 .btn-outline{background:transparent;border:2px solid var(--ev);color:var(--ev);width:100%;padding:12px;font-size:0.9rem}
 .btn-outline:hover{background:rgba(0,200,150,0.08)}
 .btn-wa{background:#25D366;color:#fff;width:100%;padding:14px;font-size:0.95rem}
 .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .btn-row .btn{flex:1;min-width:130px}
-.result-value{font-size:1.5rem;font-weight:800;letter-spacing:-0.5px}
+.result-value{font-size:1.5rem;font-weight:800}
 .ev-color{color:var(--ev)}.mdc-color{color:var(--mdc)}.phev-color{color:var(--phev)}
 .result-label{font-size:0.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px}
 .result-row{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
 .result-card{flex:1;min-width:120px;background:var(--card2);border-radius:12px;padding:14px 12px;text-align:center;border:1px solid var(--border)}
 .chart-wrap{position:relative;width:100%;margin:10px 0;aspect-ratio:16/10;max-height:380px;background:var(--card2);border-radius:12px;padding:8px;border:1px solid var(--border)}
 .chart-wrap canvas{width:100%!important;height:100%!important}
-.panel-info{background:var(--input-bg);border-radius:10px;padding:12px;font-size:0.76rem;color:var(--text2);border:1px solid var(--border);margin:8px 0;line-height:1.6}
+.panel-info{background:var(--input-bg);border-radius:10px;padding:12px;font-size:0.76rem;color:var(--text2);border:1px solid var(--border);margin:8px 0}
 .hidden{display:none!important}
 .divider{border:none;border-top:1px solid var(--border);margin:16px 0}
 .fuel-price-row{display:flex;gap:10px;flex-wrap:wrap}
@@ -95,7 +82,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 .charge-line.save-line{background:rgba(0,200,150,0.12);border-radius:8px;padding:10px;margin-top:6px;border:1px solid var(--ev)}
 .charge-line.save-line .cl-cost{color:var(--ev);font-size:1.1rem}
 .section-block{background:var(--card2);border-radius:14px;padding:16px;margin:14px 0;border:1px solid var(--border)}
-.section-block h4{color:var(--ev);margin-top:0;margin-bottom:10px;font-size:1rem;display:flex;align-items:center;gap:8px}
+.section-block h4{color:var(--ev);margin-top:0;margin-bottom:10px;font-size:1rem}
 .section-block.proj-section h4{color:#F59E0B}
 .section-block.comm-section h4{color:#8B5CF6}
 .section-block.roi-section h4{color:#F59E0B}
@@ -109,7 +96,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 .compare-box.ev-box{border-color:rgba(0,200,150,0.4)}
 .compare-box.mdc-box{border-color:rgba(229,115,115,0.4)}
 .compare-box.phev-box{border-color:rgba(74,144,226,0.4)}
-.compare-box h5{font-size:0.9rem;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.compare-box h5{font-size:0.9rem;margin-bottom:10px}
 .compare-box.ev-box h5{color:var(--ev)}
 .compare-box.mdc-box h5{color:var(--mdc)}
 .compare-box.phev-box h5{color:var(--phev)}
@@ -127,7 +114,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px}
 .modal{background:var(--card);border-radius:16px;padding:20px;max-width:540px;width:100%;border:1px solid var(--border);max-height:92vh;overflow-y:auto}
 .modal h3{margin-bottom:12px}
-@media(max-width:500px){.card{padding:14px 10px}.result-card{min-width:90px;padding:10px 6px}.result-value{font-size:1.2rem}.btn{font-size:0.8rem;padding:10px 14px}.step-dot{padding:6px 10px;font-size:0.65rem}.fields-grid{grid-template-columns:1fr}.wa-float{width:52px;height:52px;bottom:14px;right:14px}.wa-float svg{width:28px;height:28px}}
+@media(max-width:500px){.card{padding:14px 10px}.result-card{min-width:90px;padding:10px 6px}.result-value{font-size:1.2rem}.btn{font-size:0.8rem;padding:10px 14px}.step-dot{padding:6px 10px;font-size:0.65rem}.fields-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -142,7 +129,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <p class="sub">Ecuador 2026 · Comparación real de costos</p>
 </header>
 <div class="step-indicator" id="stepIndicator">
-<span class="step-dot active" data-step="1">① Vehículo</span>
+<span class="step-dot active" data-step="1"> Vehículo</span>
 <span class="step-dot" data-step="2">② Uso</span>
 <span class="step-dot" data-step="3">③ Módulos</span>
 <span class="step-dot" data-step="4">④ Resultados</span>
@@ -151,7 +138,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <!-- PASO 1 -->
 <div class="step active" id="step1">
 <div class="card">
-<h3>🚗 Selección de Vehículos</h3>
+<h3> Selección de Vehículos</h3>
 <label for="evModel">Vehículo eléctrico / híbrido a analizar</label>
 <select id="evModel">
 <option value="ex2">Geely EX2 (Eléctrico)</option>
@@ -168,24 +155,15 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <div id="phevModeSection" class="hidden" style="margin-top:12px">
 <label>Modo de conducción PHEV</label>
 <div class="mode-selector" id="phevModeSelector">
-<button type="button" class="mode-btn" data-mode="pure">
-<span class="mode-icon">🔋</span>Pure
-<span class="mode-desc">100% eléctrico</span>
-</button>
-<button type="button" class="mode-btn active" data-mode="hybrid">
-<span class="mode-icon">🔄</span>Hybrid
-<span class="mode-desc">Combinado (realista)</span>
-</button>
-<button type="button" class="mode-btn" data-mode="power">
-<span class="mode-icon">⚡</span>Power
-<span class="mode-desc">Máx. potencia</span>
-</button>
+<button type="button" class="mode-btn" data-mode="pure"><span class="mode-icon">🔋</span>Pure<span class="mode-desc">100% eléctrico</span></button>
+<button type="button" class="mode-btn active" data-mode="hybrid"><span class="mode-icon">🔄</span>Hybrid<span class="mode-desc">Combinado (realista)</span></button>
+<button type="button" class="mode-btn" data-mode="power"><span class="mode-icon">⚡</span>Power<span class="mode-desc">Máx. potencia</span></button>
 </div>
 <div class="panel-info" id="phevModeInfo" style="margin-top:8px"></div>
 </div>
 
 <hr class="divider">
-<h4>🚙 Vehículo de Combustión de Referencia (MDC)</h4>
+<h4> Vehículo de Combustión de Referencia (MDC)</h4>
 <label for="mdcSegment">Segmento</label>
 <select id="mdcSegment">
 <option value="compacto">Compacto / Hatchback</option>
@@ -221,7 +199,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <div><label>Semi-rápida AC</label><input type="number" id="tarifaSemi" value="0.25" step="0.001"></div>
 <div><label>Rápida DC</label><input type="number" id="tarifaRapida" value="0.35" step="0.001"></div>
 </div>
-<h4 style="margin-top:12px">⚡ Potencia de carga (editable — kW)</h4>
+<h4 style="margin-top:12px"> Potencia de carga (editable — kW)</h4>
 <div class="fuel-price-row">
 <div><label>Residencial</label><input type="number" id="potResid" value="7" step="0.1"></div>
 <div><label>Semi-rápida AC</label><input type="number" id="potSemi" value="22" step="0.5"></div>
@@ -250,15 +228,15 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <div class="context-text" id="cityContext">80% ciudad · 20% carretera</div>
 <label for="region">Región geográfica</label>
 <select id="region">
-<option value="costa"> Costa</option>
+<option value="costa">🌊 Costa</option>
 <option value="sierra" selected>⛰️ Sierra</option>
 <option value="oriente">🌿 Oriente / Amazonía</option>
 </select>
 <div class="panel-info" id="regionPanel">⛰️ Sierra: MDC +10% consumo por altitud, EV +5%. Mantenimiento +8%.</div>
 <label for="traffic">Tráfico habitual</label>
 <select id="traffic">
-<option value="fluido"> Fluido</option>
-<option value="moderado" selected>🟡 Moderado</option>
+<option value="fluido">🟢 Fluido</option>
+<option value="moderado" selected> Moderado</option>
 <option value="denso">🔴 Denso</option>
 </select>
 <label for="acUse">Uso de aire acondicionado</label>
@@ -269,7 +247,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 </select>
 
 <div class="charge-live" id="chargeLiveModule">
-<h4>🔌 Calculadora de carga en tiempo real</h4>
+<h4> Calculadora de carga en tiempo real</h4>
 <p style="font-size:0.8rem;color:var(--text2);margin-bottom:8px" id="chargeVehicleInfo">Batería: -- kWh</p>
 <label>¿Qué porcentaje de batería quieres cargar?</label>
 <div class="slider-row">
@@ -307,7 +285,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <div class="toggle-wrap"><input type="checkbox" id="modF" checked><label class="toggle-switch" for="modF"></label><span class="toggle-label">F — Emisiones de CO₂</span></div>
 <div class="btn-row">
 <button class="btn btn-outline" onclick="goToStep(2)">← Atrás</button>
-<button class="btn btn-primary" id="btnCalcular" onclick="handleCalcular()">⚡ Calcular</button>
+<button class="btn btn-primary" onclick="handleCalcular()">⚡ Calcular</button>
 </div>
 </div>
 </div>
@@ -320,7 +298,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <div id="chartContainers"></div>
 <div id="actionButtons" class="hidden" style="margin-top:16px">
 <div class="btn-row">
-<button class="btn btn-outline" onclick="openShareModal()">📩 Enviar resumen</button>
+<button class="btn btn-outline" onclick="openShareModal()"> Enviar resumen</button>
 <button class="btn btn-wa" onclick="openContactModal()">💬 Contactar a Jonathan Ortiz</button>
 </div>
 </div>
@@ -370,7 +348,7 @@ const $=s=>document.querySelector(s);
 const $$=s=>document.querySelectorAll(s);
 
 const state={
-    currentStep:1,evModel:'ex2',includePHEV:false,phevMode:'hybrid',
+    currentStep:1,evModel:'ex2',phevMode:'hybrid',
     mdcSegment:'suv',mdcFuel:'extra',kmMes:1500,cityPct:80,region:'sierra',
     traffic:'moderado',acUse:'intermitente',batteryPct:50,
     modC:false,modD:false,modF:true,
@@ -384,10 +362,6 @@ const state={
     mdcEditable:{rendMixto:10.5,maint:120,maintInterval:5000}
 };
 
-// ===== DATOS NEDC DE FICHA TÉCNICA =====
-// EX2: 39.4 kWh, 395 km NEDC, 11.8 kWh/100km NEDC
-// EX5: 60.22 kWh, 495 km NEDC, 14.4 kWh/100km NEDC (corrige a 14.4)
-// Starray: 18.4 kWh, 105 km NEDC eléctrico, 4.3 kWh/100km NEDC
 const defaultEVData={
     ex2:{name:'Geely EX2',type:'ev',price:18990,battery:39.4,rangeNEDC:395,consNEDC:11.8,regenCity:0.15,regenHwy:0.08,maintInterval:20000,maintCost:80},
     ex5:{name:'Geely EX5',type:'ev',price:27990,battery:60.22,rangeNEDC:495,consNEDC:14.4,regenCity:0.15,regenHwy:0.08,maintInterval:20000,maintCost:80},
@@ -405,7 +379,6 @@ const mdcSegments={
     van:{rendMixto:8,maint:140,maintInterval:5000,name:'Van / Furgoneta'}
 };
 
-// ===== TEMA =====
 function initTheme(){
     const saved=localStorage.getItem('sim-theme')||'dark';
     document.documentElement.setAttribute('data-theme',saved);
@@ -423,7 +396,6 @@ function updateThemeIcon(){
     $('#themeToggle').textContent=theme==='dark'?'☀️':'';
 }
 
-// ===== NAVEGACIÓN =====
 function goToStep(step){
     state.currentStep=step;
     $$('.step').forEach(s=>s.classList.remove('active'));
@@ -465,14 +437,13 @@ function updateCityContext(){
 function updateRegionPanel(){
     const r=$('#region').value;
     const m={
-        costa:'🌊 Costa: Condiciones de referencia. Sin ajustes adicionales.',
-        sierra:'️ Sierra: MDC +10% consumo por altitud, EV +5%. Mantenimiento +8%.',
+        costa:' Costa: Condiciones de referencia. Sin ajustes adicionales.',
+        sierra:'⛰️ Sierra: MDC +10% consumo por altitud, EV +5%. Mantenimiento +8%.',
         oriente:'🌿 Oriente/Amazonía: MDC +5%, EV +2%. Mantenimiento +15% por vías.'
     };
     $('#regionPanel').textContent=m[r]||m.costa;
 }
 
-// ===== MODO PHEV =====
 function getPhevElecPct(){
     const mode=state.phevMode;
     const cityPct=state.cityPct/100;
@@ -486,19 +457,48 @@ function updatePhevModeInfo(){
     const mode=state.phevMode;
     const info=$('#phevModeInfo');
     if(!info)return;
-    const km=state.kmMes||parseInt($('#kmMesNum').value)||1500;
+    const km=parseInt($('#kmMesNum').value)||1500;
     const kmElec=Math.round(km*pct);
     const kmGas=km-kmElec;
     if(mode==='pure'){
-        info.innerHTML=`🔋 <strong>Modo Pure:</strong> ~${(pct*100).toFixed(0)}% eléctrico. En ${km} km/mes → ~${kmElec} km eléctricos + ~${kmGas} km con gasolina (batería vacía).`;
+        info.innerHTML=`🔋 <strong>Modo Pure:</strong> ~${(pct*100).toFixed(0)}% eléctrico. En ${km} km/mes → ~${kmElec} km eléctricos + ~${kmGas} km con gasolina.`;
     } else if(mode==='power'){
-        info.innerHTML=`⚡ <strong>Modo Power:</strong> ~${(pct*100).toFixed(0)}% eléctrico, máxima potencia. En ${km} km/mes → ~${kmElec} km eléctricos + ~${kmGas} km híbridos.`;
+        info.innerHTML=`⚡ <strong>Modo Power:</strong> ~${(pct*100).toFixed(0)}% eléctrico. En ${km} km/mes → ~${kmElec} km eléctricos + ~${kmGas} km híbridos.`;
     } else {
-        info.innerHTML=`🔄 <strong>Modo Hybrid:</strong> combina eléctrico y combustión. ~${(pct*100).toFixed(0)}% eléctrico con ${state.cityPct}% ciudad. En ${km} km/mes → ~${kmElec} km eléctricos + ~${kmGas} km en híbrido normal (~4.1 L/100km).`;
+        info.innerHTML=`🔄 <strong>Modo Hybrid:</strong> ~${(pct*100).toFixed(0)}% eléctrico con ${state.cityPct}% ciudad. En ${km} km/mes → ~${kmElec} km eléctricos + ~${kmGas} km en híbrido normal (~4.1 L/100km).`;
     }
 }
 
-// ===== DATOS EDITABLES =====
+function getEVData(){
+    if(state.evEditable&&state.evEditable._model===state.evModel)return {...state.evEditable};
+    return {...(defaultEVData[state.evModel]||defaultEVData.custom)};
+}
+function getMDCData(){return {...state.mdcEditable};}
+function getFuelPricePerLiter(){
+    const gp=state.fuelPrices[state.mdcFuel]||state.fuelPrices.extra;
+    return gp/3.785;
+}
+function getGeographicFactors(){
+    const r=state.region;
+    if(r==='costa')return{ev:0,mdc:0,mant:0};
+    if(r==='sierra')return{ev:0.05,mdc:0.10,mant:0.08};
+    return{ev:0.02,mdc:0.05,mant:0.15};
+}
+function getTrafficFactor(vType){
+    const t=state.traffic;
+    if(vType==='ev'||vType==='phev'){
+        if(t==='fluido')return 0.05;if(t==='moderado')return 0;return -0.03;
+    }
+    if(vType==='mdc'){
+        if(t==='fluido')return 0;if(t==='moderado')return 0.08;return 0.18;
+    }
+    return 0;
+}
+function getACFactor(){
+    const a=state.acUse;
+    if(a==='sin_uso')return 0;if(a==='intermitente')return 0.05;return 0.12;
+}
+
 function updateEVDataPanel(){
     const model=$('#evModel').value;
     const data={...(defaultEVData[model]||defaultEVData.custom)};
@@ -507,13 +507,7 @@ function updateEVDataPanel(){
     const grid=$('#evFieldsGrid');
     if(!grid)return;
     const isPhev=model==='starray';
-    
-    const modeSection=$('#phevModeSection');
-    if(isPhev){
-        modeSection.classList.remove('hidden');
-    } else {
-        modeSection.classList.add('hidden');
-    }
+    $('#phevModeSection').classList.toggle('hidden',!isPhev);
     
     let fields=[];
     if(isPhev){
@@ -541,30 +535,19 @@ function updateEVDataPanel(){
             {id:'evMaintCost',label:'Costo mant. ($)',val:ed.maintCost,step:5}
         ];
     }
-    
     grid.innerHTML=fields.map(f=>{
         if(f.type==='text') return `<div><label>${f.label}</label><input type="text" id="${f.id}" value="${f.val}" data-evfield="${f.id}"></div>`;
         return `<div><label>${f.label}</label><input type="number" id="${f.id}" value="${f.val}" step="${f.step||1}" data-evfield="${f.id}"></div>`;
     }).join('');
-    
     grid.querySelectorAll('input').forEach(inp=>{
         inp.addEventListener('input',()=>{
             const id=inp.dataset.evfield;
             const v=inp.type==='text'?inp.value:(parseFloat(inp.value)||0);
             if(!state.evEditable)return;
-            if(id==='evName')state.evEditable.name=v;
-            else if(id==='evPrice')state.evEditable.price=v;
-            else if(id==='evBattery')state.evEditable.battery=v;
-            else if(id==='evRangeNEDC')state.evEditable.rangeNEDC=v;
-            else if(id==='evRangeElecNEDC')state.evEditable.rangeElecNEDC=v;
-            else if(id==='evConsNEDC')state.evEditable.consNEDC=v;
-            else if(id==='evConsElecNEDC')state.evEditable.consElecNEDC=v;
-            else if(id==='evConsHybrid')state.evEditable.consHybridNormal=v;
-            else if(id==='evConsEmpty')state.evEditable.consBatteryEmpty=v;
-            else if(id==='evRegenCity')state.evEditable.regenCity=v/100;
+            const map={evName:'name',evPrice:'price',evBattery:'battery',evRangeNEDC:'rangeNEDC',evRangeElecNEDC:'rangeElecNEDC',evConsNEDC:'consNEDC',evConsElecNEDC:'consElecNEDC',evConsHybrid:'consHybridNormal',evConsEmpty:'consBatteryEmpty',evMaintInterval:'maintInterval',evMaintCost:'maintCost'};
+            if(id==='evRegenCity')state.evEditable.regenCity=v/100;
             else if(id==='evRegenHwy')state.evEditable.regenHwy=v/100;
-            else if(id==='evMaintInterval')state.evEditable.maintInterval=v;
-            else if(id==='evMaintCost')state.evEditable.maintCost=v;
+            else if(map[id])state.evEditable[map[id]]=v;
         });
     });
     updatePhevModeInfo();
@@ -579,7 +562,6 @@ function precargarSegmentoMDC(){
     $('#mdcSegment').value=seg;
     cargarMDCValues(seg);
 }
-
 function cargarMDCValues(seg){
     if(seg==='custom')return;
     const d=mdcSegments[seg];
@@ -592,7 +574,6 @@ function cargarMDCValues(seg){
 
 function updateStateFromUI(){
     state.evModel=$('#evModel').value;
-    state.includePHEV=$('#includePHEV').checked;
     state.mdcSegment=$('#mdcSegment').value;
     state.mdcFuel=$('#mdcFuel').value;
     state.kmMes=parseInt($('#kmMesNum').value)||1500;
@@ -602,7 +583,8 @@ function updateStateFromUI(){
     state.acUse=$('#acUse').value;
     state.batteryPct=parseInt($('#batteryPctNum').value)||50;
     state.modC=$('#modC').checked;
-    state.modD=$('#modD').checked;state.modF=$('#modF').checked;
+    state.modD=$('#modD').checked;
+    state.modF=$('#modF').checked;
     state.fuelPrices.extra=parseFloat($('#fuelPriceExtra').value)||3.31;
     state.fuelPrices.super=parseFloat($('#fuelPriceSuper').value)||5.70;
     state.fuelPrices.diesel=parseFloat($('#fuelPriceDiesel').value)||3.25;
@@ -629,47 +611,9 @@ function updateStateFromUI(){
     state.mdcEditable.maintInterval=5000;
 }
 
-function getEVData(){
-    if(state.evEditable&&state.evEditable._model===state.evModel)return {...state.evEditable};
-    return {...(defaultEVData[state.evModel]||defaultEVData.custom)};
-}
-function getStarrayData(){return {...defaultEVData.starray};}
-function getMDCData(){return {...state.mdcEditable};}
-
-function getFuelPricePerLiter(){
-    const gp=state.fuelPrices[state.mdcFuel]||state.fuelPrices.extra;
-    return gp/3.785;
-}
-
-function getGeographicFactors(){
-    const r=state.region;
-    if(r==='costa')return{ev:0,mdc:0,mant:0};
-    if(r==='sierra')return{ev:0.05,mdc:0.10,mant:0.08};
-    return{ev:0.02,mdc:0.05,mant:0.15};
-}
-
-function getTrafficFactor(vType){
-    const t=state.traffic;
-    if(vType==='ev'||vType==='phev'){
-        if(t==='fluido')return 0.05;if(t==='moderado')return 0;return -0.03;
-    }
-    if(vType==='mdc'){
-        if(t==='fluido')return 0;if(t==='moderado')return 0.08;return 0.18;
-    }
-    return 0;
-}
-
-function getACFactor(){
-    const a=state.acUse;
-    if(a==='sin_uso')return 0;if(a==='intermitente')return 0.05;return 0.12;
-}
-
-// ===== CÁLCULOS =====
-// Para BEV: consumo NEDC ajustado por factores (regenerativo, tráfico, región, A/C)
 function calcBEV(ev){
     const cf=state.cityPct/100,hf=1-cf;
     const regen=cf*ev.regenCity+hf*ev.regenHwy;
-    // Consumo NEDC base, ajustado por regenerativo
     let cons=ev.consNEDC*(1-regen);
     cons*=(1+getTrafficFactor('ev'));
     cons*=(1+getGeographicFactors().ev);
@@ -679,58 +623,35 @@ function calcBEV(ev){
     const energia=kwh*state.elecTariffs.residencial+state.elecTariffs.cargoFijo;
     const geo=getGeographicFactors();
     const mant=(ev.maintCost/ev.maintInterval)*km*(1+geo.mant);
-    // Autonomía real = batería / consumo ajustado * 100
     const autonomiaReal=ev.battery/cons*100;
     return{cons,kwh,energia,mant,total:energia+mant,cpk:(energia+mant)/km,autonomiaReal};
 }
 
-// Para PHEV (Starray): usa consumo NEDC eléctrico y gasolina
 function calcPHEV(phevData){
     const km=state.kmMes;
     const elecPct=getPhevElecPct();
     const mode=state.phevMode;
-    
     const kmElec=km*elecPct;
     const kmGas=km*(1-elecPct);
-    
-    // Consumo eléctrico NEDC ajustado
     let consElec=phevData.consElecNEDC;
     consElec*=(1+getGeographicFactors().ev);
     consElec*=(1+getACFactor()*0.5);
-    
-    // Consumo gasolina según modo
     let consGas;
-    if(mode==='pure'){
-        consGas=phevData.consBatteryEmpty;
-    } else if(mode==='power'){
-        consGas=phevData.consBatteryEmpty*1.1;
-    } else {
-        consGas=phevData.consHybridNormal;
-    }
+    if(mode==='pure')consGas=phevData.consBatteryEmpty;
+    else if(mode==='power')consGas=phevData.consBatteryEmpty*1.1;
+    else consGas=phevData.consHybridNormal;
     consGas*=(1+getGeographicFactors().mdc*0.5);
     consGas*=(1+getTrafficFactor('mdc')*0.5);
-    
     const kwhElec=(consElec/100)*kmElec;
     const costoElec=kwhElec*state.elecTariffs.residencial+state.elecTariffs.cargoFijo;
-    
     const litrosGas=(consGas/100)*kmGas;
     const costoGas=litrosGas*getFuelPricePerLiter();
-    
     const energiaTotal=costoElec+costoGas;
-    
     const geo=getGeographicFactors();
     const mant=(phevData.maintCost/phevData.maintInterval)*km*(1+geo.mant);
-    
     const total=energiaTotal+mant;
-    // Autonomía eléctrica real = batería / consumo eléctrico ajustado * 100
     const autonomiaElecReal=phevData.battery/consElec*100;
-    
-    return{
-        elecPct,kmElec,kmGas,consElec,consGas,
-        kwhElec,costoElec,litrosGas,costoGas,
-        energia:energiaTotal,mant,total,cpk:total/km,
-        autonomiaElecReal
-    };
+    return{elecPct,kmElec,kmGas,consElec,consGas,kwhElec,costoElec,litrosGas,costoGas,energia:energiaTotal,mant,total,cpk:total/km,autonomiaElecReal};
 }
 
 function calcMDC(mdc){
@@ -739,13 +660,10 @@ function calcMDC(mdc){
     rend/=(1+getGeographicFactors().mdc);
     rend/=(1+getTrafficFactor('mdc'));
     rend/=(1+getACFactor());
-    
     const litros=km/rend;
     const energia=litros*getFuelPricePerLiter();
-    
     const geo=getGeographicFactors();
     const mant=(mdc.maint/mdc.maintInterval)*km*(1+geo.mant);
-    
     return{rend,litros,energia,mant,total:energia+mant,cpk:(energia+mant)/km};
 }
 
@@ -767,31 +685,17 @@ function formatTime(hours){
     return m>0?`${h}h ${m}min`:`${h}h`;
 }
 
-// ===== CALCULADORA DE CARGA EN VIVO =====
 function updateChargeLive(){
     try{
         const ev=getEVData();
         const mdc=getMDCData();
         const pct=parseInt($('#batteryPctNum').value)||50;
-        
-        // Actualizar info del vehículo
         $('#chargeVehicleInfo').textContent=`Batería: ${ev.battery} kWh · ${ev.name}`;
-        
         const kwh=ev.battery*pct/100;
-        
-        // Autonomía NEDC (siempre visible, dato de ficha técnica)
-        let autonomiaNEDC;
-        let consRef;
-        if(ev.type==='phev'){
-            autonomiaNEDC=ev.rangeElecNEDC||105;
-            consRef=ev.consElecNEDC||4.3;
-        } else {
-            autonomiaNEDC=ev.rangeNEDC||400;
-            consRef=ev.consNEDC||15;
-        }
+        let autonomiaNEDC,consRef;
+        if(ev.type==='phev'){autonomiaNEDC=ev.rangeElecNEDC||105;consRef=ev.consElecNEDC||4.3;}
+        else{autonomiaNEDC=ev.rangeNEDC||400;consRef=ev.consNEDC||15;}
         const kmNEDC=autonomiaNEDC*(pct/100);
-        
-        // Autonomía real (solo si módulo D activo)
         let autonomiaReal=null;
         if(state.modD){
             if(ev.type==='phev'){
@@ -809,52 +713,30 @@ function updateChargeLive(){
                 autonomiaReal=ev.battery/cons*100*(pct/100);
             }
         }
-        
         const costCasa=kwh*state.elecTariffs.residencial;
         const costSemi=kwh*state.elecTariffs.semirapida;
         const costRapida=kwh*state.elecTariffs.rapida;
-        
         const timeCasa=kwh/state.chargePower.residencial;
         const timeSemi=kwh/state.chargePower.semi;
         const timeRapida=kwh/state.chargePower.rapida;
-        
         const mdcRendAdj=mdc.rendMixto/(1+getGeographicFactors().mdc);
-        const kmAutoNEDC=kmNEDC;
-        const litrosGasolina=kmAutoNEDC/mdcRendAdj;
+        const litrosGasolina=kmNEDC/mdcRendAdj;
         const costGasolina=litrosGasolina*getFuelPricePerLiter();
-        
         const ahorroCasa=costGasolina-costCasa;
-        
         let autonomiaHTML=`<div style="font-size:0.85rem;color:var(--text2);margin-top:4px">📋 Autonomía NEDC: ~${Math.round(kmNEDC)} km (ficha técnica)</div>`;
         if(autonomiaReal!==null){
             autonomiaHTML+=`<div style="font-size:0.9rem;color:var(--ev);margin-top:4px;font-weight:600">🎯 Autonomía real estimada: ~${Math.round(autonomiaReal)} km</div>`;
         }
-        
         const html=`
             <div style="text-align:center;margin-bottom:10px">
                 <div style="font-size:1.6rem;font-weight:800;color:var(--ev)">${kwh.toFixed(1)} kWh</div>
                 ${autonomiaHTML}
             </div>
-            <div class="charge-line ev-line">
-                <div><span class="cl-icon"></span> Residencial (${state.chargePower.residencial} kW)</div>
-                <div style="text-align:right"><div class="cl-cost">$${costCasa.toFixed(2)}</div><div class="cl-time">${formatTime(timeCasa)}</div></div>
-            </div>
-            <div class="charge-line ev-line">
-                <div><span class="cl-icon">⚡</span> Semi-rápida (${state.chargePower.semi} kW)</div>
-                <div style="text-align:right"><div class="cl-cost">$${costSemi.toFixed(2)}</div><div class="cl-time">${formatTime(timeSemi)}</div></div>
-            </div>
-            <div class="charge-line ev-line">
-                <div><span class="cl-icon">🔌</span> Rápida DC (${state.chargePower.rapida} kW)</div>
-                <div style="text-align:right"><div class="cl-cost">$${costRapida.toFixed(2)}</div><div class="cl-time">${formatTime(timeRapida)}</div></div>
-            </div>
-            <div class="charge-line mdc-line">
-                <div><span class="cl-icon"></span> Equivalente gasolina (${Math.round(kmAutoNEDC)} km NEDC)</div>
-                <div style="text-align:right"><div class="cl-cost">$${costGasolina.toFixed(2)}</div><div class="cl-time">${litrosGasolina.toFixed(2)} L</div></div>
-            </div>
-            <div class="charge-line save-line">
-                <div><span class="cl-icon">💰</span> <strong>AHORRO cargando en casa</strong></div>
-                <div style="text-align:right"><div class="cl-cost">$${ahorroCasa.toFixed(2)}</div><div class="cl-time">${costGasolina>0?((ahorroCasa/costGasolina)*100).toFixed(0):0}% menos</div></div>
-            </div>
+            <div class="charge-line ev-line"><div><span class="cl-icon">🏠</span> Residencial (${state.chargePower.residencial} kW)</div><div style="text-align:right"><div class="cl-cost">$${costCasa.toFixed(2)}</div><div class="cl-time">${formatTime(timeCasa)}</div></div></div>
+            <div class="charge-line ev-line"><div><span class="cl-icon">⚡</span> Semi-rápida (${state.chargePower.semi} kW)</div><div style="text-align:right"><div class="cl-cost">$${costSemi.toFixed(2)}</div><div class="cl-time">${formatTime(timeSemi)}</div></div></div>
+            <div class="charge-line ev-line"><div><span class="cl-icon">🔌</span> Rápida DC (${state.chargePower.rapida} kW)</div><div style="text-align:right"><div class="cl-cost">$${costRapida.toFixed(2)}</div><div class="cl-time">${formatTime(timeRapida)}</div></div></div>
+            <div class="charge-line mdc-line"><div><span class="cl-icon">⛽</span> Equivalente gasolina (${Math.round(kmNEDC)} km NEDC)</div><div style="text-align:right"><div class="cl-cost">$${costGasolina.toFixed(2)}</div><div class="cl-time">${litrosGasolina.toFixed(2)} L</div></div></div>
+            <div class="charge-line save-line"><div><span class="cl-icon">💰</span> <strong>AHORRO cargando en casa</strong></div><div style="text-align:right"><div class="cl-cost">$${ahorroCasa.toFixed(2)}</div><div class="cl-time">${costGasolina>0?((ahorroCasa/costGasolina)*100).toFixed(0):0}% menos</div></div></div>
         `;
         $('#chargeLiveResult').innerHTML=html;
     }catch(e){console.error('Error updateChargeLive:',e);}
@@ -867,7 +749,7 @@ function handleCalcular(){
         goToStep(4);
     }catch(e){
         console.error('Error al calcular:',e);
-        alert('Error al calcular: '+e.message+'\n'+e.stack);
+        alert('Error al calcular: '+e.message);
     }
 }
 
@@ -875,21 +757,12 @@ function calculateAll(){
     const ev=getEVData();
     const mdc=getMDCData();
     const km=state.kmMes;
-    
     let principal,principalType;
-    if(ev.type==='phev'){
-        principal=calcPHEV(ev);
-        principalType='phev';
-    } else {
-        principal=calcBEV(ev);
-        principalType='bev';
-    }
-    
+    if(ev.type==='phev'){principal=calcPHEV(ev);principalType='phev';}
+    else{principal=calcBEV(ev);principalType='bev';}
     const mdcCalc=calcMDC(mdc);
-    
     const ahorroEnergia=mdcCalc.energia-principal.energia;
     const ahorroTotal=mdcCalc.total-principal.total;
-    
     const proyData=[1,5,10].map(y=>{
         const meses=y*12;let ahorroE=0,ahorroM=0;
         for(let m=0;m<meses;m++){
@@ -902,7 +775,6 @@ function calculateAll(){
         }
         return{years:y,energia:ahorroE,mant:ahorroM,total:ahorroE+ahorroM};
     });
-    
     let comm=null;
     if(state.modC){
         const carrerasMes=state.cCarreras*state.cDias;
@@ -911,26 +783,19 @@ function calculateAll(){
         const desc=ingB*(state.cComision/100);
         const prop=state.cPropina?state.cDias*state.cPropinaVal:0;
         const ingN=ingB-desc+prop;
-        
         const principalCostoCarrera=(principal.total/km)*state.cDist;
         const mdcCostoCarrera=(mdcCalc.total/km)*state.cDist;
-        
         const principalUtilidad=state.cTarifa-principalCostoCarrera;
         const mdcUtilidad=state.cTarifa-mdcCostoCarrera;
-        
         const ahorroPorCarrera=principalUtilidad-mdcUtilidad;
         const ahorroDiario=ahorroPorCarrera*state.cCarreras;
         const ahorroMensual=ahorroDiario*state.cDias;
-        
         const principalUtilidadMensual=principalUtilidad*state.cCarreras*state.cDias;
         const mdcUtilidadMensual=mdcUtilidad*state.cCarreras*state.cDias;
-        
         const roiAbsMeses=principalUtilidadMensual>0?ev.price/principalUtilidadMensual:Infinity;
         const roiAbsDias=principalUtilidad>0?ev.price/(principalUtilidad*state.cCarreras):Infinity;
-        
         const roiVsMeses=ahorroMensual>0?ev.price/ahorroMensual:Infinity;
         const roiVsDias=ahorroDiario>0?ev.price/ahorroDiario:Infinity;
-        
         const proyComm=[1,5,10].map(y=>{
             const meses=y*12;let total=0;
             for(let m=0;m<meses;m++){
@@ -944,35 +809,20 @@ function calculateAll(){
             }
             return{years:y,total};
         });
-        
         comm={carrerasMes,kmMesComercial,ingN,principalCostoCarrera,mdcCostoCarrera,principalUtilidad,mdcUtilidad,ahorroPorCarrera,ahorroDiario,ahorroMensual,principalUtilidadMensual,mdcUtilidadMensual,roiAbsMeses,roiAbsDias,roiAbs:formatROI(roiAbsMeses),roiVsMeses,roiVsDias,roiVs:formatROI(roiVsMeses),proyComm};
     }
-    
     let emis=null;
     if(state.modF){
         const co2L=2.31,co2Kwh=0.25;
         let principalCO2,mdcCO2;
-        if(principalType==='phev'){
-            principalCO2=principal.kwhElec*co2Kwh+principal.litrosGas*co2L;
-        } else {
-            principalCO2=principal.kwh*co2Kwh;
-        }
+        if(principalType==='phev'){principalCO2=principal.kwhElec*co2Kwh+principal.litrosGas*co2L;}
+        else{principalCO2=principal.kwh*co2Kwh;}
         mdcCO2=mdcCalc.litros*co2L;
         emis={principal:principalCO2,mdc:mdcCO2};
     }
-    
     let aut=null;
-    if(state.modD){
-        if(principalType==='phev'){
-            aut={principal:principal.autonomiaElecReal};
-        } else {
-            aut={principal:principal.autonomiaReal};
-        }
-    }
-    
-    state.results={ev,mdc,km,principal,principalType,mdcCalc,
-        ahorroEnergia,ahorroTotal,
-        proyData,comm,emis,aut};
+    if(state.modD){aut={principal:principalType==='phev'?principal.autonomiaElecReal:principal.autonomiaReal};}
+    state.results={ev,mdc,km,principal,principalType,mdcCalc,ahorroEnergia,ahorroTotal,proyData,comm,emis,aut};
     state.calculated=true;
     renderResults();
 }
@@ -985,138 +835,57 @@ function destroyAllCharts(){
 function renderResults(){
     destroyAllCharts();
     const r=state.results;if(!r)return;
-    const p=r.principal;
-    const m=r.mdcCalc;
-    const isPhevMain=r.principalType==='phev';
+    const p=r.principal,m=r.mdcCalc,isPhevMain=r.principalType==='phev';
     let html='';
-    
-    html+=`<div class="section-block">
-        <h4>⛽ vs  Ahorro mensual solo en combustible/electricidad</h4>
+    html+=`<div class="section-block"><h4>⛽ vs ⚡ Ahorro mensual solo en combustible/electricidad</h4>
         <div class="result-row">
-            <div class="result-card"><span class="result-label">${isPhevMain?'⚡+⛽ Energía':'⚡ Electricidad'} ${r.ev.name}/mes</span><div class="result-value ev-color">$${p.energia.toFixed(2)}</div></div>
-            <div class="result-card"><span class="result-label">⛽ Gasolina MDC/mes</span><div class="result-value mdc-color">$${m.energia.toFixed(2)}</div></div>
-            <div class="result-card"><span class="result-label">💰 Ahorro/mes</span><div class="result-value" style="color:var(--positive)">$${Math.max(0,r.ahorroEnergia).toFixed(2)}</div></div>
+            <div class="result-card"><span class="result-label">${isPhevMain?'⚡+ Energía':'⚡ Electricidad'} ${r.ev.name}/mes</span><div class="result-value ev-color">$${p.energia.toFixed(2)}</div></div>
+            <div class="result-card"><span class="result-label"> Gasolina MDC/mes</span><div class="result-value mdc-color">$${m.energia.toFixed(2)}</div></div>
+            <div class="result-card"><span class="result-label"> Ahorro/mes</span><div class="result-value" style="color:var(--positive)">$${Math.max(0,r.ahorroEnergia).toFixed(2)}</div></div>
         </div>`;
-    if(isPhevMain){
-        html+=`<p style="font-size:0.75rem;color:var(--text2);margin-top:8px">Desglose: Electricidad $${p.costoElec.toFixed(2)} + Gasolina $${p.costoGas.toFixed(2)} (${(p.elecPct*100).toFixed(0)}% eléctrico · ${((1-p.elecPct)*100).toFixed(0)}% híbrido)</p>`;
-    } else {
-        html+=`<p style="font-size:0.75rem;color:var(--text2);margin-top:8px">Consumo ${r.ev.name}: ${p.kwh.toFixed(1)} kWh/mes · Consumo MDC: ${m.litros.toFixed(1)} L/mes</p>`;
-    }
+    if(isPhevMain)html+=`<p style="font-size:0.75rem;color:var(--text2);margin-top:8px">Desglose: Electricidad $${p.costoElec.toFixed(2)} + Gasolina $${p.costoGas.toFixed(2)} (${(p.elecPct*100).toFixed(0)}% eléctrico · ${((1-p.elecPct)*100).toFixed(0)}% híbrido)</p>`;
+    else html+=`<p style="font-size:0.75rem;color:var(--text2);margin-top:8px">Consumo ${r.ev.name}: ${p.kwh.toFixed(1)} kWh/mes · Consumo MDC: ${m.litros.toFixed(1)} L/mes</p>`;
     html+=`</div>`;
-    
-    html+=`<div class="section-block">
-        <h4> Comparación completa (consumo + mantenimiento)</h4>
-        <div class="compare-grid">`;
-    
+    html+=`<div class="section-block"><h4>📊 Comparación completa (consumo + mantenimiento)</h4><div class="compare-grid">`;
     const mainBoxClass=isPhevMain?'phev-box':'ev-box';
     const mainColor=isPhevMain?'var(--phev)':'var(--ev)';
-    const mainIcon=isPhevMain?'🔵':'⚡';
-    html+=`<div class="compare-box ${mainBoxClass}">
-        <h5>${mainIcon} ${r.ev.name}</h5>`;
-    if(isPhevMain){
-        html+=`<div class="compare-row"><span>Consumo eléctrico (${(p.elecPct*100).toFixed(0)}%)</span><span>$${p.costoElec.toFixed(2)}</span></div>`;
-        html+=`<div class="compare-row"><span>Consumo gasolina (${((1-p.elecPct)*100).toFixed(0)}%)</span><span>$${p.costoGas.toFixed(2)}</span></div>`;
-    } else {
-        html+=`<div class="compare-row"><span>Consumo eléctrico</span><span>$${p.energia.toFixed(2)}</span></div>`;
-    }
-    html+=`<div class="compare-row"><span>Mantenimiento</span><span>$${p.mant.toFixed(2)}</span></div>
-        <div class="compare-row total" style="color:${mainColor}"><span>TOTAL/mes</span><span>$${p.total.toFixed(2)}</span></div>
-        <div class="compare-row"><span>Costo/km</span><span>$${p.cpk.toFixed(3)}</span></div>
-    </div>`;
-    
-    html+=`<div class="compare-box mdc-box">
-        <h5>⛽ ${r.mdc.name}</h5>
-        <div class="compare-row"><span>Consumo combustible</span><span>$${m.energia.toFixed(2)}</span></div>
-        <div class="compare-row"><span>Mantenimiento</span><span>$${m.mant.toFixed(2)}</span></div>
-        <div class="compare-row total mdc-total"><span>TOTAL/mes</span><span>$${m.total.toFixed(2)}</span></div>
-        <div class="compare-row"><span>Costo/km</span><span>$${m.cpk.toFixed(3)}</span></div>
-    </div>`;
-    html+=`</div>`;
-    
-    html+=`<div class="result-row" style="margin-top:12px">
-        <div class="result-card"><span class="result-label">💰 Ahorro total ${r.ev.name}/mes</span><div class="result-value" style="color:var(--positive)">$${Math.max(0,r.ahorroTotal).toFixed(2)}</div></div>
-    </div>`;
-    html+=`</div>`;
-    
-    html+=`<div class="section-block proj-section">
-        <h4>📈 Proyecciones de ahorro total (1, 5 y 10 años)</h4>
-        <table class="proy-table">
-            <tr><th>Período</th><th style="color:var(--ev)">Ahorro energía</th><th>Ahorro mant.</th><th style="color:var(--ev)">TOTAL</th></tr>`;
-    r.proyData.forEach(pd=>{
-        html+=`<tr><td><strong>${pd.years} año${pd.years>1?'s':''}</strong></td>
-            <td class="positive">$${Math.round(pd.energia).toLocaleString()}</td>
-            <td>$${Math.round(pd.mant).toLocaleString()}</td>
-            <td class="positive"><strong>$${Math.round(pd.total).toLocaleString()}</strong></td></tr>`;
-    });
+    const mainIcon=isPhevMain?'🔵':'';
+    html+=`<div class="compare-box ${mainBoxClass}"><h5>${mainIcon} ${r.ev.name}</h5>`;
+    if(isPhevMain){html+=`<div class="compare-row"><span>Consumo eléctrico (${(p.elecPct*100).toFixed(0)}%)</span><span>$${p.costoElec.toFixed(2)}</span></div><div class="compare-row"><span>Consumo gasolina (${((1-p.elecPct)*100).toFixed(0)}%)</span><span>$${p.costoGas.toFixed(2)}</span></div>`;}
+    else html+=`<div class="compare-row"><span>Consumo eléctrico</span><span>$${p.energia.toFixed(2)}</span></div>`;
+    html+=`<div class="compare-row"><span>Mantenimiento</span><span>$${p.mant.toFixed(2)}</span></div><div class="compare-row total" style="color:${mainColor}"><span>TOTAL/mes</span><span>$${p.total.toFixed(2)}</span></div><div class="compare-row"><span>Costo/km</span><span>$${p.cpk.toFixed(3)}</span></div></div>`;
+    html+=`<div class="compare-box mdc-box"><h5>⛽ ${r.mdc.name}</h5><div class="compare-row"><span>Consumo combustible</span><span>$${m.energia.toFixed(2)}</span></div><div class="compare-row"><span>Mantenimiento</span><span>$${m.mant.toFixed(2)}</span></div><div class="compare-row total mdc-total"><span>TOTAL/mes</span><span>$${m.total.toFixed(2)}</span></div><div class="compare-row"><span>Costo/km</span><span>$${m.cpk.toFixed(3)}</span></div></div></div>`;
+    html+=`<div class="result-row" style="margin-top:12px"><div class="result-card"><span class="result-label">💰 Ahorro total ${r.ev.name}/mes</span><div class="result-value" style="color:var(--positive)">$${Math.max(0,r.ahorroTotal).toFixed(2)}</div></div></div></div>`;
+    html+=`<div class="section-block proj-section"><h4>📈 Proyecciones de ahorro total (1, 5 y 10 años)</h4><table class="proy-table"><tr><th>Período</th><th style="color:var(--ev)">Ahorro energía</th><th>Ahorro mant.</th><th style="color:var(--ev)">TOTAL</th></tr>`;
+    r.proyData.forEach(pd=>{html+=`<tr><td><strong>${pd.years} año${pd.years>1?'s':''}</strong></td><td class="positive">$${Math.round(pd.energia).toLocaleString()}</td><td>$${Math.round(pd.mant).toLocaleString()}</td><td class="positive"><strong>$${Math.round(pd.total).toLocaleString()}</strong></td></tr>`;});
     html+=`</table></div>`;
-    
     if(state.modC&&r.comm){
         const c=r.comm;
-        html+=`<div class="section-block comm-section">
-            <h4>🚕 Transporte Comercial</h4>
-            <p>Ingreso neto mensual: <strong>$${c.ingN.toFixed(2)}</strong> (${c.carrerasMes} carreras · ${c.kmMesComercial.toLocaleString()} km)</p>
-            <div class="result-row">
-                <div class="result-card"><span class="result-label">Utilidad ${r.ev.name}/carrera</span><div class="result-value ev-color">$${c.principalUtilidad.toFixed(2)}</div></div>
-                <div class="result-card"><span class="result-label">Utilidad MDC/carrera</span><div class="result-value mdc-color">$${c.mdcUtilidad.toFixed(2)}</div></div>
-                <div class="result-card"><span class="result-label">Ahorro/carrera</span><div class="result-value" style="color:var(--positive)">$${c.ahorroPorCarrera.toFixed(2)}</div></div>
-            </div>
-            <p style="margin-top:8px">Utilidad neta ${r.ev.name}: <strong style="color:var(--ev)">$${c.principalUtilidadMensual.toFixed(0)}/mes</strong> | MDC: <strong style="color:var(--mdc)">$${c.mdcUtilidadMensual.toFixed(0)}/mes</strong></p>
-        </div>`;
-
-        html+=`<div class="section-block roi-section">
-            <h4>⏱️ ROI — Recuperación de la inversión (${r.ev.name})</h4>
-            <p style="font-size:0.85rem;color:var(--text2)">Cotización: <strong>$${r.ev.price.toLocaleString()}</strong></p>
-            <div style="background:var(--input-bg);border-radius:10px;padding:12px;margin:10px 0;border:1px solid var(--border)">
-                <p style="font-size:0.85rem;margin-bottom:8px"><strong>📊 Con utilidad mensual ($${c.principalUtilidadMensual.toFixed(0)}/mes):</strong></p>
-                <div class="result-row">
-                    <div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:#F59E0B">${!isFinite(c.roiAbsDias)?'∞':Math.round(c.roiAbsDias)}</div></div>
-                    <div class="result-card"><span class="result-label">En meses</span><div class="result-value" style="color:#F59E0B">${formatROI(c.roiAbsMeses)}</div></div>
-                </div>
-            </div>
-            <div style="background:var(--input-bg);border-radius:10px;padding:12px;margin:10px 0;border:1px solid var(--border)">
-                <p style="font-size:0.85rem;margin-bottom:8px"><strong>📊 Ahorro mensual vs MDC ($${c.ahorroMensual.toFixed(0)}/mes):</strong></p>
-                <div class="result-row">
-                    <div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:var(--ev)">${!isFinite(c.roiVsDias)?'∞':Math.round(c.roiVsDias)}</div></div>
-                    <div class="result-card"><span class="result-label">En meses</span><div class="result-value" style="color:var(--ev)">${formatROI(c.roiVsMeses)}</div></div>
-                </div>
-            </div></div>`;
-
-        html+=`<div class="section-block proj-section">
-            <h4>📈 Proyecciones comerciales (1, 5 y 10 años)</h4>
-            <table class="proy-table">
-                <tr><th>Período</th><th style="color:var(--ev)">Ahorro acumulado vs MDC</th></tr>`;
-        c.proyComm.forEach(pd=>{
-            html+=`<tr><td><strong>${pd.years} año${pd.years>1?'s':''}</strong></td>
-                <td class="positive"><strong>$${Math.round(pd.total).toLocaleString()}</strong></td></tr>`;
-        });
+        html+=`<div class="section-block comm-section"><h4> Transporte Comercial</h4><p>Ingreso neto mensual: <strong>$${c.ingN.toFixed(2)}</strong> (${c.carrerasMes} carreras · ${c.kmMesComercial.toLocaleString()} km)</p>
+            <div class="result-row"><div class="result-card"><span class="result-label">Utilidad ${r.ev.name}/carrera</span><div class="result-value ev-color">$${c.principalUtilidad.toFixed(2)}</div></div><div class="result-card"><span class="result-label">Utilidad MDC/carrera</span><div class="result-value mdc-color">$${c.mdcUtilidad.toFixed(2)}</div></div><div class="result-card"><span class="result-label">Ahorro/carrera</span><div class="result-value" style="color:var(--positive)">$${c.ahorroPorCarrera.toFixed(2)}</div></div></div>
+            <p style="margin-top:8px">Utilidad neta ${r.ev.name}: <strong style="color:var(--ev)">$${c.principalUtilidadMensual.toFixed(0)}/mes</strong> | MDC: <strong style="color:var(--mdc)">$${c.mdcUtilidadMensual.toFixed(0)}/mes</strong></p></div>`;
+        html+=`<div class="section-block roi-section"><h4>⏱️ ROI — Recuperación de la inversión (${r.ev.name})</h4><p style="font-size:0.85rem;color:var(--text2)">Cotización: <strong>$${r.ev.price.toLocaleString()}</strong></p>
+            <div style="background:var(--input-bg);border-radius:10px;padding:12px;margin:10px 0;border:1px solid var(--border)"><p style="font-size:0.85rem;margin-bottom:8px"><strong> Con utilidad mensual ($${c.principalUtilidadMensual.toFixed(0)}/mes):</strong></p><div class="result-row"><div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:#F59E0B">${!isFinite(c.roiAbsDias)?'∞':Math.round(c.roiAbsDias)}</div></div><div class="result-card"><span class="result-label">En meses</span><div class="result-value" style="color:#F59E0B">${formatROI(c.roiAbsMeses)}</div></div></div></div>
+            <div style="background:var(--input-bg);border-radius:10px;padding:12px;margin:10px 0;border:1px solid var(--border)"><p style="font-size:0.85rem;margin-bottom:8px"><strong>📊 Ahorro mensual vs MDC ($${c.ahorroMensual.toFixed(0)}/mes):</strong></p><div class="result-row"><div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:var(--ev)">${!isFinite(c.roiVsDias)?'∞':Math.round(c.roiVsDias)}</div></div><div class="result-card"><span class="result-label">En meses</span><div class="result-value" style="color:var(--ev)">${formatROI(c.roiVsMeses)}</div></div></div></div></div>`;
+        html+=`<div class="section-block proj-section"><h4>📈 Proyecciones comerciales (1, 5 y 10 años)</h4><table class="proy-table"><tr><th>Período</th><th style="color:var(--ev)">Ahorro acumulado vs MDC</th></tr>`;
+        c.proyComm.forEach(pd=>{html+=`<tr><td><strong>${pd.years} año${pd.years>1?'s':''}</strong></td><td class="positive"><strong>$${Math.round(pd.total).toLocaleString()}</strong></td></tr>`;});
         html+=`</table></div>`;
     }
-
     if(state.modD&&r.aut){
-        html+=`<div class="section-block">
-            <h4>🔋 Autonomía Real</h4>`;
-        if(isPhevMain){
-            html+=`<p>${r.ev.name}: <strong>${Math.round(r.aut.principal)} km</strong> eléctricos reales (batería ${r.ev.battery} kWh)</p>`;
-        } else {
-            html+=`<p>${r.ev.name}: <strong>${Math.round(r.aut.principal)} km</strong> reales por carga (batería ${r.ev.battery} kWh)</p>`;
-        }
+        html+=`<div class="section-block"><h4>🔋 Autonomía Real</h4>`;
+        if(isPhevMain)html+=`<p>${r.ev.name}: <strong>${Math.round(r.aut.principal)} km</strong> eléctricos reales (batería ${r.ev.battery} kWh)</p>`;
+        else html+=`<p>${r.ev.name}: <strong>${Math.round(r.aut.principal)} km</strong> reales por carga (batería ${r.ev.battery} kWh)</p>`;
         html+=`</div>`;
     }
-
     if(state.modF&&r.emis){
-        // Árboles: 1 árbol absorbe ~22 kg CO2/año
         const arbolesEV=Math.round(r.emis.principal*12/22);
         const arbolesMDC=Math.round(r.emis.mdc*12/22);
         const arbolesSalvados=arbolesMDC-arbolesEV;
-        html+=`<div class="section-block">
-            <h4>🌍 Emisiones CO₂</h4>
-            <p>${r.ev.name}: <strong>${r.emis.principal.toFixed(1)} kg/mes</strong> (equivale a ~${arbolesEV} árboles/año) | MDC: <strong>${r.emis.mdc.toFixed(1)} kg/mes</strong> (equivale a ~${arbolesMDC} árboles/año)</p>`;
         const reduction=((1-r.emis.principal/r.emis.mdc)*100).toFixed(0);
+        html+=`<div class="section-block"><h4>🌍 Emisiones CO₂</h4><p>${r.ev.name}: <strong>${r.emis.principal.toFixed(1)} kg/mes</strong> (~${arbolesEV} árboles/año) | MDC: <strong>${r.emis.mdc.toFixed(1)} kg/mes</strong> (~${arbolesMDC} árboles/año)</p>`;
         html+=`<p style="color:var(--positive);font-weight:600">↓ Reducción con ${r.ev.name}: ${reduction}%</p>`;
-        html+=`<p style="margin-top:8px;font-size:0.9rem">🌳 <strong>Árboles salvados al año: ~${arbolesSalvados}</strong> (al elegir ${r.ev.name} en vez de MDC)</p>`;
-        html+=`</div>`;
+        html+=`<p style="margin-top:8px;font-size:0.9rem">🌳 <strong>Árboles salvados al año: ~${arbolesSalvados}</strong> (al elegir ${r.ev.name} en vez de MDC)</p></div>`;
     }
-
     $('#resultsContent').innerHTML=html;
     $('#actionButtons').classList.remove('hidden');
     initChartCanvases();
@@ -1125,18 +894,13 @@ function renderResults(){
 
 function initChartCanvases(){
     const c=$('#chartContainers');if(!c)return;
-    c.innerHTML=`
-        <div class="chart-wrap"><canvas id="chartEnergia"></canvas></div>
-        <div class="chart-wrap"><canvas id="chartTotal"></canvas></div>
-        <div id="chartProyWrap" class="chart-wrap"><canvas id="chartProyecciones"></canvas></div>
-    `;
+    c.innerHTML=`<div class="chart-wrap"><canvas id="chartEnergia"></canvas></div><div class="chart-wrap"><canvas id="chartTotal"></canvas></div><div id="chartProyWrap" class="chart-wrap"><canvas id="chartProyecciones"></canvas></div>`;
 }
 
 function renderCharts(r){
     const textColor=getComputedStyle(document.documentElement).getPropertyValue('--text').trim()||'#F1F5F9';
     const text2Color=getComputedStyle(document.documentElement).getPropertyValue('--text2').trim()||'#94A3B8';
     const borderColor=getComputedStyle(document.documentElement).getPropertyValue('--border').trim()||'#263148';
-    
     const c1=$('#chartEnergia');
     if(c1){
         if(state.chartInstances.c1)state.chartInstances.c1.destroy();
@@ -1159,237 +923,79 @@ function renderCharts(r){
 }
 
 function animateResults(){
-    $$('.result-value').forEach(el=>{
-        el.style.opacity='0';el.style.transform='translateY(10px)';
-        requestAnimationFrame(()=>{
-            el.style.transition='all 0.6s cubic-bezier(0.22,0.61,0.36,1)';
-            el.style.opacity='1';el.style.transform='translateY(0)';
-        });
-    });
+    $$('.result-value').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(10px)';requestAnimationFrame(()=>{el.style.transition='all 0.6s cubic-bezier(0.22,0.61,0.36,1)';el.style.opacity='1';el.style.transform='translateY(0)';});});
 }
 
-// ===== IMAGEN RESUMEN REDISEÑADA =====
 function generateSummaryImage(){
     const r=state.results;if(!r)return null;
     const S=2080;
     const canvas=document.createElement('canvas');
     canvas.width=S;canvas.height=S;
     const ctx=canvas.getContext('2d');
-    const pad=60;
-    const W=S-pad*2;
-    const colW=(W-40)/2; // 2 columnas
-
-    // Fondo
+    const pad=60;const W=S-pad*2;const colW=(W-40)/2;
     const bgGrad=ctx.createLinearGradient(0,0,S,S);
     bgGrad.addColorStop(0,'#0a0f1c');bgGrad.addColorStop(0.5,'#0f1729');bgGrad.addColorStop(1,'#0a0f1c');
     ctx.fillStyle=bgGrad;ctx.fillRect(0,0,S,S);
-
-    // Círculos decorativos
-    ctx.globalAlpha=0.04;
-    ctx.fillStyle='#00C896';ctx.beginPath();ctx.arc(250,350,450,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#4A90E2';ctx.beginPath();ctx.arc(1830,1650,400,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;
-
-    // HEADER
-    const hdrGrad=ctx.createLinearGradient(0,0,S,0);
-    hdrGrad.addColorStop(0,'#00C896');hdrGrad.addColorStop(0.5,'#4A90E2');hdrGrad.addColorStop(1,'#6366F1');
-    ctx.fillStyle=hdrGrad;
-    ctx.beginPath();ctx.roundRect(pad,pad,W,200,28);ctx.fill();
-
-    ctx.fillStyle='#000';ctx.font='800 68px Inter, sans-serif';ctx.textAlign='center';
-    ctx.fillText(' SIMULADOR EV',S/2,pad+85);
-    ctx.font='600 46px Inter, sans-serif';
-    ctx.fillText(`${r.ev.name}  vs  MDC`,S/2,pad+145);
-    ctx.font='400 34px Inter, sans-serif';
-    ctx.fillText(`${r.km.toLocaleString()} km/mes · ${state.cityPct}% ciudad · ${state.region}`,S/2,pad+185);
-
-    // GRID 2x2 para bloques principales
-    let y=pad+240;
-    const blockH=340;
-    const gap=30;
-    const colGap=30;
-    const leftX=pad;
-    const rightX=pad+colW+colGap;
-
+    ctx.globalAlpha=0.04;ctx.fillStyle='#00C896';ctx.beginPath();ctx.arc(250,350,450,0,Math.PI*2);ctx.fill();ctx.fillStyle='#4A90E2';ctx.beginPath();ctx.arc(1830,1650,400,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    const hdrGrad=ctx.createLinearGradient(0,0,S,0);hdrGrad.addColorStop(0,'#00C896');hdrGrad.addColorStop(0.5,'#4A90E2');hdrGrad.addColorStop(1,'#6366F1');
+    ctx.fillStyle=hdrGrad;ctx.beginPath();ctx.roundRect(pad,pad,W,200,28);ctx.fill();
+    ctx.fillStyle='#000';ctx.font='800 68px Inter, sans-serif';ctx.textAlign='center';ctx.fillText('⚡ SIMULADOR EV',S/2,pad+85);
+    ctx.font='600 46px Inter, sans-serif';ctx.fillText(`${r.ev.name}  vs  MDC`,S/2,pad+145);
+    ctx.font='400 34px Inter, sans-serif';ctx.fillText(`${r.km.toLocaleString()} km/mes · ${state.cityPct}% ciudad · ${state.region}`,S/2,pad+185);
+    let y=pad+240;const blockH=340;const gap=30;const colGap=30;const leftX=pad;const rightX=pad+colW+colGap;
     function drawCard(x,y,w,h,title,accent,lines){
-        ctx.fillStyle='#131b2e';
-        ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.fill();
-        ctx.strokeStyle=accent;ctx.lineWidth=3;
-        ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.stroke();
-        // Title bar
-        ctx.fillStyle=accent;ctx.globalAlpha=0.15;
-        ctx.beginPath();ctx.roundRect(x,y,w,70,[22,22,0,0]);ctx.fill();
-        ctx.globalAlpha=1;
-        ctx.fillStyle='#F1F5F9';ctx.font='700 42px Inter, sans-serif';ctx.textAlign='left';
-        ctx.fillText(title,x+28,y+48);
+        ctx.fillStyle='#131b2e';ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.fill();
+        ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.stroke();
+        ctx.fillStyle=accent;ctx.globalAlpha=0.15;ctx.beginPath();ctx.roundRect(x,y,w,70,[22,22,0,0]);ctx.fill();ctx.globalAlpha=1;
+        ctx.fillStyle='#F1F5F9';ctx.font='700 42px Inter, sans-serif';ctx.textAlign='left';ctx.fillText(title,x+28,y+48);
         ctx.font='500 38px Inter, sans-serif';
-        lines.forEach((l,i)=>{
-            ctx.fillStyle=l.color||'#F1F5F9';
-            ctx.fillText(l.text,x+28,y+110+i*52);
-        });
+        lines.forEach((l,i)=>{ctx.fillStyle=l.color||'#F1F5F9';ctx.fillText(l.text,x+28,y+110+i*52);});
     }
-
-    // BLOQUE 1: Ahorro energía (arriba izquierda)
-    drawCard(leftX,y,colW,blockH,'⛽ vs ⚡ AHORRO ENERGÍA','#00C896',[
-        {text:`${r.ev.name}: $${r.principal.energia.toFixed(2)}/mes`,color:'#00C896'},
-        {text:`MDC: $${r.mdcCalc.energia.toFixed(2)}/mes`,color:'#E57373'},
-        {text:`Ahorro: $${Math.max(0,r.ahorroEnergia).toFixed(2)}/mes`,color:'#00C896'}
-    ]);
-
-    // BLOQUE 2: Ahorro total (arriba derecha)
-    drawCard(rightX,y,colW,blockH,'💰 AHORRO TOTAL','#F59E0B',[
-        {text:`${r.ev.name}: $${r.principal.total.toFixed(2)}/mes`,color:'#00C896'},
-        {text:`MDC: $${r.mdcCalc.total.toFixed(2)}/mes`,color:'#E57373'},
-        {text:`Ahorro: $${Math.max(0,r.ahorroTotal).toFixed(2)}/mes`,color:'#F59E0B'}
-    ]);
-
+    drawCard(leftX,y,colW,blockH,'⛽ vs ⚡ AHORRO ENERGÍA','#00C896',[{text:`${r.ev.name}: $${r.principal.energia.toFixed(2)}/mes`,color:'#00C896'},{text:`MDC: $${r.mdcCalc.energia.toFixed(2)}/mes`,color:'#E57373'},{text:`Ahorro: $${Math.max(0,r.ahorroEnergia).toFixed(2)}/mes`,color:'#00C896'}]);
+    drawCard(rightX,y,colW,blockH,'💰 AHORRO TOTAL','#F59E0B',[{text:`${r.ev.name}: $${r.principal.total.toFixed(2)}/mes`,color:'#00C896'},{text:`MDC: $${r.mdcCalc.total.toFixed(2)}/mes`,color:'#E57373'},{text:`Ahorro: $${Math.max(0,r.ahorroTotal).toFixed(2)}/mes`,color:'#F59E0B'}]);
     y+=blockH+gap;
-
-    // BLOQUE 3: Proyecciones (abajo izquierda)
-    drawCard(leftX,y,colW,blockH,'📈 PROYECCIONES','#6366F1',[
-        {text:`1 año: $${Math.round(r.proyData[0].total).toLocaleString()}`,color:'#F1F5F9'},
-        {text:`5 años: $${Math.round(r.proyData[1].total).toLocaleString()}`,color:'#F1F5F9'},
-        {text:`10 años: $${Math.round(r.proyData[2].total).toLocaleString()}`,color:'#00C896'}
-    ]);
-
-    // BLOQUE 4: Transporte comercial o Emisiones (abajo derecha)
+    drawCard(leftX,y,colW,blockH,'📈 PROYECCIONES','#6366F1',[{text:`1 año: $${Math.round(r.proyData[0].total).toLocaleString()}`,color:'#F1F5F9'},{text:`5 años: $${Math.round(r.proyData[1].total).toLocaleString()}`,color:'#F1F5F9'},{text:`10 años: $${Math.round(r.proyData[2].total).toLocaleString()}`,color:'#00C896'}]);
     if(state.modC&&r.comm){
         const c=r.comm;
-        drawCard(rightX,y,colW,blockH,'🚕 COMERCIAL','#8B5CF6',[
-            {text:`Utilidad neta: $${c.principalUtilidadMensual.toFixed(0)}/mes`,color:'#00C896'},
-            {text:`Recuperación: ${c.roiAbs}`,color:'#F59E0B'},
-            {text:`(${!isFinite(c.roiAbsDias)?'∞':Math.round(c.roiAbsDias)} días)`,color:'#F59E0B'}
-        ]);
+        drawCard(rightX,y,colW,blockH,'🚕 COMERCIAL','#8B5CF6',[{text:`Utilidad neta: $${c.principalUtilidadMensual.toFixed(0)}/mes`,color:'#00C896'},{text:`Recuperación: ${c.roiAbs}`,color:'#F59E0B'},{text:`(${!isFinite(c.roiAbsDias)?'∞':Math.round(c.roiAbsDias)} días)`,color:'#F59E0B'}]);
     } else if(state.modF&&r.emis){
-        const arbolesEV=Math.round(r.emis.principal*12/22);
-        const arbolesMDC=Math.round(r.emis.mdc*12/22);
-        const arbolesSalvados=arbolesMDC-arbolesEV;
-        const reduction=((1-r.emis.principal/r.emis.mdc)*100).toFixed(0);
-        drawCard(rightX,y,colW,blockH,'🌍 EMISIONES CO₂','#22C55E',[
-            {text:`${r.ev.name}: ${r.emis.principal.toFixed(1)} kg/mes`,color:'#00C896'},
-            {text:`MDC: ${r.emis.mdc.toFixed(1)} kg/mes`,color:'#E57373'},
-            {text:`↓ ${reduction}% · 🌳 ${arbolesSalvados} árboles/año`,color:'#22C55E'}
-        ]);
-    } else {
-        // Si no hay comercial ni emisiones, mostrar autonomía si está activa
-        if(state.modD&&r.aut){
-            drawCard(rightX,y,colW,blockH,'🔋 AUTONOMÍA REAL','#00C896',[
-                {text:`${r.ev.name}: ${Math.round(r.aut.principal)} km`,color:'#00C896'},
-                {text:`(batería ${r.ev.battery} kWh)`,color:'#94A3B8'}
-            ]);
-        }
+        const arbolesEV=Math.round(r.emis.principal*12/22);const arbolesMDC=Math.round(r.emis.mdc*12/22);const arbolesSalvados=arbolesMDC-arbolesEV;const reduction=((1-r.emis.principal/r.emis.mdc)*100).toFixed(0);
+        drawCard(rightX,y,colW,blockH,'🌍 EMISIONES CO₂','#22C55E',[{text:`${r.ev.name}: ${r.emis.principal.toFixed(1)} kg/mes`,color:'#00C896'},{text:`MDC: ${r.emis.mdc.toFixed(1)} kg/mes`,color:'#E57373'},{text:`↓ ${reduction}% ·  ${arbolesSalvados} árboles/año`,color:'#22C55E'}]);
+    } else if(state.modD&&r.aut){
+        drawCard(rightX,y,colW,blockH,'🔋 AUTONOMÍA REAL','#00C896',[{text:`${r.ev.name}: ${Math.round(r.aut.principal)} km`,color:'#00C896'},{text:`(batería ${r.ev.battery} kWh)`,color:'#94A3B8'}]);
     }
-
-    // FOOTER
-    const footerY=S-240;
-    const footerGrad=ctx.createLinearGradient(0,0,S,0);
-    footerGrad.addColorStop(0,'#1E293B');footerGrad.addColorStop(1,'#334155');
-    ctx.fillStyle=footerGrad;
-    ctx.beginPath();ctx.roundRect(pad,footerY,W,180,28);ctx.fill();
-    ctx.strokeStyle='#00C896';ctx.lineWidth=4;
-    ctx.beginPath();ctx.moveTo(pad+40,footerY+28);ctx.lineTo(pad+W-40,footerY+28);ctx.stroke();
-    ctx.fillStyle='#F1F5F9';ctx.font='700 54px Inter, sans-serif';ctx.textAlign='center';
-    ctx.fillText('Jonathan Ortiz',S/2,footerY+95);
-    ctx.fillStyle='#00C896';ctx.font='600 52px Inter, sans-serif';
-    ctx.fillText('097918972',S/2,footerY+155);
-
+    const footerY=S-240;const footerGrad=ctx.createLinearGradient(0,0,S,0);footerGrad.addColorStop(0,'#1E293B');footerGrad.addColorStop(1,'#334155');
+    ctx.fillStyle=footerGrad;ctx.beginPath();ctx.roundRect(pad,footerY,W,180,28);ctx.fill();
+    ctx.strokeStyle='#00C896';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(pad+40,footerY+28);ctx.lineTo(pad+W-40,footerY+28);ctx.stroke();
+    ctx.fillStyle='#F1F5F9';ctx.font='700 54px Inter, sans-serif';ctx.textAlign='center';ctx.fillText('Jonathan Ortiz',S/2,footerY+95);
+    ctx.fillStyle='#00C896';ctx.font='600 52px Inter, sans-serif';ctx.fillText('097918972',S/2,footerY+155);
     return canvas;
 }
 
-function openShareModal(){
-    if(!state.calculated)return;
-    $('#shareModal').classList.remove('hidden');
-    const pc=$('#previewCanvas');
-    const img=generateSummaryImage();
-    if(img&&pc){
-        const pctx=pc.getContext('2d');
-        pc.width=800;pc.height=800;
-        pctx.clearRect(0,0,pc.width,pc.height);
-        pctx.drawImage(img,0,0,pc.width,pc.height);
-    }
-}
+function openShareModal(){if(!state.calculated)return;$('#shareModal').classList.remove('hidden');const pc=$('#previewCanvas');const img=generateSummaryImage();if(img&&pc){const pctx=pc.getContext('2d');pc.width=800;pc.height=800;pctx.clearRect(0,0,pc.width,pc.height);pctx.drawImage(img,0,0,pc.width,pc.height);}}
 function closeShareModal(){$('#shareModal').classList.add('hidden');}
-
-function downloadImage(){
-    const img=generateSummaryImage();if(!img)return;
-    const a=document.createElement('a');
-    a.download='simulador-ev-resumen.png';
-    a.href=img.toDataURL('image/png');
-    a.click();
-}
-
-function shareWhatsApp(){
-    const ph=$('#sharePhone').value.replace(/\s/g,'');
-    const pre=$('#sharePrefix').value.replace(/[^+\d]/g,'');
-    const name=$('#shareName').value.trim();
-    if(!ph)return alert('Ingresa el número de teléfono.');
-    const r=state.results;
-    const saludo=name?`¡Hola ${name}!`:'¡Hola!';
-    let msg=`${saludo} Soy Jonathan Ortiz, Asesor comercial de Geely. Te comparto tu simulación:\n\n`;
-    msg+=`⚡ Ahorro mensual: $${Math.max(0,r.ahorroTotal).toFixed(2)}\n`;
-    msg+=`📈 Ahorro a 1 año: $${Math.round(r.proyData[0].total).toLocaleString()}\n`;
-    msg+=`📈 Ahorro a 5 años: $${Math.round(r.proyData[1].total).toLocaleString()}\n\n`;
-    msg+=`Cualquier inquietud estoy al pendiente. ⚡`;
-    window.open(`https://wa.me/${pre.replace('+','')+ph}?text=${encodeURIComponent(msg)}`,'_blank');
-}
-
-function openContactModal(){
-    const ev=getEVData();
-    const tipoVeh=ev.type==='phev'?'híbrido enchufable':'eléctrico';
-    $('#contactVehicleType').value=tipoVeh;
-    $('#contactName').value='';
-    $('#contactCedula').value='';
-    $('#contactModal').classList.remove('hidden');
-}
+function downloadImage(){const img=generateSummaryImage();if(!img)return;const a=document.createElement('a');a.download='simulador-ev-resumen.png';a.href=img.toDataURL('image/png');a.click();}
+function shareWhatsApp(){const ph=$('#sharePhone').value.replace(/\s/g,'');const pre=$('#sharePrefix').value.replace(/[^+\d]/g,'');const name=$('#shareName').value.trim();if(!ph)return alert('Ingresa el número de teléfono.');const r=state.results;const saludo=name?`¡Hola ${name}!`:'¡Hola!';let msg=`${saludo} Soy Jonathan Ortiz, Asesor comercial de Geely. Te comparto tu simulación:\n\n⚡ Ahorro mensual: $${Math.max(0,r.ahorroTotal).toFixed(2)}\n📈 Ahorro a 1 año: $${Math.round(r.proyData[0].total).toLocaleString()}\n📈 Ahorro a 5 años: $${Math.round(r.proyData[1].total).toLocaleString()}\n\nCualquier inquietud estoy al pendiente. 🚗`;window.open(`https://wa.me/${pre.replace('+','')+ph}?text=${encodeURIComponent(msg)}`,'_blank');}
+function openContactModal(){const ev=getEVData();const tipoVeh=ev.type==='phev'?'híbrido enchufable':'eléctrico';$('#contactVehicleType').value=tipoVeh;$('#contactName').value='';$('#contactCedula').value='';$('#contactModal').classList.remove('hidden');}
 function closeContactModal(){$('#contactModal').classList.add('hidden');}
-
-function sendContactWhatsApp(){
-    const name=$('#contactName').value.trim();
-    const cedula=$('#contactCedula').value.trim();
-    const tipo=$('#contactVehicleType').value;
-    if(!name){alert('Por favor ingresa tu nombre.');return;}
-    if(!cedula||cedula.length<10){alert('Por favor ingresa un número de cédula válido (10 dígitos).');return;}
-    const msg=`Hola Jonathan, soy *${name}*, mi cédula es *${cedula}* y me interesa comprar un vehículo ${tipo}. ¿Podrías asesorarme?`;
-    window.open(`https://wa.me/593979189728?text=${encodeURIComponent(msg)}`,'_blank');
-    closeContactModal();
-}
+function sendContactWhatsApp(){const name=$('#contactName').value.trim();const cedula=$('#contactCedula').value.trim();const tipo=$('#contactVehicleType').value;if(!name){alert('Por favor ingresa tu nombre.');return;}if(!cedula||cedula.length<10){alert('Por favor ingresa un número de cédula válido (10 dígitos).');return;}const msg=`Hola Jonathan, soy *${name}*, mi cédula es *${cedula}* y me interesa comprar un vehículo ${tipo}. ¿Podrías asesorarme?`;window.open(`https://wa.me/593979189728?text=${encodeURIComponent(msg)}`,'_blank');closeContactModal();}
 
 function setupEvents(){
     $('#themeToggle').addEventListener('click',toggleTheme);
     $('#waFloat').addEventListener('click',(e)=>{e.preventDefault();openContactModal();});
-    
     $('#evModel').addEventListener('change',()=>{updateEVDataPanel();precargarSegmentoMDC();});
-    $('#mdcSegment').addEventListener('change',()=>{
-        const seg=$('#mdcSegment').value;
-        if(seg!=='custom')cargarMDCValues(seg);
-    });
+    $('#mdcSegment').addEventListener('change',()=>{const seg=$('#mdcSegment').value;if(seg!=='custom')cargarMDCValues(seg);});
     $('#region').addEventListener('change',updateRegionPanel);
     $('#modC').addEventListener('change',()=>{$('#modCFields').classList.toggle('hidden',!$('#modC').checked);});
-    $('#modD').addEventListener('change',()=>{updateChargeLive();});
+    $('#modD').addEventListener('change',updateChargeLive);
     $('#cPropina').addEventListener('change',()=>{$('#propinaField').classList.toggle('hidden',!$('#cPropina').checked);});
     syncSlider('kmMesSlider','kmMesNum',()=>{updateKmContext();updatePhevModeInfo();});
     syncSlider('cityPctSlider','cityPctNum',()=>{updateCityContext();updatePhevModeInfo();});
     syncSlider('batteryPctSlider','batteryPctNum',updateChargeLive);
-    
-    $$('#phevModeSelector .mode-btn').forEach(btn=>{
-        btn.addEventListener('click',()=>{
-            $$('#phevModeSelector .mode-btn').forEach(b=>b.classList.remove('active'));
-            btn.classList.add('active');
-            state.phevMode=btn.dataset.mode;
-            updatePhevModeInfo();
-        });
-    });
-    
-    ['tarifaResid','tarifaSemi','tarifaRapida','potResid','potSemi','potRapida','fuelPriceExtra','fuelPriceSuper','fuelPriceDiesel'].forEach(id=>{
-        const el=$('#'+id);
-        if(el)el.addEventListener('input',updateChargeLive);
-    });
+    $$('#phevModeSelector .mode-btn').forEach(btn=>{btn.addEventListener('click',()=>{$$('#phevModeSelector .mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');state.phevMode=btn.dataset.mode;updatePhevModeInfo();});});
+    ['tarifaResid','tarifaSemi','tarifaRapida','potResid','potSemi','potRapida','fuelPriceExtra','fuelPriceSuper','fuelPriceDiesel'].forEach(id=>{const el=$('#'+id);if(el)el.addEventListener('input',updateChargeLive);});
     $('#mdcSegment').addEventListener('change',updateChargeLive);
-    
-    $$('.step-dot').forEach(d=>d.addEventListener('click',function(){
-        const s=parseInt(this.dataset.step);
-        if(s<=state.currentStep||(s===4&&state.calculated))goToStep(s);
-    }));
+    $$('.step-dot').forEach(d=>d.addEventListener('click',function(){const s=parseInt(this.dataset.step);if(s<=state.currentStep||(s===4&&state.calculated))goToStep(s);}));
     $('#shareModal').addEventListener('click',function(e){if(e.target===this)closeShareModal();});
     $('#contactModal').addEventListener('click',function(e){if(e.target===this)closeContactModal();});
 }
