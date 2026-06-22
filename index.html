@@ -130,7 +130,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 </header>
 <div class="step-indicator" id="stepIndicator">
 <span class="step-dot active" data-step="1">① Vehículo</span>
-<span class="step-dot" data-step="2"> Uso</span>
+<span class="step-dot" data-step="2">② Uso</span>
 <span class="step-dot" data-step="3">③ Módulos</span>
 <span class="step-dot" data-step="4">④ Resultados</span>
 </div>
@@ -223,14 +223,14 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <select id="region">
 <option value="costa">🌊 Costa</option>
 <option value="sierra" selected>⛰️ Sierra</option>
-<option value="oriente">🌿 Oriente / Amazonía</option>
+<option value="oriente"> Oriente / Amazonía</option>
 </select>
 <div class="panel-info" id="regionPanel">⛰️ Sierra: MDC +10% consumo por altitud, EV +5%. Mantenimiento +8%.</div>
 <label for="traffic">Tráfico habitual</label>
 <select id="traffic">
 <option value="fluido">🟢 Fluido</option>
 <option value="moderado" selected>🟡 Moderado</option>
-<option value="denso"> Denso</option>
+<option value="denso">🔴 Denso</option>
 </select>
 <label for="acUse">Uso de aire acondicionado</label>
 <select id="acUse">
@@ -282,7 +282,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 
 <div class="step" id="step4">
 <div class="card">
-<h3>📊 Resultados</h3>
+<h3> Resultados</h3>
 <div id="resultsContent"><p style="color:var(--text2);text-align:center">Presiona <strong>Calcular</strong> para ver los resultados.</p></div>
 <div id="chartContainers"></div>
 <div id="actionButtons" class="hidden" style="margin-top:16px">
@@ -304,7 +304,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <label>Nombre del prospecto</label><input type="text" id="shareName" placeholder="Ej: Juan">
 <canvas id="previewCanvas" width="400" height="400" style="width:100%;max-width:400px;display:block;margin:12px auto;border-radius:12px;background:var(--input-bg);border:1px solid var(--border)"></canvas>
 <div class="btn-row">
-<button class="btn btn-outline" onclick="downloadImage()"> Descargar imagen</button>
+<button class="btn btn-outline" onclick="downloadImage()">📥 Descargar imagen</button>
 <button class="btn btn-wa" onclick="shareWhatsApp()">💬 Abrir WhatsApp</button>
 </div>
 <button class="btn btn-outline" onclick="closeShareModal()" style="margin-top:8px">Cerrar</button>
@@ -313,7 +313,7 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 
 <div class="modal-overlay hidden" id="contactModal">
 <div class="modal">
-<h3>💬 Contactar a Jonathan Ortiz</h3>
+<h3> Contactar a Jonathan Ortiz</h3>
 <p style="color:var(--text2);font-size:0.85rem;margin-bottom:12px">Completa tus datos y te contactaremos por WhatsApp</p>
 <label>Nombre</label>
 <input type="text" id="contactName" placeholder="Ej: Juan Pérez">
@@ -426,7 +426,7 @@ function updateRegionPanel(){
     const m={
         costa:'🌊 Costa: Condiciones de referencia. Sin ajustes adicionales.',
         sierra:'⛰️ Sierra: MDC +10% consumo por altitud, EV +5%. Mantenimiento +8%.',
-        oriente:' Oriente/Amazonía: MDC +5%, EV +2%. Mantenimiento +15% por vías.'
+        oriente:'🌿 Oriente/Amazonía: MDC +5%, EV +2%. Mantenimiento +15% por vías.'
     };
     $('#regionPanel').textContent=m[r]||m.costa;
 }
@@ -450,7 +450,7 @@ function updatePhevModeInfo(){
     if(mode==='pure'){
         info.innerHTML='🔋 <strong>Modo Pure:</strong> ~'+(pct*100).toFixed(0)+'% eléctrico. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km con gasolina (batería vacía).';
     } else if(mode==='power'){
-        info.innerHTML='⚡ <strong>Modo Power:</strong> ~'+(pct*100).toFixed(0)+'% eléctrico, máxima potencia. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km híbridos.';
+        info.innerHTML=' <strong>Modo Power:</strong> ~'+(pct*100).toFixed(0)+'% eléctrico, máxima potencia. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km híbridos.';
     } else {
         info.innerHTML='🔄 <strong>Modo Hybrid:</strong> combina eléctrico y combustión. ~'+(pct*100).toFixed(0)+'% eléctrico con '+state.cityPct+'% ciudad. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km en híbrido normal (~4.1 L/100km).';
     }
@@ -713,13 +713,11 @@ function updateChargeLive(){
         const pct=parseInt($('#batteryPctNum').value)||50;
         $('#chargeVehicleInfo').textContent='Batería: '+ev.battery+' kWh · '+ev.name;
         const kwh=ev.battery*pct/100;
-        let autonomiaNEDC,consRef;
+        let autonomiaNEDC;
         if(ev.type==='phev'){
             autonomiaNEDC=ev.rangeElecNEDC||105;
-            consRef=ev.consElecNEDC||4.3;
         } else {
             autonomiaNEDC=ev.rangeNEDC||400;
-            consRef=ev.consNEDC||15;
         }
         const kmNEDC=autonomiaNEDC*(pct/100);
         let autonomiaReal=null;
@@ -875,7 +873,7 @@ function renderResults(){
     const isPhevMain=(r.principalType==='phev');
     let html='';
     html+='<div class="section-block"><h4>⛽ vs ⚡ Ahorro mensual solo en combustible/electricidad</h4><div class="result-row">';
-    html+='<div class="result-card"><span class="result-label">'+(isPhevMain?'⚡+⛽ Energía':'⚡ Electricidad')+' '+r.ev.name+'/mes</span><div class="result-value ev-color">$'+p.energia.toFixed(2)+'</div></div>';
+    html+='<div class="result-card"><span class="result-label">'+(isPhevMain?'⚡+⛽ Energía':' Electricidad')+' '+r.ev.name+'/mes</span><div class="result-value ev-color">$'+p.energia.toFixed(2)+'</div></div>';
     html+='<div class="result-card"><span class="result-label">⛽ Gasolina MDC/mes</span><div class="result-value mdc-color">$'+m.energia.toFixed(2)+'</div></div>';
     html+='<div class="result-card"><span class="result-label">💰 Ahorro/mes</span><div class="result-value" style="color:var(--positive)">$'+Math.max(0,r.ahorroEnergia).toFixed(2)+'</div></div>';
     html+='</div>';
@@ -927,7 +925,7 @@ function renderResults(){
         html+='<div class="result-row"><div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:#F59E0B">'+(!isFinite(c.roiAbsDias)?'∞':Math.round(c.roiAbsDias))+'</div></div>';
         html+='<div class="result-card"><span class="result-label">En meses</span><div class="result-value" style="color:#F59E0B">'+formatROI(c.roiAbsMeses)+'</div></div></div></div>';
         html+='<div style="background:var(--input-bg);border-radius:10px;padding:12px;margin:10px 0;border:1px solid var(--border)"><p style="font-size:0.85rem;margin-bottom:8px"><strong> Ahorro mensual vs MDC ($'+c.ahorroMensual.toFixed(0)+'/mes):</strong></p>';
-        html+='<div class="result-row"><div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:var(--ev)">'+(!isFinite(c.roiVsDias)?'∞':Math.round(c.roiVsDias))+'</div></div>';
+        html+='<div class="result-row"><div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:var(--ev)">'+(!isFinite(c.roiVsDias)?'':Math.round(c.roiVsDias))+'</div></div>';
         html+='<div class="result-card"><span class="result-label">En meses</span><div class="result-value" style="color:var(--ev)">'+formatROI(c.roiVsMeses)+'</div></div></div></div></div>';
         html+='<div class="section-block proj-section"><h4>📈 Proyecciones comerciales (1, 5 y 10 años)</h4><table class="proy-table"><tr><th>Período</th><th style="color:var(--ev)">Ahorro acumulado vs MDC</th></tr>';
         for(let i=0;i<c.proyComm.length;i++){
@@ -974,13 +972,13 @@ function renderCharts(r){
     if(c1){
         if(state.chartInstances.c1)state.chartInstances.c1.destroy();
         const labels=[r.ev.name,'MDC'],data=[r.principal.energia,r.mdcCalc.energia],colors=[r.principalType==='phev'?'#4A90E2':'#00C896','#E57373'];
-        state.chartInstances.c1=new Chart(c1,{type:'bar',data:{labels:labels,datasets:[{label:'Energía ($/mes)',data:data,backgroundColor:colors,borderRadius:10,barThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'⛽ vs  Costo mensual ENERGÍA',color:textColor,font:{size:14}}},scales:{y:{ticks:{color:text2Color,callback:function(v){return'$'+v.toFixed(0);}},grid:{color:borderColor}},x:{ticks:{color:textColor}}}}});
+        state.chartInstances.c1=new Chart(c1,{type:'bar',data:{labels:labels,datasets:[{label:'Energía ($/mes)',data:data,backgroundColor:colors,borderRadius:10,barThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'⛽ vs ⚡ Costo mensual ENERGÍA',color:textColor,font:{size:14}}},scales:{y:{ticks:{color:text2Color,callback:function(v){return'$'+v.toFixed(0);}},grid:{color:borderColor}},x:{ticks:{color:textColor}}}}});
     }
     const c2=$('#chartTotal');
     if(c2){
         if(state.chartInstances.c2)state.chartInstances.c2.destroy();
         const labels=[r.ev.name,'MDC'],data=[r.principal.total,r.mdcCalc.total],colors=[r.principalType==='phev'?'#4A90E2':'#00C896','#E57373'];
-        state.chartInstances.c2=new Chart(c2,{type:'bar',data:{labels:labels,datasets:[{label:'Total ($/mes)',data:data,backgroundColor:colors,borderRadius:10,barThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'💰 Costo mensual TOTAL',color:textColor,font:{size:14}}},scales:{y:{ticks:{color:text2Color,callback:function(v){return'$'+v.toFixed(0);}},grid:{color:borderColor}},x:{ticks:{color:textColor}}}}});
+        state.chartInstances.c2=new Chart(c2,{type:'bar',data:{labels:labels,datasets:[{label:'Total ($/mes)',data:data,backgroundColor:colors,borderRadius:10,barThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:' Costo mensual TOTAL',color:textColor,font:{size:14}}},scales:{y:{ticks:{color:text2Color,callback:function(v){return'$'+v.toFixed(0);}},grid:{color:borderColor}},x:{ticks:{color:textColor}}}}});
     }
     const c3=$('#chartProyecciones');
     if(c3){
@@ -1004,97 +1002,128 @@ function animateResults(){
     }
 }
 
+// ===== IMAGEN RESUMEN - LAYOUT UNA SOLA COLUMNA CON LETRAS GRANDES =====
 function generateSummaryImage(){
     const r=state.results;if(!r)return null;
     const S=2080;
     const canvas=document.createElement('canvas');
     canvas.width=S;canvas.height=S;
     const ctx=canvas.getContext('2d');
-    const pad=60;
+    const pad=80;
     const W=S-pad*2;
-    const colW=(W-40)/2;
+
+    // Fondo
     const bgGrad=ctx.createLinearGradient(0,0,S,S);
     bgGrad.addColorStop(0,'#0a0f1c');bgGrad.addColorStop(0.5,'#0f1729');bgGrad.addColorStop(1,'#0a0f1c');
     ctx.fillStyle=bgGrad;ctx.fillRect(0,0,S,S);
+
+    // Círculos decorativos
     ctx.globalAlpha=0.04;
     ctx.fillStyle='#00C896';ctx.beginPath();ctx.arc(250,350,450,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#4A90E2';ctx.beginPath();ctx.arc(1830,1650,400,0,Math.PI*2);ctx.fill();
     ctx.globalAlpha=1;
+
+    // HEADER
     const hdrGrad=ctx.createLinearGradient(0,0,S,0);
     hdrGrad.addColorStop(0,'#00C896');hdrGrad.addColorStop(0.5,'#4A90E2');hdrGrad.addColorStop(1,'#6366F1');
-    ctx.fillStyle=hdrGrad;ctx.beginPath();ctx.roundRect(pad,pad,W,200,28);ctx.fill();
-    ctx.fillStyle='#000';ctx.font='800 72px Inter, sans-serif';ctx.textAlign='center';
-    ctx.fillText(' SIMULADOR EV',S/2,pad+90);
-    ctx.font='600 50px Inter, sans-serif';
-    ctx.fillText(r.ev.name+'  vs  MDC',S/2,pad+150);
-    ctx.font='400 38px Inter, sans-serif';
-    ctx.fillText(r.km.toLocaleString()+' km/mes · '+state.cityPct+'% ciudad · '+state.region,S/2,pad+190);
-    let y=pad+240;
-    const blockH=380;
-    const gap=30;
-    const colGap=30;
-    const leftX=pad;
-    const rightX=pad+colW+colGap;
-    function drawCard(x,y,w,h,title,accent,lines){
-        ctx.fillStyle='#131b2e';ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.fill();
-        ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.stroke();
-        ctx.fillStyle=accent;ctx.globalAlpha=0.15;ctx.beginPath();ctx.roundRect(x,y,w,80,[22,22,0,0]);ctx.fill();ctx.globalAlpha=1;
-        ctx.fillStyle='#F1F5F9';ctx.font='700 48px Inter, sans-serif';ctx.textAlign='left';
-        ctx.fillText(title,x+30,y+55);
-        ctx.font='500 44px Inter, sans-serif';
+    ctx.fillStyle=hdrGrad;
+    ctx.beginPath();ctx.roundRect(pad,pad,W,220,28);ctx.fill();
+
+    ctx.fillStyle='#000';ctx.font='800 80px Inter, sans-serif';ctx.textAlign='center';
+    ctx.fillText('⚡ SIMULADOR EV',S/2,pad+100);
+    ctx.font='600 56px Inter, sans-serif';
+    ctx.fillText(r.ev.name+'  vs  MDC',S/2,pad+165);
+    ctx.font='400 42px Inter, sans-serif';
+    ctx.fillText(r.km.toLocaleString()+' km/mes · '+state.cityPct+'% ciudad · '+state.region,S/2,pad+210);
+
+    // BLOQUES EN UNA SOLA COLUMNA
+    let y=pad+260;
+    const blockH=300;
+    const gap=28;
+
+    function drawFullBlock(title,accent,lines){
+        if(y+blockH>S-280)return;
+        // Fondo del bloque
+        ctx.fillStyle='#131b2e';
+        ctx.beginPath();ctx.roundRect(pad,y,W,blockH,24);ctx.fill();
+        // Borde izquierdo grueso de color
+        ctx.fillStyle=accent;
+        ctx.beginPath();ctx.roundRect(pad,y,12,blockH,[24,0,0,24]);ctx.fill();
+        // Línea superior decorativa
+        ctx.fillStyle=accent;ctx.globalAlpha=0.2;
+        ctx.fillRect(pad,y,W,6);
+        ctx.globalAlpha=1;
+        // Título
+        ctx.fillStyle=accent;ctx.font='800 56px Inter, sans-serif';ctx.textAlign='left';
+        ctx.fillText(title,pad+40,y+75);
+        // Líneas de contenido
+        ctx.font='600 48px Inter, sans-serif';
         for(let i=0;i<lines.length;i++){
             ctx.fillStyle=lines[i].color||'#F1F5F9';
-            ctx.fillText(lines[i].text,x+30,y+130+i*60);
+            ctx.fillText(lines[i].text,pad+40,y+145+i*55);
         }
+        y+=blockH+gap;
     }
-    drawCard(leftX,y,colW,blockH,'⛽ vs ⚡ AHORRO ENERGÍA','#00C896',[
+
+    // BLOQUE 1: Ahorro Energía
+    drawFullBlock('⛽ vs  AHORRO MENSUAL ENERGÍA','#00C896',[
         {text:r.ev.name+': $'+r.principal.energia.toFixed(2)+'/mes',color:'#00C896'},
         {text:'MDC: $'+r.mdcCalc.energia.toFixed(2)+'/mes',color:'#E57373'},
         {text:'Ahorro: $'+Math.max(0,r.ahorroEnergia).toFixed(2)+'/mes',color:'#00C896'}
     ]);
-    drawCard(rightX,y,colW,blockH,'💰 AHORRO TOTAL','#F59E0B',[
+
+    // BLOQUE 2: Ahorro Total
+    drawFullBlock('💰 AHORRO TOTAL (energía + mantenimiento)','#F59E0B',[
         {text:r.ev.name+': $'+r.principal.total.toFixed(2)+'/mes',color:'#00C896'},
         {text:'MDC: $'+r.mdcCalc.total.toFixed(2)+'/mes',color:'#E57373'},
-        {text:'Ahorro: $'+Math.max(0,r.ahorroTotal).toFixed(2)+'/mes',color:'#F59E0B'}
+        {text:'Ahorro mensual: $'+Math.max(0,r.ahorroTotal).toFixed(2),color:'#F59E0B'}
     ]);
-    y+=blockH+gap;
-    drawCard(leftX,y,colW,blockH,'📈 PROYECCIONES','#6366F1',[
+
+    // BLOQUE 3: Proyecciones
+    drawFullBlock('📈 PROYECCIONES DE AHORRO','#6366F1',[
         {text:'1 año: $'+Math.round(r.proyData[0].total).toLocaleString(),color:'#F1F5F9'},
         {text:'5 años: $'+Math.round(r.proyData[1].total).toLocaleString(),color:'#F1F5F9'},
         {text:'10 años: $'+Math.round(r.proyData[2].total).toLocaleString(),color:'#00C896'}
     ]);
+
+    // BLOQUE 4: Comercial o Emisiones
     if(state.modC&&r.comm){
         const c=r.comm;
-        drawCard(rightX,y,colW,blockH,'🚕 COMERCIAL','#8B5CF6',[
+        drawFullBlock('🚕 TRANSPORTE COMERCIAL','#8B5CF6',[
             {text:'Utilidad neta: $'+c.principalUtilidadMensual.toFixed(0)+'/mes',color:'#00C896'},
             {text:'Recuperación: '+c.roiAbs,color:'#F59E0B'},
-            {text:'('+(!isFinite(c.roiAbsDias)?'':Math.round(c.roiAbsDias))+' días)',color:'#F59E0B'}
+            {text:'('+(!isFinite(c.roiAbsDias)?'∞':Math.round(c.roiAbsDias))+' días)',color:'#F59E0B'}
         ]);
     } else if(state.modF&&r.emis){
         const arbolesEV=Math.round(r.emis.principal*12/22);
         const arbolesMDC=Math.round(r.emis.mdc*12/22);
         const arbolesSalvados=arbolesMDC-arbolesEV;
         const reduction=((1-r.emis.principal/r.emis.mdc)*100).toFixed(0);
-        drawCard(rightX,y,colW,blockH,'🌍 EMISIONES CO₂','#22C55E',[
+        drawFullBlock('🌍 EMISIONES CO₂','#22C55E',[
             {text:r.ev.name+': '+r.emis.principal.toFixed(1)+' kg/mes',color:'#00C896'},
             {text:'MDC: '+r.emis.mdc.toFixed(1)+' kg/mes',color:'#E57373'},
-            {text:'↓ '+reduction+'% · 🌳 '+arbolesSalvados+' árboles/año',color:'#22C55E'}
+            {text:'↓ '+reduction+'% · 🌳 '+arbolesSalvados+' árboles/año salvados',color:'#22C55E'}
         ]);
     } else if(state.modD&&r.aut){
-        drawCard(rightX,y,colW,blockH,' AUTONOMÍA REAL','#00C896',[
-            {text:r.ev.name+': '+Math.round(r.aut.principal)+' km',color:'#00C896'},
+        drawFullBlock('🔋 AUTONOMÍA REAL','#00C896',[
+            {text:r.ev.name+': '+Math.round(r.aut.principal)+' km reales',color:'#00C896'},
             {text:'(batería '+r.ev.battery+' kWh)',color:'#94A3B8'}
         ]);
     }
-    const footerY=S-240;
+
+    // FOOTER
+    const footerY=S-260;
     const footerGrad=ctx.createLinearGradient(0,0,S,0);
     footerGrad.addColorStop(0,'#1E293B');footerGrad.addColorStop(1,'#334155');
-    ctx.fillStyle=footerGrad;ctx.beginPath();ctx.roundRect(pad,footerY,W,180,28);ctx.fill();
-    ctx.strokeStyle='#00C896';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(pad+40,footerY+28);ctx.lineTo(pad+W-40,footerY+28);ctx.stroke();
-    ctx.fillStyle='#F1F5F9';ctx.font='700 60px Inter, sans-serif';ctx.textAlign='center';
-    ctx.fillText('Jonathan Ortiz',S/2,footerY+100);
-    ctx.fillStyle='#00C896';ctx.font='600 58px Inter, sans-serif';
-    ctx.fillText('097918972',S/2,footerY+165);
+    ctx.fillStyle=footerGrad;
+    ctx.beginPath();ctx.roundRect(pad,footerY,W,200,28);ctx.fill();
+    ctx.strokeStyle='#00C896';ctx.lineWidth=4;
+    ctx.beginPath();ctx.moveTo(pad+40,footerY+30);ctx.lineTo(pad+W-40,footerY+30);ctx.stroke();
+    ctx.fillStyle='#F1F5F9';ctx.font='800 68px Inter, sans-serif';ctx.textAlign='center';
+    ctx.fillText('Jonathan Ortiz',S/2,footerY+105);
+    ctx.fillStyle='#00C896';ctx.font='700 64px Inter, sans-serif';
+    ctx.fillText('097918972',S/2,footerY+175);
+
     return canvas;
 }
 
@@ -1118,6 +1147,8 @@ function downloadImage(){
     a.href=img.toDataURL('image/png');
     a.click();
 }
+
+// ===== MENSAJE WHATSAPP CON FORMATO MEJORADO =====
 function shareWhatsApp(){
     const ph=$('#sharePhone').value.replace(/\s/g,'');
     const pre=$('#sharePrefix').value.replace(/[^+\d]/g,'');
@@ -1125,13 +1156,18 @@ function shareWhatsApp(){
     if(!ph){alert('Ingresa el número de teléfono.');return;}
     const r=state.results;
     const saludo=name?'¡Hola '+name+'!':'¡Hola!';
-    let msg=saludo+' Soy Jonathan Ortiz, Asesor comercial de Geely. Te comparto tu simulación:\n\n';
-    msg+='⚡ Ahorro mensual: $'+Math.max(0,r.ahorroTotal).toFixed(2)+'\n';
-    msg+='📈 Ahorro a 1 año: $'+Math.round(r.proyData[0].total).toLocaleString()+'\n';
-    msg+='📈 Ahorro a 5 años: $'+Math.round(r.proyData[1].total).toLocaleString()+'\n\n';
-    msg+='Cualquier inquietud estoy al pendiente. ⚡';
+    const ahorroMensual=Math.max(0,r.ahorroTotal);
+    const ahorroAnual=ahorroMensual*12;
+    const ahorro5Anios=Math.round(r.proyData[1].total);
+    
+    let msg=saludo+' Soy *Jonathan Ortiz*, asesor comercial de Geely. Te comparto tu simulación:\n\n';
+    msg+='*⚡ Ahorro mensual:* $'+ahorroMensual.toFixed(2)+'\n';
+    msg+='*📅 Ahorro anual:* $'+ahorroAnual.toFixed(2)+'\n';
+    msg+='*📈 Ahorro en 5 años:* $'+ahorro5Anios.toLocaleString()+'\n\n';
+    msg+='Cualquier inquietud estoy al pendiente. ✌️';
     window.open('https://wa.me/'+pre.replace('+','')+ph+'?text='+encodeURIComponent(msg),'_blank');
 }
+
 function openContactModal(){
     const ev=getEVData();
     const tipoVeh=ev.type==='phev'?'híbrido enchufable':'eléctrico';
