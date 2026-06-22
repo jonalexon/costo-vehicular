@@ -1,2022 +1,1302 @@
-$ cat > /workspace/index.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Vehículos - Jonathan Ortiz</title>
-    <!-- Tipografía Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <style>
-        :root {
-            --color-bev: #00C896;
-            --color-phev: #4A90E2;
-            --color-ice: #E57373;
-            --bg-color: #0F172A;
-            --card-bg: #1E293B;
-            --text-color: #F1F5F9;
-            --text-muted: #94A3B8;
-            --accent: #38BDF8;
-            --border: #334155;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding-bottom: 4rem;
-        }
-        /* Layout & Containers */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-        .header { text-align: center; padding: 2rem 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
-        .header h1 { font-weight: 800; font-size: 1.8rem; color: var(--accent); }
-        .header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; }
-        /* Wizard Progress */
-        .wizard-progress { display: flex; justify-content: space-between; margin-bottom: 2rem; position: relative; }
-        .wizard-progress::before {
-            content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px;
-            background: var(--border); z-index: 0; transform: translateY(-50%);
-        }
-        .step {
-            background: var(--card-bg); border: 1px solid var(--border);
-            padding: 0.5rem 1rem; border-radius: 20px; z-index: 1;
-            font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
-            transition: all 0.3s ease;
-        }
-        .step.active { background: var(--accent); color: var(--bg-color); border-color: var(--accent); }
-        .step.completed { background: var(--color-bev); color: var(--bg-color); border-color: var(--color-bev); }
-        /* Cards & Sections */
-        .card {
-            background: var(--card-bg); border-radius: 12px; padding: 1.5rem;
-            margin-bottom: 1.5rem; border: 1px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; }
-        
-        /* Forms & Inputs */
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted); }
-        select, input[type="number"], input[type="text"] {
-            width: 100%; padding: 0.75rem; border-radius: 8px;
-            background: var(--bg-color); border: 1px solid var(--border);
-            color: var(--text-color); font-family: inherit; font-size: 0.95rem;
-        }
-        select:focus, input:focus { outline: none; border-color: var(--accent); }
-        /* Sliders */
-        .slider-container { margin: 1.5rem 0; }
-        .slider-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-        input[type="range"] {
-            width: 100%; height: 6px; background: var(--border); border-radius: 5px;
-            appearance: none; outline: none;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            appearance: none; width: 20px; height: 20px; border-radius: 50%;
-            background: var(--accent); cursor: pointer; transition: transform 0.1s;
-        }
-        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
-        .slider-value { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
-        /* Toggles */
-        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
-        .toggle-switch {
-            position: relative; display: inline-block; width: 50px; height: 26px;
-        }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--bg-color); transition: .4s; border-radius: 34px; border: 1px solid var(--border);
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
-            background-color: white; transition: .4s; border-radius: 50%;
-        }
-        input:checked + .slider { background-color: var(--accent); border-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(24px); }
-        /* Buttons */
-        .btn {
-            display: inline-block; padding: 0.8rem 1.5rem; border-radius: 8px;
-            font-weight: 600; text-decoration: none; cursor: pointer; border: none;
-            transition: all 0.2s; font-size: 1rem; text-align: center;
-        }
-        .btn-primary { background: var(--accent); color: var(--bg-color); width: 100%; }
-        .btn-primary:hover { filter: brightness(1.1); }
-        .btn-success { background: var(--color-bev); color: var(--bg-color); }
-        .btn-whatsapp { background: #25D366; color: white; }
-        
-        .btn-loading { opacity: 0.7; pointer-events: none; }
-        .spinner {
-            display: inline-block; width: 1rem; height: 1rem; border: 2px solid rgba(0,0,0,0.3);
-            border-radius: 50%; border-top-color: currentColor; animation: spin 0.8s linear infinite;
-            margin-right: 0.5rem; vertical-align: middle;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        /* Results Area */
-        #results-area { display: none; animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-        .stat-value { font-size: 2rem; font-weight: 800; color: var(--accent); margin: 0.5rem 0; }
-        .stat-label { font-size: 0.9rem; color: var(--text-muted); }
-        .stat-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
-        .chart-container { position: relative; height: 300px; width: 100%; margin-top: 1rem; }
-        
-        .info-panel {
-            background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--accent);
-            padding: 1rem; margin: 1rem 0; border-radius: 4px; font-size: 0.9rem;
-        }
-        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; }
-        @media (max-width: 600px) { .action-buttons { grid-template-columns: 1fr; } }
-        /* Modal */
-        .modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center;
-        }
-        .modal-content {
-            background: var(--card-bg); padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px;
-            position: relative; border: 1px solid var(--border);
-        }
-        .close-modal { position: absolute; top: 1rem; right: 1.5rem; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
-        #preview-canvas { width: 100%; height: auto; margin: 1rem 0; border-radius: 8px; display: none; }
-        .hidden { display: none; }
-        .text-bev { color: var(--color-bev); }
-        .text-phev { color: var(--color-phev); }
-        .text-ice { color: var(--color-ice); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador EV vs Combustión — Ecuador 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{--ev:#00C896;--phev:#4A90E2;--ice:#E57373;--positive:#00C896;--bg:#0a0f1c;--card:#131b2e;--card2:#182032;--text:#F1F5F9;--text2:#94A3B8;--border:#263148;--radius:16px;--glow:0 0 20px rgba(0,200,150,0.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;background-image:radial-gradient(ellipse at 30% 20%,rgba(0,200,150,0.03) 0%,transparent 60%),radial-gradient(ellipse at 70% 70%,rgba(74,144,226,0.04) 0%,transparent 60%)}
+.container{max-width:920px;margin:0 auto;padding:12px 14px 50px}
+header{text-align:center;padding:24px 0 6px}
+header h1{font-size:clamp(1.4rem,3.5vw,1.9rem);font-weight:800;letter-spacing:-0.4px;background:linear-gradient(135deg,#00C896,#4A90E2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+header .sub{font-size:0.85rem;color:var(--text2);margin-top:2px}
+.step-indicator{display:flex;gap:8px;justify-content:center;margin:18px 0 22px;flex-wrap:wrap}
+.step-dot{padding:8px 16px;border-radius:30px;font-size:0.75rem;font-weight:600;background:var(--card);color:var(--text2);cursor:pointer;border:1.5px solid transparent;transition:all 0.3s;white-space:nowrap}
+.step-dot.active{background:#00C89620;border-color:var(--ev);color:var(--ev);box-shadow:var(--glow)}
+.step-dot.done{background:#0d7a5f30;color:#0d7a5f;border-color:#0d7a5f}
+.step{display:none;animation:fadeSlide 0.4s ease}
+.step.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card);border-radius:var(--radius);padding:20px 18px;margin-bottom:14px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.2);transition:box-shadow 0.3s}
+.card:hover{box-shadow:0 4px 24px rgba(0,0,0,0.35)}
+.card h3{font-size:1.05rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h4{font-size:0.9rem;font-weight:600;color:var(--text2);margin:10px 0 6px}
+label{display:block;font-size:0.8rem;font-weight:500;color:var(--text2);margin-bottom:4px;margin-top:10px}
+select,input[type="number"],input[type="text"],input[type="tel"]{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);background:#0c1422;color:var(--text);font-size:0.88rem;font-family:'Inter',sans-serif;transition:all 0.25s;-moz-appearance:textfield;appearance:textfield}
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3px rgba(0,200,150,0.06)}
+.slider-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.slider-row input[type="range"]{flex:1;min-width:120px;-webkit-appearance:none;height:8px;border-radius:10px;background:var(--border);outline:none;cursor:pointer}
+.slider-row input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--ev);cursor:pointer;border:3px solid #0a0f1c;box-shadow:0 0 12px rgba(0,200,150,0.5)}
+.slider-row input[type="number"]{width:72px;text-align:center;flex-shrink:0}
+.context-text{font-size:0.73rem;color:var(--text2);margin-top:3px;min-height:18px}
+.toggle-wrap{display:flex;align-items:center;gap:10px;margin:8px 0;cursor:pointer;user-select:none}
+.toggle-wrap input{display:none}
+.toggle-switch{width:44px;height:26px;border-radius:30px;background:var(--border);position:relative;cursor:pointer;transition:background 0.3s;flex-shrink:0}
+.toggle-switch::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform 0.3s}
+.toggle-wrap input:checked+.toggle-switch{background:var(--ev)}
+.toggle-wrap input:checked+.toggle-switch::after{transform:translateX(18px)}
+.toggle-label{font-size:0.82rem;color:var(--text);font-weight:500}
+.btn{display:inline-block;padding:12px 22px;border-radius:30px;font-weight:700;font-size:0.88rem;cursor:pointer;border:none;transition:all 0.3s;font-family:'Inter',sans-serif;text-align:center}
+.btn-primary{background:var(--ev);color:#0a0f1c;width:100%;font-size:1rem;padding:14px;box-shadow:0 8px 28px rgba(0,200,150,0.25)}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;filter:none;transform:none}
+.btn-outline{background:transparent;border:2px solid var(--ev);color:var(--ev);width:100%;padding:12px;font-size:0.9rem}
+.btn-outline:hover{background:rgba(0,200,150,0.06)}
+.btn-wa{background:#25D366;color:#fff;width:100%;padding:14px;font-size:0.95rem}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn-row .btn{flex:1;min-width:130px}
+.result-value{font-size:1.5rem;font-weight:800;letter-spacing:-0.5px}
+.ev-color{color:var(--ev)}.ice-color{color:var(--ice)}.phev-color{color:var(--phev)}
+.result-label{font-size:0.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px}
+.result-row{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.result-card{flex:1;min-width:120px;background:var(--card2);border-radius:12px;padding:14px 12px;text-align:center;border:1px solid var(--border)}
+.chart-wrap{position:relative;width:100%;margin:10px 0;aspect-ratio:16/10;max-height:380px;background:var(--card2);border-radius:12px;padding:8px;border:1px solid var(--border)}
+.chart-wrap canvas{width:100%!important;height:100%!important}
+.panel-info{background:#0c1422;border-radius:10px;padding:12px;font-size:0.76rem;color:var(--text2);border:1px solid var(--border);margin:8px 0;line-height:1.6}
+.hidden{display:none!important}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.fuel-price-row{display:flex;gap:10px;flex-wrap:wrap}
+.fuel-price-row>div{flex:1;min-width:100px}
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.editable-section{background:#0c1422;border:1px solid var(--border);border-radius:12px;padding:14px;margin:10px 0}
+.editable-section h4{margin-top:0;color:var(--ev)}
+.charge-live{background:linear-gradient(135deg,rgba(0,200,150,0.08),rgba(74,144,226,0.08));border:1.5px solid var(--ev);border-radius:14px;padding:16px;margin-top:12px}
+.charge-live h4{color:var(--ev);margin-top:0;margin-bottom:10px;font-size:1rem}
+.charge-line{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--border);font-size:0.88rem;flex-wrap:wrap;gap:6px}
+.charge-line:last-child{border-bottom:none}
+.charge-line .cl-icon{font-weight:700}
+.charge-line .cl-cost{font-weight:700;font-size:1rem}
+.charge-line .cl-time{color:var(--text2);font-size:0.8rem}
+.charge-line.ev-line .cl-cost{color:var(--ev)}
+.charge-line.ice-line .cl-cost{color:#F59E0B}
+.charge-line.save-line{background:rgba(0,200,150,0.1);border-radius:8px;padding:10px;margin-top:6px;border:1px solid var(--ev)}
+.charge-line.save-line .cl-cost{color:var(--ev);font-size:1.1rem}
+.section-block{background:var(--card2);border-radius:14px;padding:16px;margin:14px 0;border:1px solid var(--border)}
+.section-block h4{color:var(--ev);margin-top:0;margin-bottom:10px;font-size:1rem;display:flex;align-items:center;gap:8px}
+.section-block.ice-section h4{color:var(--ice)}
+.section-block.phev-section h4{color:var(--phev)}
+.section-block.proj-section h4{color:#F59E0B}
+.section-block.comm-section h4{color:#8B5CF6}
+.section-block.roi-section h4{color:#F59E0B}
+.proy-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:0.85rem}
+.proy-table th,.proy-table td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--border)}
+.proy-table th{color:var(--text2);font-weight:600;font-size:0.75rem;text-transform:uppercase}
+.proy-table td.positive{color:var(--ev);font-weight:700}
+.proy-table td.negative{color:var(--ice);font-weight:700}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--card);border-radius:var(--radius);padding:20px;max-width:540px;width:100%;border:1px solid var(--border);max-height:92vh;overflow-y:auto}
+.modal h3{margin-bottom:12px}
+@media(max-width:500px){.card{padding:14px 10px}.result-card{min-width:90px;padding:10px 6px}.result-value{font-size:1.2rem}.btn{font-size:0.8rem;padding:10px 14px}.step-dot{padding:6px 10px;font-size:0.65rem}.fields-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <div class="container">
-    <header class="header">
-        <h1>⚡ Simulador de Vehículos</h1>
-        <p>Comparativa profesional: Eléctrico vs Híbrido vs Combustión</p>
-    </header>
-    <!-- Wizard Progress -->
-    <div class="wizard-progress">
-        <div class="step active" id="step-indicator-1">1. Vehículo</div>
-        <div class="step" id="step-indicator-2">2. Uso</div>
-        <div class="step" id="step-indicator-3">3. Módulos</div>
-        <div class="step" id="step-indicator-4">4. Resultados</div>
-    </div>
-    <!-- STEP 1: VEHICLE SELECTION -->
-    <div id="step-1" class="card wizard-step">
-        <div class="section-title">🚗 Selección de Vehículo</div>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Modelo a Comparar (Geely)</label>
-                <select id="bev-model" onchange="updateICEPreset()">
-                    <option value="ex2">Geely EX2 (Compacto)</option>
-                    <option value="ex5">Geely EX5 (SUV Mediano)</option>
-                    <option value="starray">Geely Starray EM-i (Híbrido)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Vehículo de Combustión Referencia</label>
-                <select id="ice-segment" onchange="updateICEManual()">
-                    <option value="compacto">Compacto ($19k, 10km/L)</option>
-                    <option value="sedan">Sedán Mediano ($24k, 9km/L)</option>
-                    <option value="suv-med" selected>SUV Mediano ($30k, 8km/L)</option>
-                    <option value="suv-grande">SUV Grande ($41k, 7km/L)</option>
-                    <option value="pickup">Pickup / 4x4 ($40k, 7km/L)</option>
-                    <option value="van">Van / Furgoneta ($28.5k, 8km/L)</option>
-                    <option value="custom">Personalizado...</option>
-                </select>
-            </div>
-        </div>
-        <div id="ice-custom-fields" class="form-grid hidden" style="margin-top:1rem;">
-            <div class="form-group"><label>Precio ($)</label><input type="number" id="ice-price-custom" value="30000"></div>
-            <div class="form-group"><label>Rend. Ciudad (km/L)</label><input type="number" id="ice-city-custom" value="8" step="0.1"></div>
-            <div class="form-group"><label>Rend. Carretera (km/L)</label><input type="number" id="ice-hwy-custom" value="11.5" step="0.1"></div>
-            <div class="form-group"><label>Mant. cada 5k km ($)</label><input type="number" id="ice-maint-custom" value="105"></div>
-        </div>
-        <div style="margin-top:1rem; text-align:right;">
-            <button class="btn btn-primary" onclick="nextStep(2)">Siguiente: Parámetros ➡️</button>
-        </div>
-    </div>
-    <!-- STEP 2: USAGE PARAMETERS -->
-    <div id="step-2" class="card wizard-step hidden">
-        <div class="section-title">🛣️ Parámetros de Uso</div>
-        
-        <div class="slider-container">
-            <div class="slider-labels">
-                <span>Kilómetros Mensuales</span>
-                <span class="slider-value"><span id="km-display">1500</span> km/mes</span>
-            </div>
-            <input type="range" id="km-monthly" min="500" max="5000" step="50" value="1500" oninput="syncKM('range')">
-            <div class="slider-labels" style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-muted);">
-                <span id="km-daily-display">~50 km/día</span>
-                <span id="km-yearly-display">~18,000 km/año</span>
-            </div>
-        </div>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Región Geográfica</label>
-                <select id="geo-region" onchange="updateGeoPanel()">
-                    <option value="costa">Costa</option>
-                    <option value="sierra">Sierra</option>
-                    <option value="oriente">Oriente / Amazonía</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Tráfico Predominante</label>
-                <select id="traffic-level">
-                    <option value="fluido">Fluido</option>
-                    <option value="moderado" selected>Moderado</option>
-                    <option value="denso">Denso</option>
-                </select>
-            </div>
-        </div>
-        <div id="geo-panel" class="info-panel">
-            Factor aplicado: 🌴 Costa (Sin cambios en consumo)
-        </div>
-        <div class="form-grid" style="margin-top:1rem;">
-            <div class="form-group">
-                <label>% Ciudad</label>
-                <input type="number" id="pct-city" value="60" min="0" max="100">
-            </div>
-            <div class="form-group">
-                <label>% Carretera</label>
-                <input type="number" id="pct-hwy" value="40" min="0" max="100">
-            </div>
-            <div class="form-group">
-                <label>Aire Acondicionado</label>
-                <select id="ac-usage">
-                    <option value="0">Sin uso</option>
-                    <option value="5">Intermitente (+5%)</option>
-                    <option value="12">Constante (+12%)</option>
-                </select>
-            </div>
-        </div>
-        <div style="margin-top:1rem; display:flex; gap:1rem;">
-            <button class="btn" style="background:var(--border); color:var(--text-color);" onclick="nextStep(1)">⬅️ Atrás</button>
-            <button class="btn btn-primary" onclick="nextStep(3)">Siguiente: Módulos ➡️</button>
-        </div>
-    </div>
-    <!-- STEP 3: MODULES -->
-    <div id="step-3" class="card wizard-step hidden">
-        <div class="section-title">⚙️ Módulos Opcionales</div>
-        
-        <div class="toggle-row">
-            <span>Incluir Híbrido Enchufable (PHEV)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-phev" onchange="togglePHEVInputs()">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div id="phev-slider-container" class="slider-container hidden" style="background:rgba(74,144,226,0.1); padding:1rem; border-radius:8px; margin-top:0.5rem;">
-            <label style="color:var(--color-phev)">¿Con qué frecuencia usas el modo eléctrico?</label>
-            <div class="slider-labels">
-                <span>0% (Solo Gasolina)</span>
-                <span class="slider-value"><span id="phev-pct-display">80</span>%</span>
-                <span>100% (Solo Eléctrico)</span>
-            </div>
-            <input type="range" id="phev-electric-pct" min="0" max="100" value="80" oninput="document.getElementById('phev-pct-display').innerText = this.value">
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.5rem;">*Si los km eléctricos superan la autonomía de batería (105km), el simulador ajusta automáticamente.</p>
-        </div>
-        <div class="toggle-row">
-            <span>Calculadora de Carga</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-charge" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-row">
-            <span>Transporte Comercial (Apps/Taxi)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-commercial" onchange="toggleCommercialInputs()">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div id="commercial-inputs" class="hidden" style="margin-top:1rem; padding:1rem; background:rgba(0,0,0,0.2); border-radius:8px;">
-            <div class="form-grid">
-                <div class="form-group"><label>Distancia por carrera (km)</label><input type="number" id="comm-dist" value="3"></div>
-                <div class="form-group"><label>Tarifa por carrera ($)</label><input type="number" id="comm-fare" value="2.00" step="0.10"></div>
-                <div class="form-group"><label>Carreras por día</label><input type="number" id="comm-trips" value="15"></div>
-                <div class="form-group"><label>Días laborables/mes</label><input type="number" id="comm-days" value="25"></div>
-                <div class="form-group"><label>Comisión App (%)</label><input type="number" id="comm-commission" value="0"></div>
-                <div class="form-group">
-                    <label>¿Incluye propinas?</label>
-                    <select id="comm-tips-toggle" onchange="toggleTipsInput()">
-                        <option value="no">No</option>
-                        <option value="yes">Sí</option>
-                    </select>
-                </div>
-                <div class="form-group" id="comm-tips-field" style="visibility:hidden;">
-                    <label>Propina promedio/día ($)</label>
-                    <input type="number" id="comm-tips-amount" value="1.00" step="0.50">
-                </div>
-            </div>
-        </div>
-        <div class="toggle-row">
-            <span>Proyecciones y ROI (1-10 años)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-roi" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-row">
-            <span>Emisiones CO₂</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-co2" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div style="margin-top:1rem; display:flex; gap:1rem;">
-            <button class="btn" style="background:var(--border); color:var(--text-color);" onclick="nextStep(2)">⬅️ Atrás</button>
-            <button class="btn btn-primary" id="btn-calculate" onclick="calculateAll()">🚀 Calcular Comparativa</button>
-        </div>
-    </div>
-    <!-- STEP 4: RESULTS -->
-    <div id="step-4" class="wizard-step hidden">
-        <div id="results-area" style="display:block;">
-            
-            <!-- Summary Cards -->
-            <div class="result-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Costo Mensual BEV</div>
-                    <div class="stat-value text-bev" id="res-bev-cost">$---</div>
-                    <div class="stat-sub" id="res-bev-detail">Energía + Mant.</div>
-                </div>
-                <div class="stat-card" id="card-phev-summary" style="display:none;">
-                    <div class="stat-label">Costo Mensual PHEV</div>
-                    <div class="stat-value text-phev" id="res-phev-cost">$---</div>
-                    <div class="stat-sub" id="res-phev-detail">Mixto</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Costo Mensual ICE</div>
-                    <div class="stat-value text-ice" id="res-ice-cost">$---</div>
-                    <div class="stat-sub" id="res-ice-detail">Combustible + Mant.</div>
-                </div>
-            </div>
-            <!-- Charts Row 1 -->
-            <div class="card">
-                <div class="section-title">📊 Comparativa de Costos Mensuales</div>
-                <div class="chart-container">
-                    <canvas id="chart-monthly"></canvas>
-                </div>
-            </div>
-            <!-- Commercial Results -->
-            <div id="commercial-results" class="card hidden">
-                <div class="section-title">💰 Análisis Comercial</div>
-                <div class="result-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Utilidad/Carrera (BEV)</div>
-                        <div class="stat-value text-bev" id="res-comm-profit-bev">$---</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Utilidad/Carrera (ICE)</div>
-                        <div class="stat-value text-ice" id="res-comm-profit-ice">$---</div>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="chart-commercial"></canvas>
-                </div>
-            </div>
-            <!-- ROI & Projections -->
-            <div id="roi-results" class="card hidden">
-                <div class="section-title">📈 Retorno de Inversión (ROI)</div>
-                <div class="info-panel" id="roi-text">Calculando...</div>
-                <div class="chart-container">
-                    <canvas id="chart-roi"></canvas>
-                </div>
-            </div>
-            <!-- CO2 Results -->
-            <div id="co2-results" class="card hidden">
-                <div class="section-title">🌱 Impacto Ambiental</div>
-                <div class="result-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">CO₂ BEV (kg/mes)</div>
-                        <div class="stat-value text-bev" id="res-co2-bev">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">CO₂ ICE (kg/mes)</div>
-                        <div class="stat-value text-ice" id="res-co2-ice">0</div>
-                    </div>
-                </div>
-                <p style="text-align:center; color:var(--text-muted); font-size:0.9rem;" id="res-co2-trees">Equivalente a X árboles plantados.</p>
-            </div>
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-success" onclick="openShareModal()">📤 Enviar Resumen</button>
-                <a href="https://wa.me/593979189728?text=Hola%20Jonathan,%20me%20interesa%20información%20sobre%20los%20vehículos%20Geely." target="_blank" class="btn btn-whatsapp">💬 Contactar a Jonathan (Geely)</a>
-            </div>
-            
-            <div style="text-align:center; margin-top:2rem; color:var(--text-muted); font-size:0.8rem;">
-                <p>Jonathan Ortiz | Asesor Comercial Geely | 097918972</p>
-                <p style="margin-top:0.5rem;">*Valores referenciales sujetos a cambios del mercado y políticas SRI.</p>
-            </div>
-        </div>
-    </div>
+<header>
+<h1>⚡ Simulador EV vs Combustión</h1>
+<p class="sub">Ecuador 2026 · Comparación real de costos</p>
+</header>
+<div class="step-indicator" id="stepIndicator">
+<span class="step-dot active" data-step="1">① Vehículo</span>
+<span class="step-dot" data-step="2">② Uso</span>
+<span class="step-dot" data-step="3">③ Módulos</span>
+<span class="step-dot" data-step="4">④ Resultados</span>
 </div>
-<!-- Share Modal -->
-<div id="share-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeShareModal()">&times;</span>
-        <h3 style="margin-bottom:1rem;">📤 Enviar al Prospecto</h3>
-        <div class="form-group">
-            <label>Número WhatsApp (sin +)</label>
-            <div style="display:flex; gap:0.5rem;">
-                <span style="padding:0.75rem; background:var(--bg-color); border:1px solid var(--border); border-radius:8px;">+593</span>
-                <input type="number" id="share-phone" placeholder="999999999">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Nombre (Opcional)</label>
-            <input type="text" id="share-name" placeholder="Ej. Carlos Pérez">
-        </div>
-        <canvas id="summary-canvas" width="2080" height="2080" style="display:none;"></canvas>
-        <img id="preview-canvas" alt="Vista previa del resumen">
-        <button class="btn btn-primary" onclick="downloadAndSend()">Descargar e Ir a WhatsApp</button>
-    </div>
+
+<!-- PASO 1 -->
+<div class="step active" id="step1">
+<div class="card">
+<h3>🚗 Selección de Vehículos</h3>
+<label for="evModel">Vehículo eléctrico / híbrido a analizar</label>
+<select id="evModel">
+<option value="ex2">Geely EX2 (Eléctrico)</option>
+<option value="ex5">Geely EX5 (Eléctrico)</option>
+<option value="starray">Starray EM-i (Híbrido Enchufable)</option>
+<option value="custom">✏️ Personalizado</option>
+</select>
+
+<div id="evDataPanel" class="editable-section">
+<h4>📋 Datos del vehículo (editables)</h4>
+<div class="fields-grid" id="evFieldsGrid"></div>
 </div>
+
+<div class="toggle-wrap" style="margin-top:12px">
+<input type="checkbox" id="includePHEV"><label class="toggle-switch" for="includePHEV"></label>
+<span class="toggle-label">Incluir también Starray EM-i en la comparación</span>
+</div>
+<div id="phevExtraFields" class="hidden">
+<div id="phevDataPanel" class="editable-section">
+<h4>🔵 Datos del PHEV (editables)</h4>
+<div class="fields-grid" id="phevFieldsGrid"></div>
+</div>
+<label for="phevChargeFreq" style="margin-top:8px">¿Con qué frecuencia usas modo eléctrico?</label>
+<select id="phevChargeFreq">
+<option value="100">Todos los días (100% eléctrico)</option>
+<option value="80" selected>Muy seguido (80%)</option>
+<option value="50">Cada dos días (50%)</option>
+<option value="20">Solo fines de semana (20%)</option>
+<option value="0">Casi nunca (0%)</option>
+</select>
+</div>
+
+<hr class="divider">
+<h4>🚙 Vehículo de Combustión de Referencia</h4>
+<label for="iceSegment">Segmento</label>
+<select id="iceSegment">
+<option value="compacto">Compacto</option>
+<option value="sedan">Sedán mediano</option>
+<option value="suv" selected>SUV mediano</option>
+<option value="suv_grande">SUV grande</option>
+<option value="pickup">Pickup / 4x4</option>
+<option value="van">Van / Furgoneta</option>
+<option value="custom">✏️ Personalizado</option>
+</select>
+<div class="fields-grid" id="iceFieldsGrid">
+<div><label>Rend. ciudad (km/L)</label><input type="number" id="iceCity" value="8" step="0.1"></div>
+<div><label>Rend. carretera (km/L)</label><input type="number" id="iceHwy" value="11.5" step="0.1"></div>
+<div><label>Cotización referencia ($)</label><input type="number" id="icePrice" value="30000" step="100"></div>
+<div><label>Mant. c/5000km ($)</label><input type="number" id="iceMaint" value="105" step="1"></div>
+<div><label>Año fabricación</label><input type="number" id="iceYear" value="2024" step="1"></div>
+</div>
+<label for="iceFuel" style="margin-top:8px">Tipo de combustible</label>
+<select id="iceFuel">
+<option value="extra" selected>Gasolina Extra</option>
+<option value="super">Gasolina Súper</option>
+<option value="diesel">Diésel</option>
+</select>
+
+<div class="editable-section" style="margin-top:14px">
+<h4>⛽ Precios de combustible (editables — $/galón)</h4>
+<div class="fuel-price-row">
+<div><label>Extra</label><input type="number" id="fuelPriceExtra" value="3.31" step="0.01"></div>
+<div><label>Súper</label><input type="number" id="fuelPriceSuper" value="5.70" step="0.01"></div>
+<div><label>Diésel</label><input type="number" id="fuelPriceDiesel" value="3.25" step="0.01"></div>
+</div>
+<h4 style="margin-top:12px">🔌 Tarifas eléctricas (editables — $/kWh)</h4>
+<div class="fuel-price-row">
+<div><label>Residencial</label><input type="number" id="tarifaResid" value="0.10" step="0.001"></div>
+<div><label>Semi-rápida AC</label><input type="number" id="tarifaSemi" value="0.25" step="0.001"></div>
+<div><label>Rápida DC</label><input type="number" id="tarifaRapida" value="0.35" step="0.001"></div>
+</div>
+<h4 style="margin-top:12px">⚡ Potencia de carga (editable — kW)</h4>
+<div class="fuel-price-row">
+<div><label>Residencial</label><input type="number" id="potResid" value="7" step="0.1"></div>
+<div><label>Semi-rápida AC</label><input type="number" id="potSemi" value="22" step="0.5"></div>
+<div><label>Rápida DC</label><input type="number" id="potRapida" value="60" step="1"></div>
+</div>
+<div class="fuel-price-row" style="margin-top:8px">
+<div><label>Cargo fijo mensual ($)</label><input type="number" id="cargoFijo" value="1.50" step="0.10"></div>
+<div><label>Inflación combustibles (%/año)</label><input type="number" id="inflacionComb" value="5" step="0.5"></div>
+<div><label>Inflación eléctrica (%/año)</label><input type="number" id="inflacionElec" value="2" step="0.5"></div>
+</div>
+</div>
+
+<button class="btn btn-primary" onclick="goToStep(2)" style="margin-top:16px">Siguiente →</button>
+</div>
+</div>
+
+<!-- PASO 2 -->
+<div class="step" id="step2">
+<div class="card">
+<h3>📐 Parámetros de Uso</h3>
+<label>Kilómetros al mes</label>
+<div class="slider-row"><input type="range" id="kmMesSlider" min="200" max="8000" value="1500" step="50"><input type="number" id="kmMesNum" value="1500" min="200" max="8000"></div>
+<div class="context-text" id="kmContext">~50 km/día · 18,000 km/año</div>
+<label>% Conducción en ciudad</label>
+<div class="slider-row"><input type="range" id="cityPctSlider" min="0" max="100" value="70"><input type="number" id="cityPctNum" value="70" min="0" max="100"></div>
+<div class="context-text" id="cityContext">70% ciudad · 30% carretera</div>
+<label for="region">Región geográfica</label>
+<select id="region">
+<option value="costa">🌊 Costa</option>
+<option value="sierra">⛰️ Sierra</option>
+<option value="oriente">🌿 Oriente / Amazonía</option>
+</select>
+<div class="panel-info" id="regionPanel">🌊 Costa: Condiciones de referencia. Sin ajustes adicionales.</div>
+<label for="traffic">Tráfico habitual</label>
+<select id="traffic">
+<option value="fluido">🟢 Fluido</option>
+<option value="moderado" selected>🟡 Moderado</option>
+<option value="denso">🔴 Denso</option>
+</select>
+<label for="acUse">Uso de aire acondicionado</label>
+<select id="acUse">
+<option value="sin_uso">Sin uso (0%)</option>
+<option value="intermitente" selected>Intermitente (+5%)</option>
+<option value="constante">Constante (+12%)</option>
+</select>
+
+<div class="charge-live" id="chargeLiveModule">
+<h4>🔌 Calculadora de carga en tiempo real</h4>
+<label>¿Qué porcentaje de batería quieres cargar?</label>
+<div class="slider-row">
+<input type="range" id="batteryPctSlider" min="5" max="100" value="50" step="5">
+<input type="number" id="batteryPctNum" value="50" min="5" max="100">
+</div>
+<div id="chargeLiveResult" style="margin-top:14px"></div>
+</div>
+
+<div class="btn-row">
+<button class="btn btn-outline" onclick="goToStep(1)">← Atrás</button>
+<button class="btn btn-primary" onclick="goToStep(3)">Siguiente →</button>
+</div>
+</div>
+</div>
+
+<!-- PASO 3 -->
+<div class="step" id="step3">
+<div class="card">
+<h3>⚙️ Módulos Opcionales</h3>
+<div class="toggle-wrap"><input type="checkbox" id="modA" checked disabled><label class="toggle-switch" for="modA" style="opacity:0.5"></label><span class="toggle-label">A — Comparación base (siempre activo)</span></div>
+<div class="toggle-wrap"><input type="checkbox" id="modC"><label class="toggle-switch" for="modC"></label><span class="toggle-label">C — Transporte comercial</span></div>
+<div id="modCFields" class="hidden">
+<div class="fields-grid" style="margin-top:8px">
+<div><label>Distancia/carrera (km)</label><input type="number" id="cDist" value="3" min="1" max="30"></div>
+<div><label>Tarifa/carrera ($)</label><input type="number" id="cTarifa" value="2.00" min="0.50" max="15" step="0.01"></div>
+<div><label>Carreras/día</label><input type="number" id="cCarreras" value="15" min="5" max="40"></div>
+<div><label>Días laborables/mes</label><input type="number" id="cDias" value="25" min="15" max="30"></div>
+<div><label>Comisión app (%)</label><input type="number" id="cComision" value="0" min="0" max="35"></div>
+</div>
+<div class="toggle-wrap"><input type="checkbox" id="cPropina"><label class="toggle-switch" for="cPropina"></label><span class="toggle-label">¿Recibe propinas?</span></div>
+<div id="propinaField" class="hidden"><label>Propina promedio/día ($)</label><input type="number" id="cPropinaVal" value="1.00" min="0" max="10" step="0.01"></div>
+</div>
+<div class="toggle-wrap"><input type="checkbox" id="modD"><label class="toggle-switch" for="modD"></label><span class="toggle-label">D — Autonomía real estimada</span></div>
+<div class="toggle-wrap"><input type="checkbox" id="modF" checked><label class="toggle-switch" for="modF"></label><span class="toggle-label">F — Emisiones de CO₂</span></div>
+<div class="btn-row">
+<button class="btn btn-outline" onclick="goToStep(2)">← Atrás</button>
+<button class="btn btn-primary" id="btnCalcular" onclick="handleCalcular()">⚡ Calcular</button>
+</div>
+</div>
+</div>
+
+<!-- PASO 4 -->
+<div class="step" id="step4">
+<div class="card">
+<h3>📊 Resultados</h3>
+<div id="resultsContent"><p style="color:var(--text2);text-align:center">Presiona <strong>Calcular</strong> para ver los resultados.</p></div>
+<div id="chartContainers"></div>
+<div id="actionButtons" class="hidden" style="margin-top:16px">
+<div class="btn-row">
+<button class="btn btn-outline" onclick="openShareModal()">📩 Enviar resumen</button>
+<button class="btn btn-wa" onclick="openContactModal()">💬 Contactar a Jonathan Ortiz</button>
+</div>
+</div>
+</div>
+<button class="btn btn-outline" onclick="goToStep(3)" style="margin-top:8px">← Atrás</button>
+</div>
+</div>
+
+<!-- Modal Compartir -->
+<div class="modal-overlay hidden" id="shareModal">
+<div class="modal">
+<h3>📩 Enviar resumen al prospecto</h3>
+<label>Prefijo país</label><input type="text" id="sharePrefix" value="+593">
+<label>Número de teléfono *</label><input type="tel" id="sharePhone" placeholder="987654321">
+<label>Nombre (opcional)</label><input type="text" id="shareName" placeholder="Nombre">
+<canvas id="previewCanvas" width="400" height="400" style="width:100%;max-width:400px;display:block;margin:12px auto;border-radius:12px;background:#0a0f1c;border:1px solid var(--border)"></canvas>
+<div class="btn-row">
+<button class="btn btn-outline" onclick="downloadImage()">📥 Descargar imagen</button>
+<button class="btn btn-wa" onclick="shareWhatsApp()">💬 Abrir WhatsApp</button>
+</div>
+<button class="btn btn-outline" onclick="closeShareModal()" style="margin-top:8px">Cerrar</button>
+</div>
+</div>
+
+<!-- Modal Contacto Jonathan -->
+<div class="modal-overlay hidden" id="contactModal">
+<div class="modal">
+<h3>💬 Contactar a Jonathan Ortiz</h3>
+<p style="color:var(--text2);font-size:0.85rem;margin-bottom:12px">Completa tus datos y te contactaremos por WhatsApp</p>
+<label>Nombre</label>
+<input type="text" id="contactName" placeholder="Ej: Juan Pérez">
+<label>Cédula</label>
+<input type="text" id="contactCedula" placeholder="Ej: 1806969806" maxlength="10">
+<label>Tipo de vehículo de interés</label>
+<select id="contactVehicleType">
+<option value="eléctrico">Vehículo Eléctrico</option>
+<option value="híbrido enchufable">Vehículo Híbrido Enchufable</option>
+</select>
+<button class="btn btn-wa" onclick="sendContactWhatsApp()" style="margin-top:14px">ENVIAR</button>
+<button class="btn btn-outline" onclick="closeContactModal()" style="margin-top:8px">Cancelar</button>
+</div>
+</div>
+
 <script>
-/**
- * CONFIGURACIÓN Y CONSTANTES
- */
-const PRICES = {
-    gas_extra: 3.31,
-    gas_super: 5.70,
-    diesel: 3.25,
-    elec_home: 0.10,
-    elec_fast: 0.35,
-    elec_semi: 0.25,
-    elec_fixed: 1.50
+(function(){
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+
+const state={
+    currentStep:1,evModel:'ex2',includePHEV:false,phevChargeFreq:80,
+    iceSegment:'suv',iceFuel:'extra',kmMes:1500,cityPct:70,region:'costa',
+    traffic:'moderado',acUse:'intermitente',batteryPct:50,
+    modC:false,modD:false,modF:true,
+    cDist:3,cTarifa:2,cCarreras:15,cDias:25,cComision:0,cPropina:false,cPropinaVal:1,
+    fuelPrices:{extra:3.31,super:5.70,diesel:3.25},
+    elecTariffs:{residencial:0.10,semirapida:0.25,rapida:0.35,cargoFijo:1.50},
+    chargePower:{residencial:7,semi:22,rapida:60},
+    inflacionComb:0.05,inflacionElec:0.02,
+    results:null,chartInstances:{},calculated:false,
+    evEditable:null,phevEditable:null,
+    iceEditable:{city:8,hwy:11.5,price:30000,maint:105,year:2024}
 };
-const VEHICLES = {
-    ex2: { price: 18990, consumption: 15.0, battery: 39.4, range: 395, segment: 'compacto' },
-    ex5: { price: 27990, consumption: 17.0, battery: 60.22, range: 495, segment: 'suv-med' },
-    starray: { price: 29990, consumption_ev: 5.5, consumption_hybrid_l100: 4.8, battery: 18.4, range_ev: 105, segment: 'suv-med' }
+
+const defaultEVData={
+    ex2:{name:'Geely EX2',type:'ev',price:18990,battery:39.4,rangeNEDC:395,consReal:15.0,regenCity:0.15,regenHwy:0.08,maintInterval:20000,maintCost:80,year:2027},
+    ex5:{name:'Geely EX5',type:'ev',price:27990,battery:60.22,rangeNEDC:495,consReal:17.0,regenCity:0.15,regenHwy:0.08,maintInterval:20000,maintCost:80,year:2027},
+    starray:{name:'Starray EM-i',type:'phev',price:29990,battery:18.4,rangeElecNEDC:105,consElecReal:5.5,consHybridReal:4.8,hybridKmPerL:100/4.8,regenCity:0.12,regenHwy:0.06,maintInterval:20000,maintCost:95,year:2027},
+    custom:{name:'Personalizado',type:'ev',price:25000,battery:50,rangeNEDC:400,consReal:16.0,regenCity:0.14,regenHwy:0.07,maintInterval:20000,maintCost:85,year:2027}
 };
-const ICE_SEGMENTS = {
-    compacto: { price: 19000, city: 10, hwy: 14, maint: 75 },
-    sedan: { price: 24000, city: 9, hwy: 13, maint: 85 },
-    'suv-med': { price: 30000, city: 8, hwy: 11.5, maint: 105 },
-    'suv-grande': { price: 41000, city: 7, hwy: 10, maint: 130 },
-    pickup: { price: 40000, city: 7, hwy: 10.5, maint: 120 },
-    van: { price: 28500, city: 8, hwy: 11, maint: 115 }
+
+const iceSegments={
+    compacto:{city:10,hwy:14,price:19000,year:2024,maint:75},
+    sedan:{city:9,hwy:13,price:24000,year:2024,maint:85},
+    suv:{city:8,hwy:11.5,price:30000,year:2024,maint:105},
+    suv_grande:{city:7,hwy:10,price:41000,year:2024,maint:130},
+    pickup:{city:7,hwy:10.5,price:40000,year:2024,maint:120},
+    van:{city:8,hwy:11,price:28500,year:2024,maint:115}
 };
-const GEO_FACTORS = {
-    costa: { bev: 0, ice: 0, mant: 0, label: '🌴 Costa' },
-    sierra: { bev: 0.05, ice: 0.10, mant: 0.08, label: '🏔️ Sierra' },
-    oriente: { bev: 0.02, ice: 0.05, mant: 0.15, label: '🌳 Oriente' }
-};
-const TRAFFIC_FACTORS = {
-    fluido: { ICE: 0, BEV: 0.05 },
-    moderado: { ICE: 0.08, BEV: 0 },
-    denso: { ICE: 0.18, BEV: -0.03 }
-};
-let chartInstances = {};
-/**
- * FUNCIONES DE UI Y WIZARD
- */
-function nextStep(step) {
-    // Ocultar todos los pasos
-    document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.step').forEach(el => {
-        el.classList.remove('active', 'completed');
+
+function goToStep(step){
+    state.currentStep=step;
+    $$('.step').forEach(s=>s.classList.remove('active'));
+    $('#step'+step).classList.add('active');
+    updateStepIndicator();
+    window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateStepIndicator(){
+    $$('.step-dot').forEach((d,i)=>{
+        d.classList.remove('active','done');
+        if(i+1<state.currentStep)d.classList.add('done');
+        if(i+1===state.currentStep)d.classList.add('active');
     });
-    // Mostrar paso actual
-    document.getElementById(`step-${step}`).classList.remove('hidden');
-    
-    // Actualizar indicadores
-    for(let i=1; i<=step; i++) {
-        const ind = document.getElementById(`step-indicator-${i}`);
-        if(i === step) ind.classList.add('active');
-        else ind.classList.add('completed');
-    }
-    if(step === 4) {
-        document.getElementById('results-area').style.display = 'none';
-        document.getElementById('btn-calculate').innerHTML = '<span class="spinner"></span> Calculando...';
-        document.getElementById('btn-calculate').classList.add('btn-loading');
-        
-        setTimeout(() => {
-            calculateAll();
-            document.getElementById('results-area').style.display = 'block';
-            document.getElementById('btn-calculate').innerHTML = '🚀 Calcular de Nuevo';
-            document.getElementById('btn-calculate').classList.remove('btn-loading');
-        }, 600);
-    }
 }
-function syncKM(source) {
-    const slider = document.getElementById('km-monthly');
-    const val = parseInt(slider.value);
-    document.getElementById('km-display').innerText = val;
-    document.getElementById('km-daily-display').innerText = `~${Math.round(val/30)} km/día`;
-    document.getElementById('km-yearly-display').innerText = `~${val*12} km/año`;
+
+function syncSlider(sliderId,numId,ctxFn){
+    const slider=$('#'+sliderId),num=$('#'+numId);
+    if(!slider||!num)return;
+    const sync=()=>{num.value=slider.value;if(ctxFn)ctxFn();};
+    slider.addEventListener('input',sync);
+    num.addEventListener('input',()=>{
+        let v=parseFloat(num.value);
+        if(isNaN(v))v=parseFloat(slider.min);
+        v=Math.max(parseFloat(slider.min),Math.min(parseFloat(slider.max),v));
+        slider.value=v;num.value=v;
+        if(ctxFn)ctxFn();
+    });
 }
-function updateGeoPanel() {
-    const region = document.getElementById('geo-region').value;
-    const f = GEO_FACTORS[region];
-    const panel = document.getElementById('geo-panel');
-    panel.innerHTML = `
-        Factor aplicado: ${f.label}<br>
-        • Consumo eléctrico: ${f.bev > 0 ? '+'+f.bev*100 : '0'}%<br>
-        • Consumo combustión: ${f.ice > 0 ? '+'+f.ice*100 : '0'}%<br>
-        • Mantenimiento: ${f.mant > 0 ? '+'+f.mant*100 : '0'}%
-    `;
+
+function updateKmContext(){
+    const km=parseInt($('#kmMesNum').value)||1500;
+    $('#kmContext').textContent=`~${Math.round(km/30)} km/día · ${(km*12).toLocaleString()} km/año`;
 }
-function updateICEPreset() {
-    const model = document.getElementById('bev-model').value;
-    const select = document.getElementById('ice-segment');
-    
-    if(model === 'ex2') {
-        select.value = 'compacto';
-    } else {
-        select.value = 'suv-med';
-    }
-    updateICEManual();
+function updateCityContext(){
+    const p=parseInt($('#cityPctNum').value)||70;
+    $('#cityContext').textContent=`${p}% ciudad · ${100-p}% carretera`;
 }
-function updateICEManual() {
-    const seg = document.getElementById('ice-segment').value;
-    const customFields = document.getElementById('ice-custom-fields');
-    
-    if(seg === 'custom') {
-        customFields.classList.remove('hidden');
-    } else {
-        customFields.classList.add('hidden');
-        // Precargar valores
-        const data = ICE_SEGMENTS[seg];
-        document.getElementById('ice-price-custom').value = data.price;
-        document.getElementById('ice-city-custom').value = data.city;
-        document.getElementById('ice-hwy-custom').value = data.hwy;
-        document.getElementById('ice-maint-custom').value = data.maint;
-    }
-}
-function togglePHEVInputs() {
-    const isChecked = document.getElementById('mod-phev').checked;
-    const container = document.getElementById('phev-slider-container');
-    if(isChecked) container.classList.remove('hidden');
-    else container.classList.add('hidden');
-}
-function toggleCommercialInputs() {
-    const isChecked = document.getElementById('mod-commercial').checked;
-    const container = document.getElementById('commercial-inputs');
-    if(isChecked) container.classList.remove('hidden');
-    else container.classList.add('hidden');
-}
-function toggleTipsInput() {
-    const val = document.getElementById('comm-tips-toggle').value;
-    const field = document.getElementById('comm-tips-field');
-    field.style.visibility = (val === 'yes') ? 'visible' : 'hidden';
-}
-/**
- * MOTOR DE CÁLCULO
- */
-function calculateAll() {
-    // 1. Obtener Inputs
-    const km_monthly = parseInt(document.getElementById('km-monthly').value);
-    const geo = GEO_FACTORS[document.getElementById('geo-region').value];
-    const traffic = TRAFFIC_FACTORS[document.getElementById('traffic-level').value];
-    const ac_factor = parseInt(document.getElementById('ac-usage').value) / 100;
-    const pct_city = parseInt(document.getElementById('pct-city').value) / 100;
-    const pct_hwy = parseInt(document.getElementById('pct-hwy').value) / 100;
-    // BEV Data
-    const bevModel = document.getElementById('bev-model').value;
-    const bevData = VEHICLES[bevModel];
-    const bev_price = bevData.price;
-    
-    // ICE Data
-    const ice_price = parseFloat(document.getElementById('ice-price-custom').value);
-    const ice_city_kmL = parseFloat(document.getElementById('ice-city-custom').value);
-    const ice_hwy_kmL = parseFloat(document.getElementById('ice-hwy-custom').value);
-    const ice_maint_cost = parseFloat(document.getElementById('ice-maint-custom').value);
-    // PHEV Data (Starray Fixed for now as per prompt)
-    const isPHEVActive = document.getElementById('mod-phev').checked;
-    const phev_price = VEHICLES.starray.price;
-    const phev_pct_elec = parseInt(document.getElementById('phev-electric-pct').value) / 100;
-    const phev_range_ev = 105; // km
-    // 2. Cálculos BEV
-    const regen_bev = (pct_city * 0.15) + (pct_hwy * 0.08);
-    const consumption_bev_base = bevData.consumption; // kWh/100km
-    const consumption_bev_adj = consumption_bev_base * (1 - regen_bev) * (1 + geo.bev) * (1 + traffic.BEV) * (1 + ac_factor);
-    
-    const kwh_monthly = (consumption_bev_adj / 100) * km_monthly;
-    const cost_bev_energy = (kwh_monthly * PRICES.elec_home) + PRICES.elec_fixed;
-    
-    const maint_bev_km_cost = (80 / 10000) * (1 + geo.mant);
-    const cost_bev_maint = km_monthly * maint_bev_km_cost;
-    
-    const total_bev_monthly = cost_bev_energy + cost_bev_maint;
-    // 3. Cálculos ICE
-    const city_adj = ice_city_kmL / (1 + geo.ice);
-    const hwy_adj = ice_hwy_kmL / (1 + geo.ice);
-    const combined_inv = (pct_city / city_adj) + (pct_hwy / hwy_adj);
-    const rend_combined = 1 / combined_inv;
-    const rend_final_ice = rend_combined / (1 + traffic.ICE); // Tráfico reduce rendimiento
-    
-    const liters_monthly = km_monthly / rend_final_ice;
-    const cost_ice_fuel = liters_monthly * (PRICES.gas_extra / 3.785); // Default Extra
-    
-    const maint_ice_km_cost = (ice_maint_cost / 5000) * (1 + geo.mant);
-    const cost_ice_maint = km_monthly * maint_ice_km_cost;
-    
-    // Matrícula ICE (Estimada anual / 12)
-    const matricula_ice_annual = calculateMatricula(ice_price, 2024, 2026);
-    const cost_ice_monthly_total = cost_ice_fuel + cost_ice_maint + (matricula_ice_annual / 12);
-    // 4. Cálculos PHEV (Si activo)
-    let total_phev_monthly = 0;
-    let cost_phev_detail = "";
-    
-    if(isPHEVActive) {
-        // Lógica híbrida
-        const km_ev_possible = km_monthly * phev_pct_elec;
-        // Si los km eléctricos posibles superan la autonomía diaria promedio implícita, ajustamos, 
-        // pero el prompt dice: "Si km_mensuales × (pct/100) ≤ 105 km" (esto parece referirse a viaje único o diario?)
-        // Asumiremos proporcional simple para el mes según el slider, con tope de eficiencia.
-        
-        const km_ev = km_monthly * phev_pct_elec;
-        const km_hybrid = km_monthly - km_ev;
-        
-        // Parte Eléctrica
-        const regen_phev = (pct_city * 0.12) + (pct_hwy * 0.06);
-        const consumption_phev_ev_adj = 5.5 * (1 - regen_phev) * (1 + geo.bev) * (1 + traffic.BEV) * (1 + ac_factor);
-        const kwh_phev = (consumption_phev_ev_adj / 100) * km_ev;
-        const cost_phev_elec = (kwh_phev * PRICES.elec_home) + (PRICES.elec_fixed * phev_pct_elec); // Prorrateo cargo fijo
-        
-        // Parte Combustión (Rendimiento híbrido 20.83 km/L = 100/4.8)
-        const rend_hybrid = 20.83; 
-        const liters_phev = km_hybrid / rend_hybrid;
-        const cost_phev_fuel = liters_phev * (PRICES.gas_extra / 3.785);
-        
-        // Mantenimiento PHEV (7500km intervalo, $95 base)
-        const maint_phev_km_cost = (95 / 7500) * (1 + geo.mant);
-        const cost_phev_maint = km_monthly * maint_phev_km_cost;
-        // Matrícula PHEV (En Ecuador los híbridos pagan menos o igual según ley, asumiremos tramo reducido o estándar. Para este simulador usaremos 50% del ICE como incentivo común o cálculo SRI normal. Usaremos SRI normal por seguridad).
-        const matricula_phev_annual = calculateMatricula(phev_price, 2024, 2026);
-        total_phev_monthly = cost_phev_elec + cost_phev_fuel + cost_phev_maint + (matricula_phev_annual / 12);
-        cost_phev_detail = `${Math.round(phev_pct_elec*100)}% EV / ${Math.round((1-phev_pct_elec)*100)}% Gas`;
-    }
-    // 5. Render Resultados Base
-    animateValue("res-bev-cost", total_bev_monthly, true);
-    document.getElementById('res-bev-detail').innerText = `$${cost_bev_energy.toFixed(2)} Energía + $${cost_bev_maint.toFixed(2)} Mant.`;
-    
-    animateValue("res-ice-cost", cost_ice_monthly_total, true);
-    document.getElementById('res-ice-detail').innerText = `$${cost_ice_fuel.toFixed(2)} Comb + $${cost_ice_maint.toFixed(2)} Mant.`;
-    if(isPHEVActive) {
-        document.getElementById('card-phev-summary').style.display = 'block';
-        animateValue("res-phev-cost", total_phev_monthly, true);
-        document.getElementById('res-phev-detail').innerText = cost_phev_detail;
-    } else {
-        document.getElementById('card-phev-summary').style.display = 'none';
-    }
-    // 6. Gráfico Mensual
-    renderMonthlyChart(total_bev_monthly, isPHEVActive ? total_phev_monthly : null, cost_ice_monthly_total);
-    // 7. Módulo Comercial
-    if(document.getElementById('mod-commercial').checked) {
-        calculateCommercial(km_monthly, total_bev_monthly, isPHEVActive ? total_phev_monthly : null, cost_ice_monthly_total);
-    } else {
-        document.getElementById('commercial-results').classList.add('hidden');
-    }
-    // 8. ROI & Proyecciones
-    if(document.getElementById('mod-roi').checked) {
-        calculateROI(bev_price, isPHEVActive ? phev_price : null, ice_price, total_bev_monthly, isPHEVActive ? total_phev_monthly : null, cost_ice_monthly_total);
-    } else {
-        document.getElementById('roi-results').classList.add('hidden');
-    }
-    // 9. CO2
-    if(document.getElementById('mod-co2').checked) {
-        calculateCO2(km_monthly, rend_final_ice);
-    } else {
-        document.getElementById('co2-results').classList.add('hidden');
-    }
-    // Guardar datos globales para la imagen
-    window.simulationData = {
-        bev: { cost: total_bev_monthly, model: bevModel },
-        ice: { cost: cost_ice_monthly_total },
-        phev: isPHEVActive ? { cost: total_phev_monthly } : null,
-        savings: cost_ice_monthly_total - total_bev_monthly
+function updateRegionPanel(){
+    const r=$('#region').value;
+    const m={
+        costa:'🌊 Costa: Condiciones de referencia. Sin ajustes adicionales.',
+        sierra:'⛰️ Sierra: ICE +10% consumo por altitud, EV +5%. Mantenimiento +8%.',
+        oriente:'🌿 Oriente/Amazonía: ICE +5%, EV +2%. Mantenimiento +15% por vías.'
     };
+    $('#regionPanel').textContent=m[r]||m.costa;
 }
-function calculateMatricula(price, year_manuf, year_current) {
-    const age = year_current - year_manuf;
-    let factor = 1.0;
-    // Depreciación simplificada exponencial
-    for(let i=0; i<age; i++) {
-        if(i===0) factor *= 0.80;
-        else if(i===1) factor *= 0.85;
-        else factor *= 0.90;
-    }
-    
-    let avaluo = price * factor;
-    if(avaluo < price * 0.10) avaluo = price * 0.10;
-    
-    let tasa, base, fija;
-    if(avaluo <= 4000) { tasa=0.005; base=0; fija=0; }
-    else if(avaluo <= 8000) { tasa=0.010; base=4000; fija=20; }
-    else if(avaluo <= 12000) { tasa=0.015; base=8000; fija=60; }
-    else if(avaluo <= 16000) { tasa=0.020; base=12000; fija=140; }
-    else if(avaluo <= 20000) { tasa=0.025; base=16000; fija=260; }
-    else if(avaluo <= 24000) { tasa=0.030; base=20000; fija=420; }
-    else { tasa=0.035; base=24000; fija=620; }
-    
-    const impuesto = fija + ((avaluo - base) * tasa);
-    return impuesto + 36 + 35 + 10; // ANT + SPPAT + Rodaje
-}
-function calculateCommercial(km_monthly, cost_bev, cost_phev, cost_ice) {
-    const dist = parseFloat(document.getElementById('comm-dist').value);
-    const fare = parseFloat(document.getElementById('comm-fare').value);
-    const trips_day = parseFloat(document.getElementById('comm-trips').value);
-    const days = parseFloat(document.getElementById('comm-days').value);
-    const commission_pct = parseFloat(document.getElementById('comm-commission').value) / 100;
-    const tips_active = document.getElementById('comm-tips-toggle').value === 'yes';
-    const tips_amt = parseFloat(document.getElementById('comm-tips-amount').value);
-    const trips_month = trips_day * days;
-    const km_commercial = trips_month * dist;
-    
-    const gross_income = trips_month * fare;
-    const commission_val = gross_income * commission_pct;
-    const tips_val = tips_active ? (days * tips_amt) : 0;
-    const net_income = gross_income - commission_val + tips_val;
-    // Costo por km de cada vehículo
-    const cost_per_km_bev = cost_bev / km_monthly;
-    const cost_per_km_ice = cost_ice / km_monthly;
-    const cost_per_km_phev = cost_phev ? (cost_phev / km_monthly) : 0;
-    const cost_trip_bev = cost_per_km_bev * dist;
-    const cost_trip_ice = cost_per_km_ice * km_monthly; // Error lógico corregido abajo
-    const real_cost_trip_ice = cost_per_km_ice * dist;
-    const real_cost_trip_phev = cost_per_km_phev * dist;
-    const profit_bev = fare - cost_trip_bev;
-    const profit_ice = fare - real_cost_trip_ice;
-    const profit_phev = fare - real_cost_trip_phev;
-    document.getElementById('commercial-results').classList.remove('hidden');
-    animateValue("res-comm-profit-bev", profit_bev, true);
-    animateValue("res-comm-profit-ice", profit_ice, true);
-    renderCommercialChart(profit_bev, cost_phev ? profit_phev : null, profit_ice);
-}
-function calculateROI(price_bev, price_phev, price_ice, cost_bev, cost_phev, cost_ice) {
-    document.getElementById('roi-results').classList.remove('hidden');
-    
-    const diff_bev = price_bev - price_ice;
-    const save_month_bev = cost_ice - cost_bev;
-    
-    let roi_html = "<h4>🆚 BEV vs ICE</h4>";
-    
-    if(save_month_bev > 0) {
-        const months = diff_bev / save_month_bev;
-        if(months < 1) roi_html += "<p class='text-bev'>Ventaja desde el día 1</p>";
-        else if(months < 12) roi_html += `<p>Recuperas la inversión en <strong>${Math.ceil(months)} meses</strong></p>`;
-        else {
-            const y = Math.floor(months/12);
-            const m = Math.ceil(months%12);
-            roi_html += `<p>Retorno en <strong>${y} años y ${m} meses</strong></p>`;
-        }
-    } else {
-        roi_html += "<p class='text-ice'>El ICE es más económico mensualmente con estos datos.</p>";
-    }
-    if(price_phev && cost_phev) {
-        const diff_phev = price_phev - price_ice;
-        const save_month_phev = cost_ice - cost_phev;
-        roi_html += "<hr style='border:0; border-top:1px solid var(--border); margin:1rem 0;'>";
-        roi_html += "<h4>🆚 PHEV vs ICE</h4>";
-        if(save_month_phev > 0) {
-            const months = diff_phev / save_month_phev;
-             if(months < 1) roi_html += "<p class='text-phev'>Ventaja desde el día 1</p>";
-             else roi_html += `<p>Retorno en <strong>${Math.ceil(months)} meses</strong></p>`;
-        } else {
-            roi_html += "<p class='text-ice'>El ICE es más económico mensualmente.</p>";
-        }
-    }
-    document.getElementById('roi-text').innerHTML = roi_html;
-    renderROIChart(diff_bev, save_month_bev * 12, price_phev ? (price_phev - price_ice) : null, cost_phev ? (cost_ice - cost_phev)*12 : null);
-}
-function calculateCO2(km, rend_ice) {
-    // Factor emisión gasolina ~2.3 kg CO2 / litro
-    const liters = km / rend_ice;
-    const co2_ice = liters * 2.3 * (1000/1000); // kg
-    
-    // BEV Ecuador (mix hidroeléctrico muy limpio) ~0.05 kg CO2 / kWh (muy optimista pero realista para hidro)
-    // Usaremos 0.1 para ser conservadores con pérdidas de red.
-    // Consumo promedio 15kWh/100km
-    const kwh = (15/100) * km;
-    const co2_bev = kwh * 0.1; 
-    document.getElementById('co2-results').classList.remove('hidden');
-    document.getElementById('res-co2-bev').innerText = co2_bev.toFixed(1);
-    document.getElementById('res-co2-ice').innerText = co2_ice.toFixed(1);
-    
-    const diff = co2_ice - co2_bev;
-    const trees = (diff / 20).toFixed(1); // 1 árbol absorbe ~20kg CO2/año -> /12 para mes? No, mejor decir al año.
-    // Ajuste: Mostramos ahorro mensual equivalente a árboles plantados por un año.
-    document.getElementById('res-co2-trees').innerText = `Ahorras ${diff.toFixed(1)} kg CO2/mes. Equivale a plantar ${trees} árboles.`;
-}
-/**
- * GRÁFICOS (Chart.js)
- */
-function destroyChart(id) {
-    if(chartInstances[id]) {
-        chartInstances[id].destroy();
-        delete chartInstances[id];
-    }
-}
-function renderMonthlyChart(bev, phev, ice) {
-    destroyChart('chart-monthly');
-    const ctx = document.getElementById('chart-monthly').getContext('2d');
-    
-    const labels = ['Eléctrico (BEV)', phev ? 'Híbrido (PHEV)' : null, 'Combustión (ICE)'].filter(Boolean);
-    const data = [bev, phev, ice].filter((_, i) => i !== 1 || phev !== null);
-    const colors = ['#00C896', '#4A90E2', '#E57373'].filter((_, i) => i !== 1 || phev !== null);
-    chartInstances['chart-monthly'] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Costo Mensual ($)',
-                data: data,
-                backgroundColor: colors,
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, grid: { color: '#334155' } },
-                x: { grid: { display: false } }
-            }
-        }
-    });
-}
-function renderCommercialChart(prof_bev, prof_phev, prof_ice) {
-    destroyChart('chart-commercial');
-    const ctx = document.getElementById('chart-commercial').getContext('2d');
-    
-    const labels = ['BEV', prof_phev!==null ? 'PHEV' : null, 'ICE'].filter(Boolean);
-    const data = [prof_bev, prof_phev, prof_ice].filter((_, i) => i !== 1 || prof_phev !== null);
-    const colors = ['#00C896', '#4A90E2', '#E57373'].filter((_, i) => i !== 1 || prof_phev !== null);
-    chartInstances['chart-commercial'] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Utilidad por Carrera ($)',
-                data: data,
-                backgroundColor: colors,
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: '#334155' } },
-                x: { grid: { display: false } }
-            }
-        }
-    });
-}
-function renderROIChart(diff_bev, save_year_bev, diff_phev, save_year_phev) {
-    destroyChart('chart-roi');
-    const ctx = document.getElementById('chart-roi').getContext('2d');
-    
-    const labels = [];
-    const dataBev = [];
-    const dataPhev = [];
-    
-    for(let i=1; i<=5; i++) {
-        labels.push(`Año ${i}`);
-        dataBev.push((save_year_bev * i) - diff_bev);
-        if(diff_phev !== null) dataPhev.push((save_year_phev * i) - diff_phev);
-    }
-    const datasets = [
-        {
-            label: 'Ahorro Acumulado BEV',
-            data: dataBev,
-            borderColor: '#00C896',
-            tension: 0.4
-        }
+
+function updateEVDataPanel(){
+    const model=$('#evModel').value;
+    const data={...(defaultEVData[model]||defaultEVData.custom)};
+    state.evEditable={...data,_model:model};
+    const ed=state.evEditable;
+    const grid=$('#evFieldsGrid');
+    if(!grid)return;
+    const isPhev=model==='starray';
+    const fields=[
+        {id:'evName',label:'Nombre del modelo',val:ed.name,type:'text'},
+        {id:'evPrice',label:'Cotización ($)',val:ed.price,step:100},
+        {id:'evBattery',label:'Batería (kWh)',val:ed.battery,step:0.1},
+        {id:'evRange',label:isPhev?'Autonomía eléctrica NEDC (km)':'Autonomía NEDC (km)',val:isPhev?ed.rangeElecNEDC:ed.rangeNEDC},
+        {id:'evCons',label:isPhev?'Consumo eléctrico real (kWh/100km)':'Consumo real (kWh/100km)',val:isPhev?ed.consElecReal:ed.consReal,step:0.1},
     ];
+    if(isPhev)fields.push({id:'evConsHybrid',label:'Consumo híbrido (L/100km)',val:ed.consHybridReal,step:0.1});
+    fields.push(
+        {id:'evRegenCity',label:'Regen. ciudad (%)',val:(ed.regenCity*100).toFixed(0),step:1},
+        {id:'evRegenHwy',label:'Regen. carretera (%)',val:(ed.regenHwy*100).toFixed(0),step:1},
+        {id:'evMaintInterval',label:'Intervalo mant. (km)',val:ed.maintInterval,step:1000},
+        {id:'evMaintCost',label:'Costo mant. ($)',val:ed.maintCost,step:5},
+        {id:'evYear',label:'Año fabricación',val:ed.year,step:1}
+    );
+    grid.innerHTML=fields.map(f=>{
+        if(f.type==='text') return `<div><label>${f.label}</label><input type="text" id="${f.id}" value="${f.val}" data-evfield="${f.id}"></div>`;
+        return `<div><label>${f.label}</label><input type="number" id="${f.id}" value="${f.val}" step="${f.step||1}" data-evfield="${f.id}"></div>`;
+    }).join('');
+    grid.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('input',()=>{
+            const id=inp.dataset.evfield;
+            const v=inp.type==='text'?inp.value:(parseFloat(inp.value)||0);
+            const isP=$('#evModel').value==='starray';
+            if(!state.evEditable)state.evEditable={...(defaultEVData[model]||defaultEVData.custom),_model:model};
+            if(id==='evName')state.evEditable.name=v;
+            else if(id==='evPrice')state.evEditable.price=v;
+            else if(id==='evBattery')state.evEditable.battery=v;
+            else if(id==='evRange'){if(isP)state.evEditable.rangeElecNEDC=v;else state.evEditable.rangeNEDC=v;}
+            else if(id==='evCons'){if(isP)state.evEditable.consElecReal=v;else state.evEditable.consReal=v;}
+            else if(id==='evConsHybrid'){state.evEditable.consHybridReal=v;state.evEditable.hybridKmPerL=100/v;}
+            else if(id==='evRegenCity')state.evEditable.regenCity=v/100;
+            else if(id==='evRegenHwy')state.evEditable.regenHwy=v/100;
+            else if(id==='evMaintInterval')state.evEditable.maintInterval=v;
+            else if(id==='evMaintCost')state.evEditable.maintCost=v;
+            else if(id==='evYear')state.evEditable.year=v;
+        });
+    });
+}
+
+function updatePHEVDataPanel(){
+    const data={...defaultEVData.starray};
+    state.phevEditable={...data,_model:'starray'};
+    const ed=state.phevEditable;
+    const grid=$('#phevFieldsGrid');
+    if(!grid)return;
+    const fields=[
+        {id:'phevPrice',label:'Cotización ($)',val:ed.price,step:100},
+        {id:'phevBattery',label:'Batería (kWh)',val:ed.battery,step:0.1},
+        {id:'phevRange',label:'Autonomía eléctrica NEDC (km)',val:ed.rangeElecNEDC},
+        {id:'phevConsElec',label:'Cons. eléctrico (kWh/100km)',val:ed.consElecReal,step:0.1},
+        {id:'phevConsHybrid',label:'Cons. híbrido (L/100km)',val:ed.consHybridReal,step:0.1},
+        {id:'phevRegenCity',label:'Regen. ciudad (%)',val:(ed.regenCity*100).toFixed(0),step:1},
+        {id:'phevRegenHwy',label:'Regen. carretera (%)',val:(ed.regenHwy*100).toFixed(0),step:1},
+        {id:'phevMaintInterval',label:'Intervalo mant. (km)',val:ed.maintInterval,step:1000},
+        {id:'phevMaintCost',label:'Costo mant. ($)',val:ed.maintCost,step:5},
+    ];
+    grid.innerHTML=fields.map(f=>`<div><label>${f.label}</label><input type="number" id="${f.id}" value="${f.val}" step="${f.step||1}" data-phevfield="${f.id}"></div>`).join('');
+    grid.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('input',()=>{
+            const id=inp.dataset.phevfield;
+            const v=parseFloat(inp.value)||0;
+            if(!state.phevEditable)state.phevEditable={...defaultEVData.starray,_model:'starray'};
+            if(id==='phevPrice')state.phevEditable.price=v;
+            else if(id==='phevBattery')state.phevEditable.battery=v;
+            else if(id==='phevRange')state.phevEditable.rangeElecNEDC=v;
+            else if(id==='phevConsElec')state.phevEditable.consElecReal=v;
+            else if(id==='phevConsHybrid'){state.phevEditable.consHybridReal=v;state.phevEditable.hybridKmPerL=100/v;}
+            else if(id==='phevRegenCity')state.phevEditable.regenCity=v/100;
+            else if(id==='phevRegenHwy')state.phevEditable.regenHwy=v/100;
+            else if(id==='phevMaintInterval')state.phevEditable.maintInterval=v;
+            else if(id==='phevMaintCost')state.phevEditable.maintCost=v;
+        });
+    });
+}
+
+function precargarSegmentoICE(){
+    const model=$('#evModel').value;
+    let seg='suv';
+    if(model==='ex2')seg='compacto';
+    else if(model==='ex5'||model==='starray')seg='suv';
+    $('#iceSegment').value=seg;
+    cargarICEValues(seg);
+}
+
+function cargarICEValues(seg){
+    if(seg==='custom')return;
+    const d=iceSegments[seg];
+    if(d){
+        state.iceEditable={...d};
+        $('#iceCity').value=d.city;
+        $('#iceHwy').value=d.hwy;
+        $('#icePrice').value=d.price;
+        $('#iceMaint').value=d.maint;
+        $('#iceYear').value=d.year;
+    }
+}
+
+function updateStateFromUI(){
+    state.evModel=$('#evModel').value;
+    state.includePHEV=$('#includePHEV').checked;
+    state.phevChargeFreq=parseInt($('#phevChargeFreq').value)||80;
+    state.iceSegment=$('#iceSegment').value;
+    state.iceFuel=$('#iceFuel').value;
+    state.kmMes=parseInt($('#kmMesNum').value)||1500;
+    state.cityPct=parseInt($('#cityPctNum').value)||70;
+    state.region=$('#region').value;
+    state.traffic=$('#traffic').value;
+    state.acUse=$('#acUse').value;
+    state.batteryPct=parseInt($('#batteryPctNum').value)||50;
+    state.modC=$('#modC').checked;
+    state.modD=$('#modD').checked;state.modF=$('#modF').checked;
+    state.fuelPrices.extra=parseFloat($('#fuelPriceExtra').value)||3.31;
+    state.fuelPrices.super=parseFloat($('#fuelPriceSuper').value)||5.70;
+    state.fuelPrices.diesel=parseFloat($('#fuelPriceDiesel').value)||3.25;
+    state.elecTariffs.residencial=parseFloat($('#tarifaResid').value)||0.10;
+    state.elecTariffs.semirapida=parseFloat($('#tarifaSemi').value)||0.25;
+    state.elecTariffs.rapida=parseFloat($('#tarifaRapida').value)||0.35;
+    state.elecTariffs.cargoFijo=parseFloat($('#cargoFijo').value)||1.50;
+    state.chargePower.residencial=parseFloat($('#potResid').value)||7;
+    state.chargePower.semi=parseFloat($('#potSemi').value)||22;
+    state.chargePower.rapida=parseFloat($('#potRapida').value)||60;
+    state.inflacionComb=(parseFloat($('#inflacionComb').value)||5)/100;
+    state.inflacionElec=(parseFloat($('#inflacionElec').value)||2)/100;
+    if(state.modC){
+        state.cDist=parseFloat($('#cDist').value)||3;
+        state.cTarifa=parseFloat($('#cTarifa').value)||2;
+        state.cCarreras=parseInt($('#cCarreras').value)||15;
+        state.cDias=parseInt($('#cDias').value)||25;
+        state.cComision=parseFloat($('#cComision').value)||0;
+        state.cPropina=$('#cPropina').checked;
+        state.cPropinaVal=parseFloat($('#cPropinaVal').value)||1;
+    }
+    state.iceEditable.city=parseFloat($('#iceCity').value)||8;
+    state.iceEditable.hwy=parseFloat($('#iceHwy').value)||11.5;
+    state.iceEditable.price=parseFloat($('#icePrice').value)||30000;
+    state.iceEditable.maint=parseFloat($('#iceMaint').value)||105;
+    state.iceEditable.year=parseInt($('#iceYear').value)||2024;
+}
+
+function getEVData(){
+    if(state.evEditable&&state.evEditable._model===state.evModel)return {...state.evEditable};
+    return {...(defaultEVData[state.evModel]||defaultEVData.custom)};
+}
+function getPHEVData(){
+    if(state.phevEditable&&state.phevEditable._model==='starray')return {...state.phevEditable};
+    return {...defaultEVData.starray};
+}
+function getICEData(){return {...state.iceEditable};}
+
+function getFuelPricePerLiter(){
+    const gp=state.fuelPrices[state.iceFuel]||state.fuelPrices.extra;
+    return gp/3.785;
+}
+
+function getGeographicFactors(){
+    const r=state.region;
+    if(r==='costa')return{ev:0,ice:0,maint:0};
+    if(r==='sierra')return{ev:0.05,ice:0.10,maint:0.08};
+    return{ev:0.02,ice:0.05,maint:0.15};
+}
+
+function getTrafficFactor(vType){
+    const t=state.traffic;
+    if(vType==='ev'||vType==='phev'){
+        if(t==='fluido')return 0.05;if(t==='moderado')return 0;return -0.03;
+    }
+    if(vType==='ice'){
+        if(t==='fluido')return 0;if(t==='moderado')return 0.08;return 0.18;
+    }
+    return 0;
+}
+
+function getACFactor(){
+    const a=state.acUse;
+    if(a==='sin_uso')return 0;if(a==='intermitente')return 0.05;return 0.12;
+}
+
+function calcEVConsumption(ev){
+    const cf=state.cityPct/100,hf=1-cf;
+    const regen=cf*ev.regenCity+hf*ev.regenHwy;
+    let cons=ev.consReal*(1-regen);
+    cons*=(1+getTrafficFactor('ev'));
+    cons*=(1+getGeographicFactors().ev);
+    cons*=(1+getACFactor());
+    return cons;
+}
+
+function calcPHEVConsumption(){
+    const phev=getPHEVData();
+    const cf=state.cityPct/100,hf=1-cf;
+    const regen=cf*phev.regenCity+hf*phev.regenHwy;
+    let elec=phev.consElecReal*(1-regen);
+    elec*=(1+getTrafficFactor('phev'));
+    elec*=(1+getGeographicFactors().ev);
+    elec*=(1+getACFactor());
+    return{elecCons:elec,hybridKmPerL:phev.hybridKmPerL};
+}
+
+function calcICEConsumption(ice){
+    const cf=state.cityPct/100,hf=1-cf;
+    const rendCiudadAdj=ice.city/(1+getGeographicFactors().ice);
+    const rendCarreteraAdj=ice.hwy/(1+getGeographicFactors().ice);
+    const combined=1/((cf/rendCiudadAdj)+(hf/rendCarreteraAdj));
+    const final=combined/(1+getTrafficFactor('ice'));
+    return final*(1/(1+getACFactor()));
+}
+
+function calcMatricula(price,year,vType){
+    if(vType==='ev')return{anual:10,mensual:10/12};
+    const age=Math.max(0,2026-year);
+    let av=price;
+    if(age>=1)av*=0.80;if(age>=2)av*=0.85;
+    for(let i=3;i<=age;i++)av*=0.90;
+    av=Math.max(av,price*0.10);
+    let tasa,base,fija;
+    if(av<=4000){tasa=0.005;base=0;fija=0;}
+    else if(av<=8000){tasa=0.010;base=4000;fija=20;}
+    else if(av<=12000){tasa=0.015;base=8000;fija=60;}
+    else if(av<=16000){tasa=0.020;base=12000;fija=140;}
+    else if(av<=20000){tasa=0.025;base=16000;fija=260;}
+    else if(av<=24000){tasa=0.030;base=20000;fija=420;}
+    else{tasa=0.035;base=24000;fija=620;}
+    const impuesto=fija+((av-base)*tasa);
+    const anual=impuesto+36+35+10;
+    return{anual,mensual:anual/12,avaluo:av};
+}
+
+function calcMatriculaForYear(price,year,targetYear,vType){
+    if(vType==='ev')return 10;
+    const age=Math.max(0,targetYear-year);
+    let av=price;
+    if(age>=1)av*=0.80;if(age>=2)av*=0.85;
+    for(let i=3;i<=age;i++)av*=0.90;
+    av=Math.max(av,price*0.10);
+    let tasa,base,fija;
+    if(av<=4000){tasa=0.005;base=0;fija=0;}
+    else if(av<=8000){tasa=0.010;base=4000;fija=20;}
+    else if(av<=12000){tasa=0.015;base=8000;fija=60;}
+    else if(av<=16000){tasa=0.020;base=12000;fija=140;}
+    else if(av<=20000){tasa=0.025;base=16000;fija=260;}
+    else if(av<=24000){tasa=0.030;base=20000;fija=420;}
+    else{tasa=0.035;base=24000;fija=620;}
+    return fija+((av-base)*tasa)+36+35+10;
+}
+
+function formatROI(meses){
+    if(!isFinite(meses)||meses<0)return'No recupera la inversión';
+    if(meses<1)return'Ventaja desde el día 1';
+    if(meses<12)return Math.round(meses)+' meses';
+    const a=Math.floor(meses/12),m=Math.round(meses%12);
+    if(meses>120)return'Más de 10 años';
+    return m>0?`${a} año${a>1?'s':''} y ${m} mes${m!==1?'es':''}`:`${a} año${a>1?'s':''}`;
+}
+
+function formatTime(hours){
+    if(!isFinite(hours)||hours<=0) return '0 min';
+    if(hours<1/60) return `${Math.round(hours*3600)} seg`;
+    if(hours<1) return `${Math.round(hours*60)} min`;
+    const h=Math.floor(hours);
+    const m=Math.round((hours-h)*60);
+    return m>0?`${h}h ${m}min`:`${h}h`;
+}
+
+function updateChargeLive(){
+    try{
+        const ev=getEVData();
+        const ice=getICEData();
+        const pct=parseInt($('#batteryPctNum').value)||50;
+        const kwh=ev.battery*pct/100;
+        const consReal=ev.consReal||15;
+        const kmAutonomia=(kwh/consReal)*100;
+        
+        const costCasa=kwh*state.elecTariffs.residencial;
+        const costSemi=kwh*state.elecTariffs.semirapida;
+        const costRapida=kwh*state.elecTariffs.rapida;
+        
+        const timeCasa=kwh/state.chargePower.residencial;
+        const timeSemi=kwh/state.chargePower.semi;
+        const timeRapida=kwh/state.chargePower.rapida;
+        
+        const iceKPL=ice.city*0.6+ice.hwy*0.4;
+        const litrosGasolina=kmAutonomia/iceKPL;
+        const costGasolina=litrosGasolina*getFuelPricePerLiter();
+        
+        const ahorroCasa=costGasolina-costCasa;
+        
+        const html=`
+            <div style="text-align:center;margin-bottom:10px">
+                <div style="font-size:1.6rem;font-weight:800;color:var(--ev)">${kwh.toFixed(1)} kWh</div>
+                <div style="font-size:0.85rem;color:var(--text2)">→ ~${Math.round(kmAutonomia)} km de autonomía</div>
+            </div>
+            <div class="charge-line ev-line">
+                <div><span class="cl-icon">🏠</span> Residencial (${state.chargePower.residencial} kW)</div>
+                <div style="text-align:right"><div class="cl-cost">$${costCasa.toFixed(2)}</div><div class="cl-time">${formatTime(timeCasa)}</div></div>
+            </div>
+            <div class="charge-line ev-line">
+                <div><span class="cl-icon">⚡</span> Semi-rápida (${state.chargePower.semi} kW)</div>
+                <div style="text-align:right"><div class="cl-cost">$${costSemi.toFixed(2)}</div><div class="cl-time">${formatTime(timeSemi)}</div></div>
+            </div>
+            <div class="charge-line ev-line">
+                <div><span class="cl-icon">🔌</span> Rápida DC (${state.chargePower.rapida} kW)</div>
+                <div style="text-align:right"><div class="cl-cost">$${costRapida.toFixed(2)}</div><div class="cl-time">${formatTime(timeRapida)}</div></div>
+            </div>
+            <div class="charge-line ice-line">
+                <div><span class="cl-icon">⛽</span> Costo gasolina (${Math.round(kmAutonomia)} km)</div>
+                <div style="text-align:right"><div class="cl-cost">$${costGasolina.toFixed(2)}</div><div class="cl-time">${litrosGasolina.toFixed(2)} L</div></div>
+            </div>
+            <div class="charge-line save-line">
+                <div><span class="cl-icon">💰</span> <strong>AHORRO cargando en casa</strong></div>
+                <div style="text-align:right"><div class="cl-cost">$${ahorroCasa.toFixed(2)}</div><div class="cl-time">${costGasolina>0?((ahorroCasa/costGasolina)*100).toFixed(0):0}% menos</div></div>
+            </div>
+        `;
+        $('#chargeLiveResult').innerHTML=html;
+    }catch(e){console.error('Error updateChargeLive:',e);}
+}
+
+function handleCalcular(){
+    try{
+        updateStateFromUI();
+        calculateAll();
+        goToStep(4);
+    }catch(e){
+        console.error('Error al calcular:',e);
+        alert('Error al calcular: '+e.message);
+    }
+}
+
+function calculateAll(){
+    const ev=getEVData(),ice=getICEData();
+    const phev=state.includePHEV?getPHEVData():null;
+    const km=state.kmMes;
+
+    const evCons=calcEVConsumption(ev);
+    const iceKPL=calcICEConsumption(ice);
+    let phevCons=null;
+    if(phev)phevCons=calcPHEVConsumption();
+
+    const evKwh=(evCons/100)*km;
+    const evEnergia=evKwh*state.elecTariffs.residencial+state.elecTariffs.cargoFijo;
+    const iceLitros=km/iceKPL;
+    const iceEnergia=iceLitros*getFuelPricePerLiter();
+
+    let phevEnergia=null,phevElecKwh=null,phevHybridLitros=null;
+    if(phevCons){
+        let pct=state.phevChargeFreq/100;
+        const autonomyElec=phev.rangeElecNEDC||105;
+        if(km*pct<=autonomyElec)pct=1;
+        const kmE=km*pct,kmH=km*(1-pct);
+        phevElecKwh=(phevCons.elecCons/100)*kmE;
+        const costE=phevElecKwh*state.elecTariffs.residencial+state.elecTariffs.cargoFijo;
+        phevHybridLitros=kmH/phevCons.hybridKmPerL;
+        const costH=phevHybridLitros*getFuelPricePerLiter();
+        phevEnergia=costE+costH;
+    }
+
+    const geo=getGeographicFactors();
+    const evMaint=(ev.maintCost/ev.maintInterval)*km*(1+geo.mant);
+    const iceMaint=(ice.maint/5000)*km*(1+geo.mant);
+    let phevMaint=null;
+    if(phev)phevMaint=(phev.maintCost/phev.maintInterval)*km*(1+geo.mant);
+
+    const evMat=calcMatricula(ev.price,ev.year||2027,'ev');
+    const iceMat=calcMatricula(ice.price,ice.year||2024,'ice');
+    let phevMat=null;
+    if(phev)phevMat=calcMatricula(phev.price,phev.year||2027,'phev');
+
+    const evTotal=evEnergia+evMaint+evMat.mensual;
+    const iceTotal=iceEnergia+iceMaint+iceMat.mensual;
+    let phevTotal=null;
+    if(phev)phevTotal=phevEnergia+phevMaint+phevMat.mensual;
+
+    const evCPK=evTotal/km,iceCPK=iceTotal/km;
+    let phevCPK=null;
+    if(phevTotal)phevCPK=phevTotal/km;
     
-    if(diff_phev !== null) {
-        datasets.push({
-            label: 'Ahorro Acumulado PHEV',
-            data: dataPhev,
-            borderColor: '#4A90E2',
-            tension: 0.4
+    const ahorroEnergia=iceEnergia-evEnergia;
+    let phevAhorroEnergia=null;
+    if(phevEnergia!==null)phevAhorroEnergia=iceEnergia-phevEnergia;
+    
+    const evAhorroTotal=iceTotal-evTotal;
+    let phevAhorroTotal=null;
+    if(phevTotal!==null)phevAhorroTotal=iceTotal-phevTotal;
+
+    const diffEV=ev.price-ice.price;
+    const proyData=[1,5,10].map(y=>{
+        const meses=y*12;let ahorroE=0,ahorroM=0,ahorroMat=0;
+        for(let m=0;m<meses;m++){
+            const yr=Math.floor(m/12);
+            const iceE=iceEnergia*Math.pow(1+state.inflacionComb,yr);
+            const evE=evEnergia*Math.pow(1+state.inflacionElec,yr);
+            const iceMt=iceMaint*Math.pow(1+state.inflacionComb,yr);
+            const evMt=evMaint*Math.pow(1+state.inflacionElec,yr);
+            ahorroE+=(iceE-evE);
+            ahorroM+=(iceMt-evMt);
+        }
+        for(let yr=0;yr<y;yr++){
+            ahorroMat+=calcMatriculaForYear(ice.price,ice.year||2024,2026+yr,'ice')-calcMatriculaForYear(ev.price,ev.year||2027,2026+yr,'ev');
+        }
+        return{years:y,energia:ahorroE,mant:ahorroM,matricula:ahorroMat,total:ahorroE+ahorroM+ahorroMat};
+    });
+    let phevProyData=null;
+    if(phev&&phevTotal!==null){
+        phevProyData=[1,5,10].map(y=>{
+            const meses=y*12;let ahorroE=0,ahorroM=0,ahorroMat=0;
+            for(let m=0;m<meses;m++){
+                const yr=Math.floor(m/12);
+                const iceE=iceEnergia*Math.pow(1+state.inflacionComb,yr);
+                const pE=phevEnergia*Math.pow(1+(state.inflacionComb+state.inflacionElec)/2,yr);
+                const iceMt=iceMaint*Math.pow(1+state.inflacionComb,yr);
+                const pMt=phevMaint*Math.pow(1+state.inflacionElec,yr);
+                ahorroE+=(iceE-pE);ahorroM+=(iceMt-pMt);
+            }
+            for(let yr=0;yr<y;yr++){
+                ahorroMat+=calcMatriculaForYear(ice.price,ice.year||2024,2026+yr,'ice')-calcMatriculaForYear(phev.price,phev.year||2027,2026+yr,'phev');
+            }
+            return{years:y,energia:ahorroE,mant:ahorroM,matricula:ahorroMat,total:ahorroE+ahorroM+ahorroMat};
         });
     }
-    chartInstances['chart-roi'] = new Chart(ctx, {
-        type: 'line',
-        data: { labels, datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { grid: { color: '#334155' } },
-                x: { grid: { display: false } }
+
+    let comm=null;
+    if(state.modC){
+        const tc=state.cCarreras*state.cDias;
+        const kmC=tc*state.cDist;
+        const ingB=tc*state.cTarifa;
+        const desc=ingB*(state.cComision/100);
+        const prop=state.cPropina?state.cDias*state.cPropinaVal:0;
+        const ingN=ingB-desc+prop;
+        const evCostoC=evCPK*state.cDist;
+        const iceCostoC=iceCPK*state.cDist;
+        const evUtil=state.cTarifa-evCostoC;
+        const iceUtil=state.cTarifa-iceCostoC;
+        const ahorroC=evUtil-iceUtil;
+        const ahorroD=ahorroC*state.cCarreras;
+        const ahorroM=ahorroD*state.cDias;
+        const roiMeses=ahorroM>0?diffEV/ahorroM:Infinity;
+        const roiDias=ahorroD>0?diffEV/ahorroD:Infinity;
+        
+        const proyComm=[1,5,10].map(y=>{
+            const meses=y*12;let total=0;
+            for(let m=0;m<meses;m++){
+                const yr=Math.floor(m/12);
+                const iceE=iceEnergia*Math.pow(1+state.inflacionComb,yr);
+                const evE=evEnergia*Math.pow(1+state.inflacionElec,yr);
+                const iceMt=iceMaint*Math.pow(1+state.inflacionComb,yr);
+                const evMt=evMaint*Math.pow(1+state.inflacionElec,yr);
+                const factor=kmC/km;
+                total+=((iceE-evE)+(iceMt-evMt))*factor;
             }
+            return{years:y,total};
+        });
+        
+        let phevC=null;
+        if(phev&&phevCPK){
+            const pCosto=phevCPK*state.cDist;
+            const pUtil=state.cTarifa-pCosto;
+            const pAhorroC=pUtil-iceUtil;
+            const pAhorroD=pAhorroC*state.cCarreras;
+            const pAhorroM=pAhorroD*state.cDias;
+            const diffPHEV=phev.price-ice.price;
+            const pRoiMeses=pAhorroM>0?diffPHEV/pAhorroM:Infinity;
+            const pRoiDias=pAhorroD>0?diffPHEV/pAhorroD:Infinity;
+            phevC={costo:pCosto,utilidad:pUtil,ahorroCarrera:pAhorroC,ahorroDiario:pAhorroD,ahorroMensual:pAhorroM,roiMeses:pRoiMeses,roiDias:pRoiDias};
         }
+        comm={tc,kmC,ingB,desc,prop,ingN,evCosto:evCostoC,iceCosto:iceCostoC,evUtil,iceUtil,ahorroC,ahorroD,ahorroM,roiMeses,roiDias,roi:formatROI(roiMeses),proyComm,phev:phevC};
+    }
+
+    let emis=null;
+    if(state.modF){
+        const co2L=2.31,co2Kwh=0.25;
+        const evCO2=evKwh*co2Kwh;
+        const iceCO2=iceLitros*co2L;
+        let phevCO2=null;
+        if(phevCons)phevCO2=(phevElecKwh||0)*co2Kwh+(phevHybridLitros||0)*co2L;
+        emis={ev:evCO2,ice:iceCO2,phev:phevCO2};
+    }
+
+    let aut=null;
+    if(state.modD){
+        const evR=ev.battery/evCons*100;
+        let phevR=null;
+        if(phevCons)phevR=phev.battery/phevCons.elecCons*100;
+        aut={ev:evR,phev:phevR};
+    }
+
+    state.results={ev,ice,phev,km,evCons,iceKPL,evKwh,evEnergia,iceLitros,iceEnergia,
+        evMaint,iceMaint,evMat,iceMat,evTotal,iceTotal,evCPK,iceCPK,phevCPK,
+        ahorroEnergia,phevAhorroEnergia,evAhorroTotal,phevAhorroTotal,
+        phevCons,phevEnergia,phevMaint,phevMat,phevTotal,phevAhorroTotal,
+        diffEV,proyData,phevProyData,
+        comm,emis,aut};
+    state.calculated=true;
+    renderResults();
+}
+
+function destroyAllCharts(){
+    Object.values(state.chartInstances).forEach(c=>{try{c.destroy();}catch(e){}});
+    state.chartInstances={};
+}
+
+function renderResults(){
+    destroyAllCharts();
+    const r=state.results;if(!r)return;
+    let html='';
+
+    html+=`<div class="section-block">
+        <h4>⛽ vs ⚡ Ahorro mensual solo en combustible/electricidad</h4>
+        <div class="result-row">
+            <div class="result-card"><span class="result-label">⚡ Electricidad EV/mes</span><div class="result-value ev-color">$${r.evEnergia.toFixed(2)}</div></div>
+            <div class="result-card"><span class="result-label">⛽ Gasolina ICE/mes</span><div class="result-value ice-color">$${r.iceEnergia.toFixed(2)}</div></div>
+            <div class="result-card"><span class="result-label">💰 Ahorro EV/mes</span><div class="result-value" style="color:var(--positive)">$${Math.max(0,r.ahorroEnergia).toFixed(2)}</div></div>
+        </div>`;
+    if(r.phev&&r.phevEnergia!==null){
+        html+=`<div class="result-row">
+            <div class="result-card"><span class="result-label">🔵 Energía PHEV/mes</span><div class="result-value phev-color">$${r.phevEnergia.toFixed(2)}</div></div>
+            <div class="result-card"><span class="result-label">💰 Ahorro PHEV/mes</span><div class="result-value" style="color:var(--positive)">$${Math.max(0,r.phevAhorroEnergia).toFixed(2)}</div></div>
+        </div>`;
+    }
+    html+=`<p style="font-size:0.75rem;color:var(--text2);margin-top:8px">Consumo EV: ${r.evKwh.toFixed(1)} kWh/mes · Consumo ICE: ${r.iceLitros.toFixed(1)} L/mes</p>`;
+    html+=`</div>`;
+
+    html+=`<div class="section-block">
+        <h4>📊 Comparación completa (energía + mantenimiento + matrícula)</h4>
+        <div class="result-row">
+            <div class="result-card"><span class="result-label">⚡ EV total/mes</span><div class="result-value ev-color">$${r.evTotal.toFixed(2)}</div></div>
+            <div class="result-card"><span class="result-label">⛽ ICE total/mes</span><div class="result-value ice-color">$${r.iceTotal.toFixed(2)}</div></div>
+            <div class="result-card"><span class="result-label">💰 Ahorro total/mes</span><div class="result-value" style="color:var(--positive)">$${Math.max(0,r.evAhorroTotal).toFixed(2)}</div></div>
+        </div>`;
+    if(r.phev&&r.phevTotal!==null){
+        html+=`<div class="result-row">
+            <div class="result-card"><span class="result-label">🔵 PHEV total/mes</span><div class="result-value phev-color">$${r.phevTotal.toFixed(2)}</div></div>
+            <div class="result-card"><span class="result-label">💰 Ahorro PHEV total/mes</span><div class="result-value" style="color:var(--positive)">$${Math.max(0,r.phevAhorroTotal).toFixed(2)}</div></div>
+        </div>`;
+    }
+    let cpkLine=`Costo/km: EV $${r.evCPK.toFixed(3)} | ICE $${r.iceCPK.toFixed(3)}`;
+    if(r.phevCPK)cpkLine+=` | PHEV $${r.phevCPK.toFixed(3)}`;
+    html+=`<p style="font-size:0.75rem;color:var(--text2)">${cpkLine}</p>`;
+    html+=`<p style="font-size:0.7rem;color:var(--text2)">Matrícula anual: EV $${r.evMat.anual.toFixed(0)} | ICE $${r.iceMat.anual.toFixed(0)} <em>(Valor referencial)</em></p>`;
+    html+=`</div>`;
+
+    html+=`<div class="section-block proj-section">
+        <h4>📈 Proyecciones de ahorro total (1, 5 y 10 años)</h4>
+        <table class="proy-table">
+            <tr><th>Período</th><th style="color:var(--ev)">Ahorro energía</th><th>Ahorro mant.</th><th>Ahorro matrícula</th><th style="color:var(--ev)">TOTAL</th></tr>`;
+    r.proyData.forEach(p=>{
+        html+=`<tr><td><strong>${p.years} año${p.years>1?'s':''}</strong></td>
+            <td class="positive">$${Math.round(p.energia).toLocaleString()}</td>
+            <td>$${Math.round(p.mant).toLocaleString()}</td>
+            <td>$${Math.round(p.matricula).toLocaleString()}</td>
+            <td class="positive"><strong>$${Math.round(p.total).toLocaleString()}</strong></td></tr>`;
+    });
+    html+=`</table>`;
+    html+=`<p style="font-size:0.72rem;color:var(--text2);margin-top:8px">Diferencia de cotización EV vs ICE: $${r.diffEV.toLocaleString()}</p>`;
+    if(r.phevProyData){
+        html+=`<h4 style="color:var(--phev);margin-top:14px">🔵 Proyecciones PHEV vs ICE</h4>
+        <table class="proy-table">
+            <tr><th>Período</th><th style="color:var(--phev)">Ahorro energía</th><th>Ahorro mant.</th><th>Ahorro matrícula</th><th style="color:var(--phev)">TOTAL</th></tr>`;
+        r.phevProyData.forEach(p=>{
+            html+=`<tr><td><strong>${p.years} año${p.years>1?'s':''}</strong></td>
+                <td class="positive">$${Math.round(p.energia).toLocaleString()}</td>
+                <td>$${Math.round(p.mant).toLocaleString()}</td>
+                <td>$${Math.round(p.matricula).toLocaleString()}</td>
+                <td class="positive"><strong>$${Math.round(p.total).toLocaleString()}</strong></td></tr>`;
+        });
+        html+=`</table>`;
+    }
+    html+=`</div>`;
+
+    if(state.modC&&r.comm){
+        const c=r.comm;
+        html+=`<div class="section-block comm-section">
+            <h4>🚕 Transporte Comercial</h4>
+            <p>Ingreso neto mensual: <strong>$${c.ingN.toFixed(2)}</strong> (${c.tc} carreras · ${c.kmC.toLocaleString()} km)</p>
+            <div class="result-row">
+                <div class="result-card"><span class="result-label">Utilidad EV/carrera</span><div class="result-value ev-color">$${c.evUtil.toFixed(2)}</div></div>
+                <div class="result-card"><span class="result-label">Utilidad ICE/carrera</span><div class="result-value ice-color">$${c.iceUtil.toFixed(2)}</div></div>
+                <div class="result-card"><span class="result-label">Ahorro/carrera</span><div class="result-value" style="color:var(--positive)">$${c.ahorroC.toFixed(2)}</div></div>
+            </div>
+            <p style="margin-top:8px">Ahorro diario: <strong style="color:var(--positive)">$${c.ahorroD.toFixed(2)}</strong> | Mensual: <strong style="color:var(--positive)">$${c.ahorroM.toFixed(0)}</strong></p>
+        </div>`;
+
+        html+=`<div class="section-block roi-section">
+            <h4>⏱️ ROI Comercial — Tiempo para recuperar el vehículo</h4>
+            <p style="font-size:0.85rem;color:var(--text2)">Diferencia de cotización EV vs ICE: <strong>$${r.diffEV.toLocaleString()}</strong></p>
+            <div class="result-row">
+                <div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:#F59E0B">${!isFinite(c.roiDias)?'∞':Math.round(c.roiDias)}</div></div>
+                <div class="result-card"><span class="result-label">En meses</span><div class="result-value" style="color:#F59E0B">${formatROI(c.roiMeses)}</div></div>
+            </div>`;
+        if(c.phev){
+            html+=`<p style="margin-top:10px">🔵 <strong>PHEV:</strong> ${!isFinite(c.phev.roiDias)?'∞':Math.round(c.phev.roiDias)} días · ${formatROI(c.phev.roiMeses)}</p>`;
+        }
+        html+=`</div>`;
+
+        html+=`<div class="section-block proj-section">
+            <h4>📈 Proyecciones comerciales (1, 5 y 10 años)</h4>
+            <table class="proy-table">
+                <tr><th>Período</th><th style="color:var(--ev)">Ahorro acumulado EV vs ICE</th></tr>`;
+        c.proyComm.forEach(p=>{
+            html+=`<tr><td><strong>${p.years} año${p.years>1?'s':''}</strong></td>
+                <td class="positive"><strong>$${Math.round(p.total).toLocaleString()}</strong></td></tr>`;
+        });
+        html+=`</table></div>`;
+    }
+
+    if(state.modD&&r.aut){
+        html+=`<div class="section-block">
+            <h4>🔋 Autonomía Real</h4>
+            <p>EV: <strong>${Math.round(r.aut.ev)} km</strong> por carga${r.aut.phev?' | PHEV eléctrico: <strong>'+Math.round(r.aut.phev)+' km</strong>':''}</p>
+        </div>`;
+    }
+
+    if(state.modF&&r.emis){
+        html+=`<div class="section-block">
+            <h4>🌍 Emisiones CO₂</h4>
+            <p>EV: <strong>${r.emis.ev.toFixed(1)} kg/mes</strong> (~${Math.round(r.emis.ev*12/18)} árboles/año) | ICE: <strong>${r.emis.ice.toFixed(1)} kg/mes</strong> (~${Math.round(r.emis.ice*12/18)} árboles/año)</p>`;
+        if(r.emis.phev!==null)html+=`<p>PHEV: <strong>${r.emis.phev.toFixed(1)} kg/mes</strong></p>`;
+        const reduction=((1-r.emis.ev/r.emis.ice)*100).toFixed(0);
+        html+=`<p style="color:var(--positive);font-weight:600">↓ Reducción con EV: ${reduction}%</p>
+        </div>`;
+    }
+
+    $('#resultsContent').innerHTML=html;
+    $('#actionButtons').classList.remove('hidden');
+    initChartCanvases();
+    setTimeout(()=>{renderCharts(r);animateResults();},300);
+}
+
+function initChartCanvases(){
+    const c=$('#chartContainers');if(!c)return;
+    c.innerHTML=`
+        <div class="chart-wrap"><canvas id="chartEnergia"></canvas></div>
+        <div class="chart-wrap"><canvas id="chartTotal"></canvas></div>
+        <div id="chartProyWrap" class="chart-wrap"><canvas id="chartProyecciones"></canvas></div>
+    `;
+}
+
+function renderCharts(r){
+    const c1=$('#chartEnergia');
+    if(c1){
+        if(state.chartInstances.c1)state.chartInstances.c1.destroy();
+        const labels=['EV','ICE'],data=[r.evEnergia,r.iceEnergia],colors=['#00C896','#E57373'];
+        if(r.phev&&r.phevEnergia!==null){labels.splice(1,0,'PHEV');data.splice(1,0,r.phevEnergia);colors.splice(1,0,'#4A90E2');}
+        state.chartInstances.c1=new Chart(c1,{type:'bar',data:{labels,datasets:[{label:'Solo energía ($/mes)',data,backgroundColor:colors,borderRadius:10,barThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'⛽ vs ⚡ Costo mensual SOLO ENERGÍA',color:'#F1F5F9',font:{size:14}}},scales:{y:{ticks:{color:'#94A3B8',callback:v=>'$'+v.toFixed(0)},grid:{color:'#263148'}},x:{ticks:{color:'#F1F5F9'}}}}});
+    }
+    const c2=$('#chartTotal');
+    if(c2){
+        if(state.chartInstances.c2)state.chartInstances.c2.destroy();
+        const labels=['EV','ICE'],data=[r.evTotal,r.iceTotal],colors=['#00C896','#E57373'];
+        if(r.phev&&r.phevTotal!==null){labels.splice(1,0,'PHEV');data.splice(1,0,r.phevTotal);colors.splice(1,0,'#4A90E2');}
+        state.chartInstances.c2=new Chart(c2,{type:'bar',data:{labels,datasets:[{label:'Total ($/mes)',data,backgroundColor:colors,borderRadius:10,barThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'💰 Costo mensual TOTAL (energía + mant. + matrícula)',color:'#F1F5F9',font:{size:14}}},scales:{y:{ticks:{color:'#94A3B8',callback:v=>'$'+v.toFixed(0)},grid:{color:'#263148'}},x:{ticks:{color:'#F1F5F9'}}}}});
+    }
+    const c3=$('#chartProyecciones');
+    if(c3){
+        if(state.chartInstances.c3)state.chartInstances.c3.destroy();
+        const labels=['1 año','5 años','10 años'];
+        const ds=[{label:'EV vs ICE',data:r.proyData.map(d=>d.total),borderColor:'#00C896',backgroundColor:'rgba(0,200,150,0.15)',fill:true,tension:0.4,pointRadius:7,pointBackgroundColor:'#00C896'}];
+        if(r.phevProyData)ds.push({label:'PHEV vs ICE',data:r.phevProyData.map(d=>d.total),borderColor:'#4A90E2',backgroundColor:'rgba(74,144,226,0.15)',fill:true,tension:0.4,pointRadius:7,pointBackgroundColor:'#4A90E2'});
+        state.chartInstances.c3=new Chart(c3,{type:'line',data:{labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#F1F5F9'}},title:{display:true,text:'📈 Ahorro acumulado total ($)',color:'#F1F5F9'}},scales:{y:{ticks:{color:'#94A3B8',callback:v=>'$'+(v/1000).toFixed(0)+'k'},grid:{color:'#263148'}},x:{ticks:{color:'#F1F5F9'}}}}});
+    }
+}
+
+function animateResults(){
+    $$('.result-value').forEach(el=>{
+        el.style.opacity='0';el.style.transform='translateY(10px)';
+        requestAnimationFrame(()=>{
+            el.style.transition='all 0.6s cubic-bezier(0.22,0.61,0.36,1)';
+            el.style.opacity='1';el.style.transform='translateY(0)';
+        });
     });
 }
-/**
- * UTILS & IMAGE GENERATION
- */
-function animateValue(id, value, isCurrency) {
-    const obj = document.getElementById(id);
-    const start = 0;
-    const end = value;
-    const duration = 1000;
-    let startTimestamp = null;
-    
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const currentVal = progress * (end - start) + start;
-        obj.innerHTML = isCurrency ? '$' + currentVal.toFixed(2) : currentVal.toFixed(0);
-        if (progress < 1) window.requestAnimationFrame(step);
-    };
-    window.requestAnimationFrame(step);
-}
-function openShareModal() {
-    document.getElementById('share-modal').style.display = 'flex';
-    generateSummaryImage();
-}
-function closeShareModal() {
-    document.getElementById('share-modal').style.display = 'none';
-}
-function generateSummaryImage() {
-    const canvas = document.getElementById('summary-canvas');
-    const ctx = canvas.getContext('2d');
-    const data = window.simulationData;
-    
-    // Fondo
-    ctx.fillStyle = '#0F172A';
-    ctx.fillRect(0, 0, 2080, 2080);
-    
-    // Header
-    ctx.fillStyle = '#38BDF8';
-    ctx.fillRect(0, 0, 2080, 200);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 60px Inter';
-    ctx.fillText("Simulador de Vehículos - Resumen", 100, 120);
-    
-    // Cuerpo
-    let y = 300;
-    ctx.font = '40px Inter';
-    ctx.fillStyle = '#F1F5F9';
-    
-    ctx.fillText(`Modelo: Geely ${data.bev.model.toUpperCase()}`, 100, y); y+=80;
-    ctx.fillText(`Ahorro Mensual vs ICE: $${data.savings.toFixed(2)}`, 100, y); y+=80;
-    
-    ctx.fillStyle = '#00C896';
-    ctx.fillText(`Costo BEV: $${data.bev.cost.toFixed(2)}/mes`, 100, y); y+=60;
-    
-    ctx.fillStyle = '#E57373';
-    ctx.fillText(`Costo ICE: $${data.ice.cost.toFixed(2)}/mes`, 100, y); y+=60;
-    if(data.phev) {
-        ctx.fillStyle = '#4A90E2';
-        ctx.fillText(`Costo PHEV: $${data.phev.cost.toFixed(2)}/mes`, 100, y); y+=60;
+
+function generateSummaryImage(){
+    const r=state.results;if(!r)return null;
+    const S=2080;
+    const canvas=document.createElement('canvas');
+    canvas.width=S;canvas.height=S;
+    const ctx=canvas.getContext('2d');
+    const pad=80;
+    const W=S-pad*2;
+
+    const bgGrad=ctx.createLinearGradient(0,0,S,S);
+    bgGrad.addColorStop(0,'#0a0f1c');bgGrad.addColorStop(0.5,'#0f1729');bgGrad.addColorStop(1,'#0a0f1c');
+    ctx.fillStyle=bgGrad;ctx.fillRect(0,0,S,S);
+
+    ctx.globalAlpha=0.04;
+    ctx.fillStyle='#00C896';ctx.beginPath();ctx.arc(300,400,500,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#4A90E2';ctx.beginPath();ctx.arc(1800,1600,450,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+
+    const hdrGrad=ctx.createLinearGradient(0,0,S,0);
+    hdrGrad.addColorStop(0,'#00C896');hdrGrad.addColorStop(0.5,'#4A90E2');hdrGrad.addColorStop(1,'#6366F1');
+    ctx.fillStyle=hdrGrad;ctx.beginPath();ctx.roundRect(pad,pad,W,220,30);ctx.fill();
+
+    ctx.fillStyle='#000';ctx.font='800 72px Inter, sans-serif';ctx.textAlign='center';
+    ctx.fillText('⚡ SIMULADOR EV',S/2,pad+90);
+    ctx.font='500 44px Inter, sans-serif';ctx.fillStyle='rgba(0,0,0,0.7)';
+    ctx.fillText(r.ev.name+' vs '+r.ice.name,S/2,pad+155);
+    ctx.font='400 32px Inter, sans-serif';
+    ctx.fillText(`${r.km.toLocaleString()} km/mes · ${state.cityPct}% ciudad · ${state.region}`,S/2,pad+200);
+
+    let y=pad+260;
+    const blockGap=30;
+
+    function drawBlock(title,lines,accent,height){
+        const h=height||240;
+        if(y+h>S-320)return y;
+        ctx.fillStyle='#131b2e';ctx.beginPath();ctx.roundRect(pad,y,W,h,24);ctx.fill();
+        ctx.strokeStyle=accent||'#00C896';ctx.lineWidth=3;
+        ctx.beginPath();ctx.roundRect(pad,y,W,h,24);ctx.stroke();
+        ctx.fillStyle=accent||'#00C896';ctx.globalAlpha=0.12;
+        ctx.beginPath();ctx.roundRect(pad,y,W,80,[24,24,0,0]);ctx.fill();ctx.globalAlpha=1;
+        ctx.fillStyle='#F1F5F9';ctx.font='700 46px Inter, sans-serif';ctx.textAlign='left';
+        ctx.fillText(title,pad+40,y+55);
+        ctx.font='500 40px Inter, sans-serif';
+        lines.forEach((l,i)=>{
+            ctx.fillStyle=l.color||'#F1F5F9';
+            ctx.fillText(l.text||l,pad+40,y+120+i*55);
+        });
+        y+=h+blockGap;return y;
     }
-    // Footer
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 50px Inter';
-    ctx.fillText("Jonathan Ortiz | 097918972", 100, 1950);
-    
-    // Preview
-    const img = document.getElementById('preview-canvas');
-    img.src = canvas.toDataURL();
-    img.style.display = 'block';
+
+    drawBlock('⛽ vs ⚡ AHORRO MENSUAL SOLO ENERGÍA',[
+        {text:`EV: $${r.evEnergia.toFixed(2)}/mes  |  ICE: $${r.iceEnergia.toFixed(2)}/mes`,color:'#F1F5F9'},
+        {text:`Ahorro EV: $${Math.max(0,r.ahorroEnergia).toFixed(2)}/mes`,color:'#00C896'}
+    ],'#00C896',200);
+
+    drawBlock('💰 AHORRO TOTAL (energía + mant. + matrícula)',
+        [{text:`EV total: $${r.evTotal.toFixed(2)}/mes  |  ICE total: $${r.iceTotal.toFixed(2)}/mes`,color:'#F1F5F9'},
+         {text:`Ahorro total mensual: $${Math.max(0,r.evAhorroTotal).toFixed(2)}`,color:'#00C896'}],
+        '#F59E0B',200);
+
+    drawBlock('📈 PROYECCIONES DE AHORRO TOTAL',[
+        {text:`1 año: $${Math.round(r.proyData[0].total).toLocaleString()}`,color:'#F1F5F9'},
+        {text:`5 años: $${Math.round(r.proyData[1].total).toLocaleString()}`,color:'#F1F5F9'},
+        {text:`10 años: $${Math.round(r.proyData[2].total).toLocaleString()}`,color:'#00C896'}
+    ],'#6366F1',260);
+
+    if(state.modC&&r.comm){
+        const c=r.comm;
+        drawBlock('🚕 TRANSPORTE COMERCIAL',[
+            {text:`Ahorro/carrera: $${c.ahorroC.toFixed(2)} | Mensual: $${c.ahorroM.toFixed(0)}`,color:'#F1F5F9'},
+            {text:`ROI: ${c.roi} (${!isFinite(c.roiDias)?'∞':Math.round(c.roiDias)} días)`,color:'#F59E0B'}
+        ],'#8B5CF6',200);
+    }
+
+    if(state.modF&&r.emis){
+        const reduction=((1-r.emis.ev/r.emis.ice)*100).toFixed(0);
+        drawBlock('🌍 EMISIONES CO₂',[
+            {text:`EV: ${r.emis.ev.toFixed(1)} kg/mes | ICE: ${r.emis.ice.toFixed(1)} kg/mes`,color:'#F1F5F9'},
+            {text:`↓ Reducción: ${reduction}%`,color:'#22C55E'}
+        ],'#22C55E',200);
+    }
+
+    const footerY=S-260;
+    const footerGrad=ctx.createLinearGradient(0,0,S,0);
+    footerGrad.addColorStop(0,'#1E293B');footerGrad.addColorStop(1,'#334155');
+    ctx.fillStyle=footerGrad;ctx.beginPath();ctx.roundRect(pad,footerY,W,200,30);ctx.fill();
+    ctx.strokeStyle='#00C896';ctx.lineWidth=4;
+    ctx.beginPath();ctx.moveTo(pad+40,footerY+30);ctx.lineTo(pad+W-40,footerY+30);ctx.stroke();
+    ctx.fillStyle='#F1F5F9';ctx.font='700 56px Inter, sans-serif';ctx.textAlign='center';
+    ctx.fillText('Jonathan Ortiz',S/2,footerY+100);
+    ctx.fillStyle='#00C896';ctx.font='600 50px Inter, sans-serif';
+    ctx.fillText('097918972',S/2,footerY+165);
+
+    return canvas;
 }
-function downloadAndSend() {
-    const phone = document.getElementById('share-phone').value;
-    const name = document.getElementById('share-name').value;
-    const canvas = document.getElementById('summary-canvas');
-    
-    if(!phone) { alert('Ingresa un número de teléfono'); return; }
-    
-    // Download
-    const link = document.createElement('a');
-    link.download = `Resumen_Geely_${name || 'Cliente'}.png`;
-    link.href = canvas.toDataURL();
-    link.click();
-    
-    // WhatsApp
-    const msg = `Hola ${name || ''}, te envío el resumen de tu simulación de vehículo Geely. Revisa la imagen adjunta.`;
-    window.open(`https://wa.me/593${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-    
-    closeShareModal();
+
+function openShareModal(){
+    if(!state.calculated)return;
+    $('#shareModal').classList.remove('hidden');
+    const pc=$('#previewCanvas');
+    const img=generateSummaryImage();
+    if(img&&pc){
+        const pctx=pc.getContext('2d');
+        pc.width=800;pc.height=800;
+        pctx.clearRect(0,0,pc.width,pc.height);
+        pctx.drawImage(img,0,0,pc.width,pc.height);
+    }
 }
-// Init
-syncKM();
-updateICEPreset();
+function closeShareModal(){$('#shareModal').classList.add('hidden');}
+
+function downloadImage(){
+    const img=generateSummaryImage();if(!img)return;
+    const a=document.createElement('a');
+    a.download='simulador-ev-resumen.png';
+    a.href=img.toDataURL('image/png');
+    a.click();
+}
+
+function shareWhatsApp(){
+    const ph=$('#sharePhone').value.replace(/\s/g,'');
+    const pre=$('#sharePrefix').value.replace(/[^+\d]/g,'');
+    const name=$('#shareName').value.trim();
+    if(!ph)return alert('Ingresa el número de teléfono.');
+    const r=state.results;
+    let msg=`Hola${name?' '+name:''}! Te comparto tu simulación:\n\n`;
+    msg+=`⚡ Ahorro energía: $${Math.max(0,r.ahorroEnergia).toFixed(2)}/mes\n`;
+    msg+=`💰 Ahorro total: $${Math.max(0,r.evAhorroTotal).toFixed(2)}/mes\n`;
+    msg+=`📈 10 años: $${Math.round(r.proyData[2].total).toLocaleString()}\n`;
+    msg+=`\n📱 Jonathan Ortiz · 097918972`;
+    window.open(`https://wa.me/${pre.replace('+','')+ph}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+function openContactModal(){
+    const ev=getEVData();
+    const tipoVeh=ev.type==='phev'?'híbrido enchufable':'eléctrico';
+    $('#contactVehicleType').value=tipoVeh;
+    $('#contactName').value='';
+    $('#contactCedula').value='';
+    $('#contactModal').classList.remove('hidden');
+}
+function closeContactModal(){$('#contactModal').classList.add('hidden');}
+
+function sendContactWhatsApp(){
+    const name=$('#contactName').value.trim();
+    const cedula=$('#contactCedula').value.trim();
+    const tipo=$('#contactVehicleType').value;
+    if(!name){alert('Por favor ingresa tu nombre.');return;}
+    if(!cedula||cedula.length<10){alert('Por favor ingresa un número de cédula válido (10 dígitos).');return;}
+    const msg=`Hola Jonathan, soy *${name}*, mi cédula es *${cedula}* y me interesa comprar un vehículo ${tipo}. ¿Podrías asesorarme?`;
+    window.open(`https://wa.me/593979189728?text=${encodeURIComponent(msg)}`,'_blank');
+    closeContactModal();
+}
+
+function setupEvents(){
+    $('#evModel').addEventListener('change',()=>{updateEVDataPanel();precargarSegmentoICE();});
+    $('#includePHEV').addEventListener('change',()=>{
+        $('#phevExtraFields').classList.toggle('hidden',!$('#includePHEV').checked);
+        if($('#includePHEV').checked)updatePHEVDataPanel();
+    });
+    $('#iceSegment').addEventListener('change',()=>{
+        const seg=$('#iceSegment').value;
+        if(seg!=='custom')cargarICEValues(seg);
+    });
+    $('#region').addEventListener('change',updateRegionPanel);
+    $('#modC').addEventListener('change',()=>{$('#modCFields').classList.toggle('hidden',!$('#modC').checked);});
+    $('#cPropina').addEventListener('change',()=>{$('#propinaField').classList.toggle('hidden',!$('#cPropina').checked);});
+    syncSlider('kmMesSlider','kmMesNum',updateKmContext);
+    syncSlider('cityPctSlider','cityPctNum',updateCityContext);
+    syncSlider('batteryPctSlider','batteryPctNum',updateChargeLive);
+    
+    ['tarifaResid','tarifaSemi','tarifaRapida','potResid','potSemi','potRapida','fuelPriceExtra','fuelPriceSuper','fuelPriceDiesel'].forEach(id=>{
+        const el=$('#'+id);
+        if(el)el.addEventListener('input',updateChargeLive);
+    });
+    $('#evModel').addEventListener('change',updateChargeLive);
+    $('#iceSegment').addEventListener('change',updateChargeLive);
+    
+    $$('.step-dot').forEach(d=>d.addEventListener('click',function(){
+        const s=parseInt(this.dataset.step);
+        if(s<=state.currentStep||(s===4&&state.calculated))goToStep(s);
+    }));
+    $('#shareModal').addEventListener('click',function(e){if(e.target===this)closeShareModal();});
+    $('#contactModal').addEventListener('click',function(e){if(e.target===this)closeContactModal();});
+}
+
+function init(){
+    updateEVDataPanel();
+    precargarSegmentoICE();
+    updateRegionPanel();
+    updateKmContext();
+    updateCityContext();
+    updateChargeLive();
+    $('#phevExtraFields').classList.add('hidden');
+    $('#modCFields').classList.add('hidden');
+    $('#propinaField').classList.add('hidden');
+    setupEvents();
+}
+
+window.goToStep=goToStep;
+window.handleCalcular=handleCalcular;
+window.openShareModal=openShareModal;
+window.closeShareModal=closeShareModal;
+window.downloadImage=downloadImage;
+window.shareWhatsApp=shareWhatsApp;
+window.openContactModal=openContactModal;
+window.closeContactModal=closeContactModal;
+window.sendContactWhatsApp=sendContactWhatsApp;
+document.addEventListener('DOMContentLoaded',init);
+})();
 </script>
 </body>
 </html>
-HTMLEOF
-cat > /workspace/index.html << 'HTMLEOF'
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Vehículos - Jonathan Ortiz</title>
-    <!-- Tipografía Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <style>
-        :root {
-            --color-bev: #00C896;
-            --color-phev: #4A90E2;
-            --color-ice: #E57373;
-            --bg-color: #0F172A;
-            --card-bg: #1E293B;
-            --text-color: #F1F5F9;
-            --text-muted: #94A3B8;
-            --accent: #38BDF8;
-            --border: #334155;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding-bottom: 4rem;
-        }
-        /* Layout & Containers */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-        .header { text-align: center; padding: 2rem 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
-        .header h1 { font-weight: 800; font-size: 1.8rem; color: var(--accent); }
-        .header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; }
-        /* Wizard Progress */
-        .wizard-progress { display: flex; justify-content: space-between; margin-bottom: 2rem; position: relative; }
-        .wizard-progress::before {
-            content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px;
-            background: var(--border); z-index: 0; transform: translateY(-50%);
-        }
-        .step {
-            background: var(--card-bg); border: 1px solid var(--border);
-            padding: 0.5rem 1rem; border-radius: 20px; z-index: 1;
-            font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
-            transition: all 0.3s ease;
-        }
-        .step.active { background: var(--accent); color: var(--bg-color); border-color: var(--accent); }
-        .step.completed { background: var(--color-bev); color: var(--bg-color); border-color: var(--color-bev); }
-        /* Cards & Sections */
-        .card {
-            background: var(--card-bg); border-radius: 12px; padding: 1.5rem;
-            margin-bottom: 1.5rem; border: 1px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; }
-        
-        /* Forms & Inputs */
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-muted); }
-        select, input[type="number"], input[type="text"] {
-            width: 100%; padding: 0.75rem; border-radius: 8px;
-            background: var(--bg-color); border: 1px solid var(--border);
-            color: var(--text-color); font-family: inherit; font-size: 0.95rem;
-        }
-        select:focus, input:focus { outline: none; border-color: var(--accent); }
-        /* Sliders */
-        .slider-container { margin: 1.5rem 0; }
-        .slider-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-        input[type="range"] {
-            width: 100%; height: 6px; background: var(--border); border-radius: 5px;
-            appearance: none; outline: none;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            appearance: none; width: 20px; height: 20px; border-radius: 50%;
-            background: var(--accent); cursor: pointer; transition: transform 0.1s;
-        }
-        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
-        .slider-value { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
-        /* Toggles */
-        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
-        .toggle-switch {
-            position: relative; display: inline-block; width: 50px; height: 26px;
-        }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--bg-color); transition: .4s; border-radius: 34px; border: 1px solid var(--border);
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
-            background-color: white; transition: .4s; border-radius: 50%;
-        }
-        input:checked + .slider { background-color: var(--accent); border-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(24px); }
-        /* Buttons */
-        .btn {
-            display: inline-block; padding: 0.8rem 1.5rem; border-radius: 8px;
-            font-weight: 600; text-decoration: none; cursor: pointer; border: none;
-            transition: all 0.2s; font-size: 1rem; text-align: center;
-        }
-        .btn-primary { background: var(--accent); color: var(--bg-color); width: 100%; }
-        .btn-primary:hover { filter: brightness(1.1); }
-        .btn-success { background: var(--color-bev); color: var(--bg-color); }
-        .btn-whatsapp { background: #25D366; color: white; }
-        
-        .btn-loading { opacity: 0.7; pointer-events: none; }
-        .spinner {
-            display: inline-block; width: 1rem; height: 1rem; border: 2px solid rgba(0,0,0,0.3);
-            border-radius: 50%; border-top-color: currentColor; animation: spin 0.8s linear infinite;
-            margin-right: 0.5rem; vertical-align: middle;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        /* Results Area */
-        #results-area { display: none; animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-        .stat-value { font-size: 2rem; font-weight: 800; color: var(--accent); margin: 0.5rem 0; }
-        .stat-label { font-size: 0.9rem; color: var(--text-muted); }
-        .stat-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem; }
-        .chart-container { position: relative; height: 300px; width: 100%; margin-top: 1rem; }
-        
-        .info-panel {
-            background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--accent);
-            padding: 1rem; margin: 1rem 0; border-radius: 4px; font-size: 0.9rem;
-        }
-        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; }
-        @media (max-width: 600px) { .action-buttons { grid-template-columns: 1fr; } }
-        /* Modal */
-        .modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8); align-items: center; justify-content: center;
-        }
-        .modal-content {
-            background: var(--card-bg); padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px;
-            position: relative; border: 1px solid var(--border);
-        }
-        .close-modal { position: absolute; top: 1rem; right: 1.5rem; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
-        #preview-canvas { width: 100%; height: auto; margin: 1rem 0; border-radius: 8px; display: none; }
-        .hidden { display: none; }
-        .text-bev { color: var(--color-bev); }
-        .text-phev { color: var(--color-phev); }
-        .text-ice { color: var(--color-ice); }
-    </style>
-</head>
-<body>
-<div class="container">
-    <header class="header">
-        <h1>⚡ Simulador de Vehículos</h1>
-        <p>Comparativa profesional: Eléctrico vs Híbrido vs Combustión</p>
-    </header>
-    <!-- Wizard Progress -->
-    <div class="wizard-progress">
-        <div class="step active" id="step-indicator-1">1. Vehículo</div>
-        <div class="step" id="step-indicator-2">2. Uso</div>
-        <div class="step" id="step-indicator-3">3. Módulos</div>
-        <div class="step" id="step-indicator-4">4. Resultados</div>
-    </div>
-    <!-- STEP 1: VEHICLE SELECTION -->
-    <div id="step-1" class="card wizard-step">
-        <div class="section-title">🚗 Selección de Vehículo</div>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Modelo a Comparar (Geely)</label>
-                <select id="bev-model" onchange="updateICEPreset()">
-                    <option value="ex2">Geely EX2 (Compacto)</option>
-                    <option value="ex5">Geely EX5 (SUV Mediano)</option>
-                    <option value="starray">Geely Starray EM-i (Híbrido)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Vehículo de Combustión Referencia</label>
-                <select id="ice-segment" onchange="updateICEManual()">
-                    <option value="compacto">Compacto ($19k, 10km/L)</option>
-                    <option value="sedan">Sedán Mediano ($24k, 9km/L)</option>
-                    <option value="suv-med" selected>SUV Mediano ($30k, 8km/L)</option>
-                    <option value="suv-grande">SUV Grande ($41k, 7km/L)</option>
-                    <option value="pickup">Pickup / 4x4 ($40k, 7km/L)</option>
-                    <option value="van">Van / Furgoneta ($28.5k, 8km/L)</option>
-                    <option value="custom">Personalizado...</option>
-                </select>
-            </div>
-        </div>
-        <div id="ice-custom-fields" class="form-grid hidden" style="margin-top:1rem;">
-            <div class="form-group"><label>Precio ($)</label><input type="number" id="ice-price-custom" value="30000"></div>
-            <div class="form-group"><label>Rend. Ciudad (km/L)</label><input type="number" id="ice-city-custom" value="8" step="0.1"></div>
-            <div class="form-group"><label>Rend. Carretera (km/L)</label><input type="number" id="ice-hwy-custom" value="11.5" step="0.1"></div>
-            <div class="form-group"><label>Mant. cada 5k km ($)</label><input type="number" id="ice-maint-custom" value="105"></div>
-        </div>
-        <div style="margin-top:1rem; text-align:right;">
-            <button class="btn btn-primary" onclick="nextStep(2)">Siguiente: Parámetros ➡️</button>
-        </div>
-    </div>
-    <!-- STEP 2: USAGE PARAMETERS -->
-    <div id="step-2" class="card wizard-step hidden">
-        <div class="section-title">🛣️ Parámetros de Uso</div>
-        
-        <div class="slider-container">
-            <div class="slider-labels">
-                <span>Kilómetros Mensuales</span>
-                <span class="slider-value"><span id="km-display">1500</span> km/mes</span>
-            </div>
-            <input type="range" id="km-monthly" min="500" max="5000" step="50" value="1500" oninput="syncKM('range')">
-            <div class="slider-labels" style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-muted);">
-                <span id="km-daily-display">~50 km/día</span>
-                <span id="km-yearly-display">~18,000 km/año</span>
-            </div>
-        </div>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Región Geográfica</label>
-                <select id="geo-region" onchange="updateGeoPanel()">
-                    <option value="costa">Costa</option>
-                    <option value="sierra">Sierra</option>
-                    <option value="oriente">Oriente / Amazonía</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Tráfico Predominante</label>
-                <select id="traffic-level">
-                    <option value="fluido">Fluido</option>
-                    <option value="moderado" selected>Moderado</option>
-                    <option value="denso">Denso</option>
-                </select>
-            </div>
-        </div>
-        <div id="geo-panel" class="info-panel">
-            Factor aplicado: 🌴 Costa (Sin cambios en consumo)
-        </div>
-        <div class="form-grid" style="margin-top:1rem;">
-            <div class="form-group">
-                <label>% Ciudad</label>
-                <input type="number" id="pct-city" value="60" min="0" max="100">
-            </div>
-            <div class="form-group">
-                <label>% Carretera</label>
-                <input type="number" id="pct-hwy" value="40" min="0" max="100">
-            </div>
-            <div class="form-group">
-                <label>Aire Acondicionado</label>
-                <select id="ac-usage">
-                    <option value="0">Sin uso</option>
-                    <option value="5">Intermitente (+5%)</option>
-                    <option value="12">Constante (+12%)</option>
-                </select>
-            </div>
-        </div>
-        <div style="margin-top:1rem; display:flex; gap:1rem;">
-            <button class="btn" style="background:var(--border); color:var(--text-color);" onclick="nextStep(1)">⬅️ Atrás</button>
-            <button class="btn btn-primary" onclick="nextStep(3)">Siguiente: Módulos ➡️</button>
-        </div>
-    </div>
-    <!-- STEP 3: MODULES -->
-    <div id="step-3" class="card wizard-step hidden">
-        <div class="section-title">⚙️ Módulos Opcionales</div>
-        
-        <div class="toggle-row">
-            <span>Incluir Híbrido Enchufable (PHEV)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-phev" onchange="togglePHEVInputs()">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div id="phev-slider-container" class="slider-container hidden" style="background:rgba(74,144,226,0.1); padding:1rem; border-radius:8px; margin-top:0.5rem;">
-            <label style="color:var(--color-phev)">¿Con qué frecuencia usas el modo eléctrico?</label>
-            <div class="slider-labels">
-                <span>0% (Solo Gasolina)</span>
-                <span class="slider-value"><span id="phev-pct-display">80</span>%</span>
-                <span>100% (Solo Eléctrico)</span>
-            </div>
-            <input type="range" id="phev-electric-pct" min="0" max="100" value="80" oninput="document.getElementById('phev-pct-display').innerText = this.value">
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.5rem;">*Si los km eléctricos superan la autonomía de batería (105km), el simulador ajusta automáticamente.</p>
-        </div>
-        <div class="toggle-row">
-            <span>Calculadora de Carga</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-charge" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-row">
-            <span>Transporte Comercial (Apps/Taxi)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-commercial" onchange="toggleCommercialInputs()">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div id="commercial-inputs" class="hidden" style="margin-top:1rem; padding:1rem; background:rgba(0,0,0,0.2); border-radius:8px;">
-            <div class="form-grid">
-                <div class="form-group"><label>Distancia por carrera (km)</label><input type="number" id="comm-dist" value="3"></div>
-                <div class="form-group"><label>Tarifa por carrera ($)</label><input type="number" id="comm-fare" value="2.00" step="0.10"></div>
-                <div class="form-group"><label>Carreras por día</label><input type="number" id="comm-trips" value="15"></div>
-                <div class="form-group"><label>Días laborables/mes</label><input type="number" id="comm-days" value="25"></div>
-                <div class="form-group"><label>Comisión App (%)</label><input type="number" id="comm-commission" value="0"></div>
-                <div class="form-group">
-                    <label>¿Incluye propinas?</label>
-                    <select id="comm-tips-toggle" onchange="toggleTipsInput()">
-                        <option value="no">No</option>
-                        <option value="yes">Sí</option>
-                    </select>
-                </div>
-                <div class="form-group" id="comm-tips-field" style="visibility:hidden;">
-                    <label>Propina promedio/día ($)</label>
-                    <input type="number" id="comm-tips-amount" value="1.00" step="0.50">
-                </div>
-            </div>
-        </div>
-        <div class="toggle-row">
-            <span>Proyecciones y ROI (1-10 años)</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-roi" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="toggle-row">
-            <span>Emisiones CO₂</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mod-co2" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div style="margin-top:1rem; display:flex; gap:1rem;">
-            <button class="btn" style="background:var(--border); color:var(--text-color);" onclick="nextStep(2)">⬅️ Atrás</button>
-            <button class="btn btn-primary" id="btn-calculate" onclick="calculateAll()">🚀 Calcular Comparativa</button>
-        </div>
-    </div>
-    <!-- STEP 4: RESULTS -->
-    <div id="step-4" class="wizard-step hidden">
-        <div id="results-area" style="display:block;">
-            
-            <!-- Summary Cards -->
-            <div class="result-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Costo Mensual BEV</div>
-                    <div class="stat-value text-bev" id="res-bev-cost">$---</div>
-                    <div class="stat-sub" id="res-bev-detail">Energía + Mant.</div>
-                </div>
-                <div class="stat-card" id="card-phev-summary" style="display:none;">
-                    <div class="stat-label">Costo Mensual PHEV</div>
-                    <div class="stat-value text-phev" id="res-phev-cost">$---</div>
-                    <div class="stat-sub" id="res-phev-detail">Mixto</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Costo Mensual ICE</div>
-                    <div class="stat-value text-ice" id="res-ice-cost">$---</div>
-                    <div class="stat-sub" id="res-ice-detail">Combustible + Mant.</div>
-                </div>
-            </div>
-            <!-- Charts Row 1 -->
-            <div class="card">
-                <div class="section-title">📊 Comparativa de Costos Mensuales</div>
-                <div class="chart-container">
-                    <canvas id="chart-monthly"></canvas>
-                </div>
-            </div>
-            <!-- Commercial Results -->
-            <div id="commercial-results" class="card hidden">
-                <div class="section-title">💰 Análisis Comercial</div>
-                <div class="result-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Utilidad/Carrera (BEV)</div>
-                        <div class="stat-value text-bev" id="res-comm-profit-bev">$---</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Utilidad/Carrera (ICE)</div>
-                        <div class="stat-value text-ice" id="res-comm-profit-ice">$---</div>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="chart-commercial"></canvas>
-                </div>
-            </div>
-            <!-- ROI & Projections -->
-            <div id="roi-results" class="card hidden">
-                <div class="section-title">📈 Retorno de Inversión (ROI)</div>
-                <div class="info-panel" id="roi-text">Calculando...</div>
-                <div class="chart-container">
-                    <canvas id="chart-roi"></canvas>
-                </div>
-            </div>
-            <!-- CO2 Results -->
-            <div id="co2-results" class="card hidden">
-                <div class="section-title">🌱 Impacto Ambiental</div>
-                <div class="result-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">CO₂ BEV (kg/mes)</div>
-                        <div class="stat-value text-bev" id="res-co2-bev">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">CO₂ ICE (kg/mes)</div>
-                        <div class="stat-value text-ice" id="res-co2-ice">0</div>
-                    </div>
-                </div>
-                <p style="text-align:center; color:var(--text-muted); font-size:0.9rem;" id="res-co2-trees">Equivalente a X árboles plantados.</p>
-            </div>
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <button class="btn btn-success" onclick="openShareModal()">📤 Enviar Resumen</button>
-                <a href="https://wa.me/593979189728?text=Hola%20Jonathan,%20me%20interesa%20información%20sobre%20los%20vehículos%20Geely." target="_blank" class="btn btn-whatsapp">💬 Contactar a Jonathan (Geely)</a>
-            </div>
-            
-            <div style="text-align:center; margin-top:2rem; color:var(--text-muted); font-size:0.8rem;">
-                <p>Jonathan Ortiz | Asesor Comercial Geely | 097918972</p>
-                <p style="margin-top:0.5rem;">*Valores referenciales sujetos a cambios del mercado y políticas SRI.</p>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Share Modal -->
-<div id="share-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeShareModal()">&times;</span>
-        <h3 style="margin-bottom:1rem;">📤 Enviar al Prospecto</h3>
-        <div class="form-group">
-            <label>Número WhatsApp (sin +)</label>
-            <div style="display:flex; gap:0.5rem;">
-                <span style="padding:0.75rem; background:var(--bg-color); border:1px solid var(--border); border-radius:8px;">+593</span>
-                <input type="number" id="share-phone" placeholder="999999999">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Nombre (Opcional)</label>
-            <input type="text" id="share-name" placeholder="Ej. Carlos Pérez">
-        </div>
-        <canvas id="summary-canvas" width="2080" height="2080" style="display:none;"></canvas>
-        <img id="preview-canvas" alt="Vista previa del resumen">
-        <button class="btn btn-primary" onclick="downloadAndSend()">Descargar e Ir a WhatsApp</button>
-    </div>
-</div>
-<script>
-/**
- * CONFIGURACIÓN Y CONSTANTES
- */
-const PRICES = {
-    gas_extra: 3.31,
-    gas_super: 5.70,
-    diesel: 3.25,
-    elec_home: 0.10,
-    elec_fast: 0.35,
-    elec_semi: 0.25,
-    elec_fixed: 1.50
-};
-const VEHICLES = {
-    ex2: { price: 18990, consumption: 15.0, battery: 39.4, range: 395, segment: 'compacto' },
-    ex5: { price: 27990, consumption: 17.0, battery: 60.22, range: 495, segment: 'suv-med' },
-    starray: { price: 29990, consumption_ev: 5.5, consumption_hybrid_l100: 4.8, battery: 18.4, range_ev: 105, segment: 'suv-med' }
-};
-const ICE_SEGMENTS = {
-    compacto: { price: 19000, city: 10, hwy: 14, maint: 75 },
-    sedan: { price: 24000, city: 9, hwy: 13, maint: 85 },
-    'suv-med': { price: 30000, city: 8, hwy: 11.5, maint: 105 },
-    'suv-grande': { price: 41000, city: 7, hwy: 10, maint: 130 },
-    pickup: { price: 40000, city: 7, hwy: 10.5, maint: 120 },
-    van: { price: 28500, city: 8, hwy: 11, maint: 115 }
-};
-const GEO_FACTORS = {
-    costa: { bev: 0, ice: 0, mant: 0, label: '🌴 Costa' },
-    sierra: { bev: 0.05, ice: 0.10, mant: 0.08, label: '🏔️ Sierra' },
-    oriente: { bev: 0.02, ice: 0.05, mant: 0.15, label: '🌳 Oriente' }
-};
-const TRAFFIC_FACTORS = {
-    fluido: { ICE: 0, BEV: 0.05 },
-    moderado: { ICE: 0.08, BEV: 0 },
-    denso: { ICE: 0.18, BEV: -0.03 }
-};
-let chartInstances = {};
-/**
- * FUNCIONES DE UI Y WIZARD
- */
-function nextStep(step) {
-    // Ocultar todos los pasos
-    document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.step').forEach(el => {
-        el.classList.remove('active', 'completed');
-    });
-    // Mostrar paso actual
-    document.getElementById(`step-${step}`).classList.remove('hidden');
-    
-    // Actualizar indicadores
-    for(let i=1; i<=step; i++) {
-        const ind = document.getElementById(`step-indicator-${i}`);
-        if(i === step) ind.classList.add('active');
-        else ind.classList.add('completed');
-    }
-    if(step === 4) {
-        document.getElementById('results-area').style.display = 'none';
-        document.getElementById('btn-calculate').innerHTML = '<span class="spinner"></span> Calculando...';
-        document.getElementById('btn-calculate').classList.add('btn-loading');
-        
-        setTimeout(() => {
-            calculateAll();
-            document.getElementById('results-area').style.display = 'block';
-            document.getElementById('btn-calculate').innerHTML = '🚀 Calcular de Nuevo';
-            document.getElementById('btn-calculate').classList.remove('btn-loading');
-        }, 600);
-    }
-}
-function syncKM(source) {
-    const slider = document.getElementById('km-monthly');
-    const val = parseInt(slider.value);
-    document.getElementById('km-display').innerText = val;
-    document.getElementById('km-daily-display').innerText = `~${Math.round(val/30)} km/día`;
-    document.getElementById('km-yearly-display').innerText = `~${val*12} km/año`;
-}
-function updateGeoPanel() {
-    const region = document.getElementById('geo-region').value;
-    const f = GEO_FACTORS[region];
-    const panel = document.getElementById('geo-panel');
-    panel.innerHTML = `
-        Factor aplicado: ${f.label}<br>
-        • Consumo eléctrico: ${f.bev > 0 ? '+'+f.bev*100 : '0'}%<br>
-        • Consumo combustión: ${f.ice > 0 ? '+'+f.ice*100 : '0'}%<br>
-        • Mantenimiento: ${f.mant > 0 ? '+'+f.mant*100 : '0'}%
-    `;
-}
-function updateICEPreset() {
-    const model = document.getElementById('bev-model').value;
-    const select = document.getElementById('ice-segment');
-    
-    if(model === 'ex2') {
-        select.value = 'compacto';
-    } else {
-        select.value = 'suv-med';
-    }
-    updateICEManual();
-}
-function updateICEManual() {
-    const seg = document.getElementById('ice-segment').value;
-    const customFields = document.getElementById('ice-custom-fields');
-    
-    if(seg === 'custom') {
-        customFields.classList.remove('hidden');
-    } else {
-        customFields.classList.add('hidden');
-        // Precargar valores
-        const data = ICE_SEGMENTS[seg];
-        document.getElementById('ice-price-custom').value = data.price;
-        document.getElementById('ice-city-custom').value = data.city;
-        document.getElementById('ice-hwy-custom').value = data.hwy;
-        document.getElementById('ice-maint-custom').value = data.maint;
-    }
-}
-function togglePHEVInputs() {
-    const isChecked = document.getElementById('mod-phev').checked;
-    const container = document.getElementById('phev-slider-container');
-    if(isChecked) container.classList.remove('hidden');
-    else container.classList.add('hidden');
-}
-function toggleCommercialInputs() {
-    const isChecked = document.getElementById('mod-commercial').checked;
-    const container = document.getElementById('commercial-inputs');
-    if(isChecked) container.classList.remove('hidden');
-    else container.classList.add('hidden');
-}
-function toggleTipsInput() {
-    const val = document.getElementById('comm-tips-toggle').value;
-    const field = document.getElementById('comm-tips-field');
-    field.style.visibility = (val === 'yes') ? 'visible' : 'hidden';
-}
-/**
- * MOTOR DE CÁLCULO
- */
-function calculateAll() {
-    // 1. Obtener Inputs
-    const km_monthly = parseInt(document.getElementById('km-monthly').value);
-    const geo = GEO_FACTORS[document.getElementById('geo-region').value];
-    const traffic = TRAFFIC_FACTORS[document.getElementById('traffic-level').value];
-    const ac_factor = parseInt(document.getElementById('ac-usage').value) / 100;
-    const pct_city = parseInt(document.getElementById('pct-city').value) / 100;
-    const pct_hwy = parseInt(document.getElementById('pct-hwy').value) / 100;
-    // BEV Data
-    const bevModel = document.getElementById('bev-model').value;
-    const bevData = VEHICLES[bevModel];
-    const bev_price = bevData.price;
-    
-    // ICE Data
-    const ice_price = parseFloat(document.getElementById('ice-price-custom').value);
-    const ice_city_kmL = parseFloat(document.getElementById('ice-city-custom').value);
-    const ice_hwy_kmL = parseFloat(document.getElementById('ice-hwy-custom').value);
-    const ice_maint_cost = parseFloat(document.getElementById('ice-maint-custom').value);
-    // PHEV Data (Starray Fixed for now as per prompt)
-    const isPHEVActive = document.getElementById('mod-phev').checked;
-    const phev_price = VEHICLES.starray.price;
-    const phev_pct_elec = parseInt(document.getElementById('phev-electric-pct').value) / 100;
-    const phev_range_ev = 105; // km
-    // 2. Cálculos BEV
-    const regen_bev = (pct_city * 0.15) + (pct_hwy * 0.08);
-    const consumption_bev_base = bevData.consumption; // kWh/100km
-    const consumption_bev_adj = consumption_bev_base * (1 - regen_bev) * (1 + geo.bev) * (1 + traffic.BEV) * (1 + ac_factor);
-    
-    const kwh_monthly = (consumption_bev_adj / 100) * km_monthly;
-    const cost_bev_energy = (kwh_monthly * PRICES.elec_home) + PRICES.elec_fixed;
-    
-    const maint_bev_km_cost = (80 / 10000) * (1 + geo.mant);
-    const cost_bev_maint = km_monthly * maint_bev_km_cost;
-    
-    const total_bev_monthly = cost_bev_energy + cost_bev_maint;
-    // 3. Cálculos ICE
-    const city_adj = ice_city_kmL / (1 + geo.ice);
-    const hwy_adj = ice_hwy_kmL / (1 + geo.ice);
-    const combined_inv = (pct_city / city_adj) + (pct_hwy / hwy_adj);
-    const rend_combined = 1 / combined_inv;
-    const rend_final_ice = rend_combined / (1 + traffic.ICE); // Tráfico reduce rendimiento
-    
-    const liters_monthly = km_monthly / rend_final_ice;
-    const cost_ice_fuel = liters_monthly * (PRICES.gas_extra / 3.785); // Default Extra
-    
-    const maint_ice_km_cost = (ice_maint_cost / 5000) * (1 + geo.mant);
-    const cost_ice_maint = km_monthly * maint_ice_km_cost;
-    
-    // Matrícula ICE (Estimada anual / 12)
-    const matricula_ice_annual = calculateMatricula(ice_price, 2024, 2026);
-    const cost_ice_monthly_total = cost_ice_fuel + cost_ice_maint + (matricula_ice_annual / 12);
-    // 4. Cálculos PHEV (Si activo)
-    let total_phev_monthly = 0;
-    let cost_phev_detail = "";
-    
-    if(isPHEVActive) {
-        // Lógica híbrida
-        const km_ev_possible = km_monthly * phev_pct_elec;
-        // Si los km eléctricos posibles superan la autonomía diaria promedio implícita, ajustamos, 
-        // pero el prompt dice: "Si km_mensuales × (pct/100) ≤ 105 km" (esto parece referirse a viaje único o diario?)
-        // Asumiremos proporcional simple para el mes según el slider, con tope de eficiencia.
-        
-        const km_ev = km_monthly * phev_pct_elec;
-        const km_hybrid = km_monthly - km_ev;
-        
-        // Parte Eléctrica
-        const regen_phev = (pct_city * 0.12) + (pct_hwy * 0.06);
-        const consumption_phev_ev_adj = 5.5 * (1 - regen_phev) * (1 + geo.bev) * (1 + traffic.BEV) * (1 + ac_factor);
-        const kwh_phev = (consumption_phev_ev_adj / 100) * km_ev;
-        const cost_phev_elec = (kwh_phev * PRICES.elec_home) + (PRICES.elec_fixed * phev_pct_elec); // Prorrateo cargo fijo
-        
-        // Parte Combustión (Rendimiento híbrido 20.83 km/L = 100/4.8)
-        const rend_hybrid = 20.83; 
-        const liters_phev = km_hybrid / rend_hybrid;
-        const cost_phev_fuel = liters_phev * (PRICES.gas_extra / 3.785);
-        
-        // Mantenimiento PHEV (7500km intervalo, $95 base)
-        const maint_phev_km_cost = (95 / 7500) * (1 + geo.mant);
-        const cost_phev_maint = km_monthly * maint_phev_km_cost;
-        // Matrícula PHEV (En Ecuador los híbridos pagan menos o igual según ley, asumiremos tramo reducido o estándar. Para este simulador usaremos 50% del ICE como incentivo común o cálculo SRI normal. Usaremos SRI normal por seguridad).
-        const matricula_phev_annual = calculateMatricula(phev_price, 2024, 2026);
-        total_phev_monthly = cost_phev_elec + cost_phev_fuel + cost_phev_maint + (matricula_phev_annual / 12);
-        cost_phev_detail = `${Math.round(phev_pct_elec*100)}% EV / ${Math.round((1-phev_pct_elec)*100)}% Gas`;
-    }
-    // 5. Render Resultados Base
-    animateValue("res-bev-cost", total_bev_monthly, true);
-    document.getElementById('res-bev-detail').innerText = `$${cost_bev_energy.toFixed(2)} Energía + $${cost_bev_maint.toFixed(2)} Mant.`;
-    
-    animateValue("res-ice-cost", cost_ice_monthly_total, true);
-    document.getElementById('res-ice-detail').innerText = `$${cost_ice_fuel.toFixed(2)} Comb + $${cost_ice_maint.toFixed(2)} Mant.`;
-    if(isPHEVActive) {
-        document.getElementById('card-phev-summary').style.display = 'block';
-        animateValue("res-phev-cost", total_phev_monthly, true);
-        document.getElementById('res-phev-detail').innerText = cost_phev_detail;
-    } else {
-        document.getElementById('card-phev-summary').style.display = 'none';
-    }
-    // 6. Gráfico Mensual
-    renderMonthlyChart(total_bev_monthly, isPHEVActive ? total_phev_monthly : null, cost_ice_monthly_total);
-    // 7. Módulo Comercial
-    if(document.getElementById('mod-commercial').checked) {
-        calculateCommercial(km_monthly, total_bev_monthly, isPHEVActive ? total_phev_monthly : null, cost_ice_monthly_total);
-    } else {
-        document.getElementById('commercial-results').classList.add('hidden');
-    }
-    // 8. ROI & Proyecciones
-    if(document.getElementById('mod-roi').checked) {
-        calculateROI(bev_price, isPHEVActive ? phev_price : null, ice_price, total_bev_monthly, isPHEVActive ? total_phev_monthly : null, cost_ice_monthly_total);
-    } else {
-        document.getElementById('roi-results').classList.add('hidden');
-    }
-    // 9. CO2
-    if(document.getElementById('mod-co2').checked) {
-        calculateCO2(km_monthly, rend_final_ice);
-    } else {
-        document.getElementById('co2-results').classList.add('hidden');
-    }
-    // Guardar datos globales para la imagen
-    window.simulationData = {
-        bev: { cost: total_bev_monthly, model: bevModel },
-        ice: { cost: cost_ice_monthly_total },
-        phev: isPHEVActive ? { cost: total_phev_monthly } : null,
-        savings: cost_ice_monthly_total - total_bev_monthly
-    };
-}
-function calculateMatricula(price, year_manuf, year_current) {
-    const age = year_current - year_manuf;
-    let factor = 1.0;
-    // Depreciación simplificada exponencial
-    for(let i=0; i<age; i++) {
-        if(i===0) factor *= 0.80;
-        else if(i===1) factor *= 0.85;
-        else factor *= 0.90;
-    }
-    
-    let avaluo = price * factor;
-    if(avaluo < price * 0.10) avaluo = price * 0.10;
-    
-    let tasa, base, fija;
-    if(avaluo <= 4000) { tasa=0.005; base=0; fija=0; }
-    else if(avaluo <= 8000) { tasa=0.010; base=4000; fija=20; }
-    else if(avaluo <= 12000) { tasa=0.015; base=8000; fija=60; }
-    else if(avaluo <= 16000) { tasa=0.020; base=12000; fija=140; }
-    else if(avaluo <= 20000) { tasa=0.025; base=16000; fija=260; }
-    else if(avaluo <= 24000) { tasa=0.030; base=20000; fija=420; }
-    else { tasa=0.035; base=24000; fija=620; }
-    
-    const impuesto = fija + ((avaluo - base) * tasa);
-    return impuesto + 36 + 35 + 10; // ANT + SPPAT + Rodaje
-}
-function calculateCommercial(km_monthly, cost_bev, cost_phev, cost_ice) {
-    const dist = parseFloat(document.getElementById('comm-dist').value);
-    const fare = parseFloat(document.getElementById('comm-fare').value);
-    const trips_day = parseFloat(document.getElementById('comm-trips').value);
-    const days = parseFloat(document.getElementById('comm-days').value);
-    const commission_pct = parseFloat(document.getElementById('comm-commission').value) / 100;
-    const tips_active = document.getElementById('comm-tips-toggle').value === 'yes';
-    const tips_amt = parseFloat(document.getElementById('comm-tips-amount').value);
-    const trips_month = trips_day * days;
-    const km_commercial = trips_month * dist;
-    
-    const gross_income = trips_month * fare;
-    const commission_val = gross_income * commission_pct;
-    const tips_val = tips_active ? (days * tips_amt) : 0;
-    const net_income = gross_income - commission_val + tips_val;
-    // Costo por km de cada vehículo
-    const cost_per_km_bev = cost_bev / km_monthly;
-    const cost_per_km_ice = cost_ice / km_monthly;
-    const cost_per_km_phev = cost_phev ? (cost_phev / km_monthly) : 0;
-    const cost_trip_bev = cost_per_km_bev * dist;
-    const cost_trip_ice = cost_per_km_ice * km_monthly; // Error lógico corregido abajo
-    const real_cost_trip_ice = cost_per_km_ice * dist;
-    const real_cost_trip_phev = cost_per_km_phev * dist;
-    const profit_bev = fare - cost_trip_bev;
-    const profit_ice = fare - real_cost_trip_ice;
-    const profit_phev = fare - real_cost_trip_phev;
-    document.getElementById('commercial-results').classList.remove('hidden');
-    animateValue("res-comm-profit-bev", profit_bev, true);
-    animateValue("res-comm-profit-ice", profit_ice, true);
-    renderCommercialChart(profit_bev, cost_phev ? profit_phev : null, profit_ice);
-}
-function calculateROI(price_bev, price_phev, price_ice, cost_bev, cost_phev, cost_ice) {
-    document.getElementById('roi-results').classList.remove('hidden');
-    
-    const diff_bev = price_bev - price_ice;
-    const save_month_bev = cost_ice - cost_bev;
-    
-    let roi_html = "<h4>🆚 BEV vs ICE</h4>";
-    
-    if(save_month_bev > 0) {
-        const months = diff_bev / save_month_bev;
-        if(months < 1) roi_html += "<p class='text-bev'>Ventaja desde el día 1</p>";
-        else if(months < 12) roi_html += `<p>Recuperas la inversión en <strong>${Math.ceil(months)} meses</strong></p>`;
-        else {
-            const y = Math.floor(months/12);
-            const m = Math.ceil(months%12);
-            roi_html += `<p>Retorno en <strong>${y} años y ${m} meses</strong></p>`;
-        }
-    } else {
-        roi_html += "<p class='text-ice'>El ICE es más económico mensualmente con estos datos.</p>";
-    }
-    if(price_phev && cost_phev) {
-        const diff_phev = price_phev - price_ice;
-        const save_month_phev = cost_ice - cost_phev;
-        roi_html += "<hr style='border:0; border-top:1px solid var(--border); margin:1rem 0;'>";
-        roi_html += "<h4>🆚 PHEV vs ICE</h4>";
-        if(save_month_phev > 0) {
-            const months = diff_phev / save_month_phev;
-             if(months < 1) roi_html += "<p class='text-phev'>Ventaja desde el día 1</p>";
-             else roi_html += `<p>Retorno en <strong>${Math.ceil(months)} meses</strong></p>`;
-        } else {
-            roi_html += "<p class='text-ice'>El ICE es más económico mensualmente.</p>";
-        }
-    }
-    document.getElementById('roi-text').innerHTML = roi_html;
-    renderROIChart(diff_bev, save_month_bev * 12, price_phev ? (price_phev - price_ice) : null, cost_phev ? (cost_ice - cost_phev)*12 : null);
-}
-function calculateCO2(km, rend_ice) {
-    // Factor emisión gasolina ~2.3 kg CO2 / litro
-    const liters = km / rend_ice;
-    const co2_ice = liters * 2.3 * (1000/1000); // kg
-    
-    // BEV Ecuador (mix hidroeléctrico muy limpio) ~0.05 kg CO2 / kWh (muy optimista pero realista para hidro)
-    // Usaremos 0.1 para ser conservadores con pérdidas de red.
-    // Consumo promedio 15kWh/100km
-    const kwh = (15/100) * km;
-    const co2_bev = kwh * 0.1; 
-    document.getElementById('co2-results').classList.remove('hidden');
-    document.getElementById('res-co2-bev').innerText = co2_bev.toFixed(1);
-    document.getElementById('res-co2-ice').innerText = co2_ice.toFixed(1);
-    
-    const diff = co2_ice - co2_bev;
-    const trees = (diff / 20).toFixed(1); // 1 árbol absorbe ~20kg CO2/año -> /12 para mes? No, mejor decir al año.
-    // Ajuste: Mostramos ahorro mensual equivalente a árboles plantados por un año.
-    document.getElementById('res-co2-trees').innerText = `Ahorras ${diff.toFixed(1)} kg CO2/mes. Equivale a plantar ${trees} árboles.`;
-}
-/**
- * GRÁFICOS (Chart.js)
- */
-function destroyChart(id) {
-    if(chartInstances[id]) {
-        chartInstances[id].destroy();
-        delete chartInstances[id];
-    }
-}
-function renderMonthlyChart(bev, phev, ice) {
-    destroyChart('chart-monthly');
-    const ctx = document.getElementById('chart-monthly').getContext('2d');
-    
-    const labels = ['Eléctrico (BEV)', phev ? 'Híbrido (PHEV)' : null, 'Combustión (ICE)'].filter(Boolean);
-    const data = [bev, phev, ice].filter((_, i) => i !== 1 || phev !== null);
-    const colors = ['#00C896', '#4A90E2', '#E57373'].filter((_, i) => i !== 1 || phev !== null);
-    chartInstances['chart-monthly'] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Costo Mensual ($)',
-                data: data,
-                backgroundColor: colors,
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, grid: { color: '#334155' } },
-                x: { grid: { display: false } }
-            }
-        }
-    });
-}
-function renderCommercialChart(prof_bev, prof_phev, prof_ice) {
-    destroyChart('chart-commercial');
-    const ctx = document.getElementById('chart-commercial').getContext('2d');
-    
-    const labels = ['BEV', prof_phev!==null ? 'PHEV' : null, 'ICE'].filter(Boolean);
-    const data = [prof_bev, prof_phev, prof_ice].filter((_, i) => i !== 1 || prof_phev !== null);
-    const colors = ['#00C896', '#4A90E2', '#E57373'].filter((_, i) => i !== 1 || prof_phev !== null);
-    chartInstances['chart-commercial'] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Utilidad por Carrera ($)',
-                data: data,
-                backgroundColor: colors,
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: '#334155' } },
-                x: { grid: { display: false } }
-            }
-        }
-    });
-}
-function renderROIChart(diff_bev, save_year_bev, diff_phev, save_year_phev) {
-    destroyChart('chart-roi');
-    const ctx = document.getElementById('chart-roi').getContext('2d');
-    
-    const labels = [];
-    const dataBev = [];
-    const dataPhev = [];
-    
-    for(let i=1; i<=5; i++) {
-        labels.push(`Año ${i}`);
-        dataBev.push((save_year_bev * i) - diff_bev);
-        if(diff_phev !== null) dataPhev.push((save_year_phev * i) - diff_phev);
-    }
-    const datasets = [
-        {
-            label: 'Ahorro Acumulado BEV',
-            data: dataBev,
-            borderColor: '#00C896',
-            tension: 0.4
-        }
-    ];
-    
-    if(diff_phev !== null) {
-        datasets.push({
-            label: 'Ahorro Acumulado PHEV',
-            data: dataPhev,
-            borderColor: '#4A90E2',
-            tension: 0.4
-        });
-    }
-    chartInstances['chart-roi'] = new Chart(ctx, {
-        type: 'line',
-        data: { labels, datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { grid: { color: '#334155' } },
-                x: { grid: { display: false } }
-            }
-        }
-    });
-}
-/**
- * UTILS & IMAGE GENERATION
- */
-function animateValue(id, value, isCurrency) {
-    const obj = document.getElementById(id);
-    const start = 0;
-    const end = value;
-    const duration = 1000;
-    let startTimestamp = null;
-    
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const currentVal = progress * (end - start) + start;
-        obj.innerHTML = isCurrency ? '$' + currentVal.toFixed(2) : currentVal.toFixed(0);
-        if (progress < 1) window.requestAnimationFrame(step);
-    };
-    window.requestAnimationFrame(step);
-}
-function openShareModal() {
-    document.getElementById('share-modal').style.display = 'flex';
-    generateSummaryImage();
-}
-function closeShareModal() {
-    document.getElementById('share-modal').style.display = 'none';
-}
-function generateSummaryImage() {
-    const canvas = document.getElementById('summary-canvas');
-    const ctx = canvas.getContext('2d');
-    const data = window.simulationData;
-    
-    // Fondo
-    ctx.fillStyle = '#0F172A';
-    ctx.fillRect(0, 0, 2080, 2080);
-    
-    // Header
-    ctx.fillStyle = '#38BDF8';
-    ctx.fillRect(0, 0, 2080, 200);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 60px Inter';
-    ctx.fillText("Simulador de Vehículos - Resumen", 100, 120);
-    
-    // Cuerpo
-    let y = 300;
-    ctx.font = '40px Inter';
-    ctx.fillStyle = '#F1F5F9';
-    
-    ctx.fillText(`Modelo: Geely ${data.bev.model.toUpperCase()}`, 100, y); y+=80;
-    ctx.fillText(`Ahorro Mensual vs ICE: $${data.savings.toFixed(2)}`, 100, y); y+=80;
-    
-    ctx.fillStyle = '#00C896';
-    ctx.fillText(`Costo BEV: $${data.bev.cost.toFixed(2)}/mes`, 100, y); y+=60;
-    
-    ctx.fillStyle = '#E57373';
-    ctx.fillText(`Costo ICE: $${data.ice.cost.toFixed(2)}/mes`, 100, y); y+=60;
-    if(data.phev) {
-        ctx.fillStyle = '#4A90E2';
-        ctx.fillText(`Costo PHEV: $${data.phev.cost.toFixed(2)}/mes`, 100, y); y+=60;
-    }
-    // Footer
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 50px Inter';
-    ctx.fillText("Jonathan Ortiz | 097918972", 100, 1950);
-    
-    // Preview
-    const img = document.getElementById('preview-canvas');
-    img.src = canvas.toDataURL();
-    img.style.display = 'block';
-}
-function downloadAndSend() {
-    const phone = document.getElementById('share-phone').value;
-    const name = document.getElementById('share-name').value;
-    const canvas = document.getElementById('summary-canvas');
-    
-    if(!phone) { alert('Ingresa un número de teléfono'); return; }
-    
-    // Download
-    const link = document.createElement('a');
-    link.download = `Resumen_Geely_${name || 'Cliente'}.png`;
-    link.href = canvas.toDataURL();
-    link.click();
-    
-    // WhatsApp
-    const msg = `Hola ${name || ''}, te envío el resumen de tu simulación de vehículo Geely. Revisa la imagen adjunta.`;
-    window.open(`https://wa.me/593${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-    
-    closeShareModal();
-}
-// Init
-syncKM();
-updateICEPreset();
-</script>
-</body>
-</html>
-HTMLEOF
+
