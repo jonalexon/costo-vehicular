@@ -1150,22 +1150,24 @@ function downloadImage(){
 
 // ===== MENSAJE WHATSAPP CON FORMATO MEJORADO =====
 function shareWhatsApp(){
-    const ph=$('#sharePhone').value.replace(/\s/g,'');
-    const pre=$('#sharePrefix').value.replace(/[^+\d]/g,'');
-    const name=$('#shareName').value.trim();
-    if(!ph){alert('Ingresa el número de teléfono.');return;}
-    const r=state.results;
-    const saludo=name?'¡Hola '+name+'!':'¡Hola!';
-    const ahorroMensual=Math.max(0,r.ahorroTotal);
-    const ahorroAnual=ahorroMensual*12;
-    const ahorro5Anios=Math.round(r.proyData[1].total);
+    const ph = $('#sharePhone').value.replace(/\s/g,'');
+    const pre = $('#sharePrefix').value.replace(/[^+\d]/g,'');
+    const name = $('#shareName').value.trim();
+    if(!ph){ alert('Ingresa el número de teléfono.'); return; }
     
-    let msg=saludo+' Soy *Jonathan Ortiz*, asesor comercial de Geely. Te comparto tu simulación:\n\n';
-    msg+='*⚡ Ahorro mensual:* $'+ahorroMensual.toFixed(2)+'\n';
-    msg+='*📅 Ahorro anual:* $'+ahorroAnual.toFixed(2)+'\n';
-    msg+='*📈 Ahorro en 5 años:* $'+ahorro5Anios.toLocaleString()+'\n\n';
-    msg+='Cualquier inquietud estoy al pendiente. ✌️';
-    window.open('https://wa.me/'+pre.replace('+','')+ph+'?text='+encodeURIComponent(msg),'_blank');
+    const r = state.results;
+    const saludo = name ? '¡Hola ' + name + '!' : '¡Hola!';
+    const ahorroMensual = Math.max(0, r.ahorroTotal);
+    const ahorroAnual = ahorroMensual * 12;
+    const ahorro5Anios = Math.round(r.proyData[1].total);
+    
+    let msg = saludo + ' Soy *Jonathan Ortiz*, asesor comercial de Geely. Te comparto tu simulación:\n\n';
+    msg += '- *Ahorro mensual:* $' + ahorroMensual.toFixed(2) + '\n';
+    msg += '- *Ahorro anual:* $' + ahorroAnual.toFixed(2) + '\n';
+    msg += '- *Ahorro en 5 años:* $' + ahorro5Anios.toLocaleString() + '\n\n';
+    msg += 'Cualquier inquietud estoy al pendiente.';
+    
+    window.open('https://wa.me/' + pre.replace('+','') + ph + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
 function openContactModal(){
