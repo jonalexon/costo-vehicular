@@ -1,4 +1,19 @@
-<!DOCTYPE html>
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  background-color: white; /* Ensure the iframe has a white background */
+                }
+
+                
+              </style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -146,12 +161,11 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 </header>
 <div class="step-indicator" id="stepIndicator">
 <span class="step-dot active" data-step="1">① Vehículo</span>
-<span class="step-dot" data-step="2"> Uso</span>
+<span class="step-dot" data-step="2">② Uso</span>
 <span class="step-dot" data-step="3">③ Módulos</span>
 <span class="step-dot" data-step="4">④ Resultados</span>
 </div>
 
-<!-- PASO 1 -->
 <div class="step active" id="step1">
 <div class="card">
 <h3>🚗 Selección de Vehículos</h3>
@@ -170,15 +184,14 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <label>Modo de conducción PHEV</label>
 <div class="mode-selector" id="phevModeSelector">
 <button type="button" class="mode-btn" data-mode="pure"><span class="mode-icon">🔋</span>Pure<span class="mode-desc">100% eléctrico</span></button>
-<button type="button" class="mode-btn active" data-mode="hybrid"><span class="mode-icon"></span>Hybrid<span class="mode-desc">Combinado (realista)</span></button>
-<button type="button" class="mode-btn" data-mode="power"><span class="mode-icon"></span>Power<span class="mode-desc">Máx. potencia</span></button>
+<button type="button" class="mode-btn active" data-mode="hybrid"><span class="mode-icon">🔄</span>Hybrid<span class="mode-desc">Combinado (realista)</span></button>
+<button type="button" class="mode-btn" data-mode="power"><span class="mode-icon">⚡</span>Power<span class="mode-desc">Máx. potencia</span></button>
 </div>
 <div class="panel-info" id="phevModeInfo" style="margin-top:8px"></div>
 </div>
 
-<!-- NUEVO: BLOQUE DE MANTENIMIENTO COMPARATIVO -->
 <div class="editable-section" style="margin-top:14px">
-<h4>🔧 Costos de Mantenimiento <span class="tooltip">ℹ️<span class="tooltip-text">El mantenimiento EV es cada 20,000 km (Geely) vs 5,000 km para MDC. Se calcula el costo mensual según km recorridos.</span></span></h4>
+<h4> Costos de Mantenimiento <span class="tooltip">ℹ️<span class="tooltip-text">El mantenimiento EV es cada 20,000 km (Geely) vs 5,000 km para MDC. Se calcula el costo mensual según km recorridos.</span></span></h4>
 <div class="maint-compare">
 <div class="maint-box ev-box">
 <h5>⚡ <span id="maintEvName">EV</span></h5>
@@ -196,7 +209,6 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <div class="panel-info" style="margin-top:10px" id="maintSavingsInfo">💰 <strong>Ahorro mensual en mantenimiento:</strong> $0.00</div>
 </div>
 
-<!-- NUEVO: BLOQUE DE MATRÍCULA -->
 <div class="editable-section" style="margin-top:14px">
 <h4>📋 Impuestos y Matrícula <span class="tooltip">ℹ️<span class="tooltip-text">En Ecuador 2026, los vehículos eléctricos pagan $10 fijo de matrícula. Los MDC pagan según avalúo (tramos SRI) + ANT + SPPAT + Rodaje.</span></span></h4>
 <div class="maint-compare">
@@ -241,19 +253,19 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 <option value="diesel">Diésel</option>
 </select>
 <div class="editable-section" style="margin-top:14px">
-<h4> Precios de combustible (editables — $/galón)</h4>
+<h4>⛽ Precios de combustible (editables — $/galón)</h4>
 <div class="fuel-price-row">
 <div><label>Extra</label><input type="number" id="fuelPriceExtra" value="3.31" step="0.01"></div>
 <div><label>Súper</label><input type="number" id="fuelPriceSuper" value="5.70" step="0.01"></div>
 <div><label>Diésel</label><input type="number" id="fuelPriceDiesel" value="3.25" step="0.01"></div>
 </div>
-<h4 style="margin-top:12px"> Tarifas eléctricas (editables — $/kWh)</h4>
+<h4 style="margin-top:12px">🔌 Tarifas eléctricas (editables — $/kWh)</h4>
 <div class="fuel-price-row">
 <div><label>Residencial</label><input type="number" id="tarifaResid" value="0.10" step="0.001"></div>
 <div><label>Semi-rápida AC</label><input type="number" id="tarifaSemi" value="0.25" step="0.001"></div>
 <div><label>Rápida DC</label><input type="number" id="tarifaRapida" value="0.35" step="0.001"></div>
 </div>
-<h4 style="margin-top:12px">⚡ Potencia de carga (editable — kW)</h4>
+<h4 style="margin-top:12px"> Potencia de carga (editable — kW)</h4>
 <div class="fuel-price-row">
 <div><label>Residencial</label><input type="number" id="potResid" value="7" step="0.1"></div>
 <div><label>Semi-rápida AC</label><input type="number" id="potSemi" value="22" step="0.5"></div>
@@ -270,7 +282,6 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 </div>
 </div>
 
-<!-- PASO 2 -->
 <div class="step" id="step2">
 <div class="card">
 <h3>📐 Parámetros de Uso</h3>
@@ -316,7 +327,6 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 </div>
 </div>
 
-<!-- PASO 3 -->
 <div class="step" id="step3">
 <div class="card">
 <h3>⚙️ Módulos Opcionales</h3>
@@ -342,7 +352,6 @@ input:focus,select:focus{outline:none;border-color:var(--ev);box-shadow:0 0 0 3p
 </div>
 </div>
 
-<!-- PASO 4 -->
 <div class="step" id="step4">
 <div class="card">
 <h3>📊 Resultados</h3>
@@ -409,7 +418,7 @@ const state={
     inflacionComb:0.05,inflacionElec:0.02,inflacionMant:0.04,
     results:null,chartInstances:{},calculated:false,
     evEditable:null,
-    mdcEditable:{rendMixto:10.5,maint:120,maintInterval:5000,price:30000,year:2024},
+    mdcEditable:{rendMixto:10.5,maint:120,maintInterval:5000,price:30000,year:2024,name:'SUV Mediano'},
     evMaintInterval:20000,evMaintCost:80,
     evMatricula:10
 };
@@ -431,7 +440,6 @@ const mdcSegments={
     van:{rendMixto:8,maint:140,maintInterval:5000,name:'Van / Furgoneta',price:28500,year:2024}
 };
 
-// ===== TEMA =====
 function initTheme(){
     const saved=localStorage.getItem('sim-theme')||'dark';
     document.documentElement.setAttribute('data-theme',saved);
@@ -446,10 +454,9 @@ function toggleTheme(){
 }
 function updateThemeIcon(){
     const theme=document.documentElement.getAttribute('data-theme');
-    $('#themeToggle').textContent=theme==='dark'?'️':'🌙';
+    $('#themeToggle').textContent=theme==='dark'?'☀️':'🌙';
 }
 
-// ===== NAVEGACIÓN =====
 function goToStep(step){
     state.currentStep=step;
     $$('.step').forEach(s=>s.classList.remove('active'));
@@ -491,14 +498,13 @@ function updateCityContext(){
 function updateRegionPanel(){
     const r=$('#region').value;
     const m={
-        costa:'🌊 Costa: Condiciones de referencia. Sin ajustes adicionales.',
+        costa:' Costa: Condiciones de referencia. Sin ajustes adicionales.',
         sierra:'⛰️ Sierra: MDC +10% consumo por altitud, EV +5%. Mantenimiento +8%.',
         oriente:'🌿 Oriente/Amazonía: MDC +5%, EV +2%. Mantenimiento +15% por vías.'
     };
     $('#regionPanel').textContent=m[r]||m.costa;
 }
 
-// ===== MODO PHEV =====
 function getPhevElecPct(){
     const mode=state.phevMode;
     const cityPct=state.cityPct/100;
@@ -516,15 +522,14 @@ function updatePhevModeInfo(){
     const kmElec=Math.round(km*pct);
     const kmGas=km-kmElec;
     if(mode==='pure'){
-        info.innerHTML='🔋 <strong>Modo Pure:</strong> ~'+(pct*100).toFixed(0)+'% eléctrico. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km con gasolina (batería vacía).';
+        info.innerHTML=' <strong>Modo Pure:</strong> ~'+(pct*100).toFixed(0)+'% eléctrico. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km con gasolina (batería vacía).';
     } else if(mode==='power'){
-        info.innerHTML=' <strong>Modo Power:</strong> ~'+(pct*100).toFixed(0)+'% eléctrico, máxima potencia. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km híbridos.';
+        info.innerHTML='⚡ <strong>Modo Power:</strong> ~'+(pct*100).toFixed(0)+'% eléctrico, máxima potencia. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km híbridos.';
     } else {
-        info.innerHTML='🔄 <strong>Modo Hybrid:</strong> combina eléctrico y combustión. ~'+(pct*100).toFixed(0)+'% eléctrico con '+state.cityPct+'% ciudad. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km en híbrido normal (~4.1 L/100km).';
+        info.innerHTML=' <strong>Modo Hybrid:</strong> combina eléctrico y combustión. ~'+(pct*100).toFixed(0)+'% eléctrico con '+state.cityPct+'% ciudad. En '+km+' km/mes → ~'+kmElec+' km eléctricos + ~'+kmGas+' km en híbrido normal (~4.1 L/100km).';
     }
 }
 
-// ===== DATOS EDITABLES =====
 function updateEVDataPanel(){
     const model=$('#evModel').value;
     const data={...(defaultEVData[model]||defaultEVData.custom)};
@@ -535,13 +540,8 @@ function updateEVDataPanel(){
     const isPhev=(model==='starray');
     
     const modeSection=$('#phevModeSection');
-    if(isPhev){
-        modeSection.classList.remove('hidden');
-    } else {
-        modeSection.classList.add('hidden');
-    }
+    if(isPhev){modeSection.classList.remove('hidden');} else {modeSection.classList.add('hidden');}
     
-    // Actualizar nombre en bloque de mantenimiento
     $('#maintEvName').textContent=ed.name;
     
     let fields=[];
@@ -602,7 +602,6 @@ function updateEVDataPanel(){
         });
     }
     
-    // Sincronizar campos de mantenimiento
     $('#evMaintInterval').value=ed.maintInterval||20000;
     $('#evMaintCost').value=ed.maintCost||80;
     state.evMaintInterval=ed.maintInterval||20000;
@@ -635,12 +634,9 @@ function cargarMDCValues(seg){
         $('#mdcPrice').value=d.price;
         $('#mdcYear').value=d.year;
         $('#maintMdcName').textContent=d.name;
-        state.mdcEditable.price=d.price;
-        state.mdcEditable.year=d.year;
     }
 }
 
-// ===== ACTUALIZAR VISTA PREVIA DE MANTENIMIENTO Y MATRÍCULA =====
 function updateMaintPreview(){
     const km=parseInt($('#kmMesNum').value)||1500;
     const evInterval=parseInt($('#evMaintInterval').value)||20000;
@@ -663,7 +659,6 @@ function updateMaintPreview(){
     state.mdcEditable.maintInterval=mdcInterval;
 }
 
-// ===== CÁLCULO DE MATRÍCULA MDC =====
 function calcMatriculaMDC(price,year){
     const anioActual=2026;
     const dep=anioActual-year;
@@ -701,7 +696,6 @@ function updateMatriculaPreview(){
     $('#matriculaSavingsInfo').innerHTML='💰 <strong>Ahorro anual en matrícula:</strong> $'+savingsAnnual.toFixed(0)+' (EV: $'+evMat+' vs MDC: $'+mdcMatAnnual.toFixed(0)+')';
 }
 
-// ===== ACTUALIZAR ESTADO DESDE UI =====
 function updateStateFromUI(){
     state.evModel=$('#evModel').value;
     state.mdcSegment=$('#mdcSegment').value;
@@ -781,7 +775,6 @@ function getACFactor(){
     if(a==='sin_uso')return 0;if(a==='intermitente')return 0.05;return 0.12;
 }
 
-// ===== CÁLCULOS PRINCIPALES =====
 function calcBEV(ev){
     const cf=state.cityPct/100,hf=1-cf;
     const regen=cf*ev.regenCity+hf*ev.regenHwy;
@@ -810,13 +803,9 @@ function calcPHEV(phevData){
     consElec*=(1+getGeographicFactors().ev);
     consElec*=(1+getACFactor()*0.5);
     let consGas;
-    if(mode==='pure'){
-        consGas=phevData.consBatteryEmpty;
-    } else if(mode==='power'){
-        consGas=phevData.consBatteryEmpty*1.1;
-    } else {
-        consGas=phevData.consHybridNormal;
-    }
+    if(mode==='pure'){consGas=phevData.consBatteryEmpty;}
+    else if(mode==='power'){consGas=phevData.consBatteryEmpty*1.1;}
+    else{consGas=phevData.consHybridNormal;}
     consGas*=(1+getGeographicFactors().mdc*0.5);
     consGas*=(1+getTrafficFactor('mdc')*0.5);
     const kwhElec=(consElec/100)*kmElec;
@@ -829,7 +818,6 @@ function calcPHEV(phevData){
     const matricula=state.evMatricula/12;
     const total=energiaTotal+mant+matricula;
     const autonomiaElecReal=phevData.battery/consElec*100;
-    // Autonomía combinada = eléctrica real + (tanque * rendimiento_híbrido)
     const tankCapacity=phevData.tankCapacity||51;
     const rendimientoHibridoKmL=100/consGas;
     const autonomiaGas=tankCapacity*rendimientoHibridoKmL;
@@ -871,21 +859,17 @@ function formatTime(hours){
     return m>0?h+'h '+m+'min':h+'h';
 }
 
-// ===== CALCULADORA DE CARGA EN VIVO (usa state, no DOM) =====
 function updateChargeLive(){
     try{
-        updateStateFromUI(); // Sincronizar estado primero
+        updateStateFromUI();
         const ev=getEVData();
         const mdc=getMDCData();
         const pct=state.batteryPct;
         $('#chargeVehicleInfo').textContent='Batería: '+ev.battery+' kWh · '+ev.name;
         const kwh=ev.battery*pct/100;
         let autonomiaNEDC;
-        if(ev.type==='phev'){
-            autonomiaNEDC=ev.rangeElecNEDC||105;
-        } else {
-            autonomiaNEDC=ev.rangeNEDC||400;
-        }
+        if(ev.type==='phev'){autonomiaNEDC=ev.rangeElecNEDC||105;}
+        else{autonomiaNEDC=ev.rangeNEDC||400;}
         const kmNEDC=autonomiaNEDC*(pct/100);
         let autonomiaReal=null;
         if(state.modD){
@@ -944,20 +928,14 @@ function calculateAll(){
     const mdc=getMDCData();
     const km=state.kmMes;
     let principal,principalType;
-    if(ev.type==='phev'){
-        principal=calcPHEV(ev);
-        principalType='phev';
-    } else {
-        principal=calcBEV(ev);
-        principalType='bev';
-    }
+    if(ev.type==='phev'){principal=calcPHEV(ev);principalType='phev';}
+    else{principal=calcBEV(ev);principalType='bev';}
     const mdcCalc=calcMDC(mdc);
     const ahorroEnergia=mdcCalc.energia-principal.energia;
     const ahorroMant=mdcCalc.mant-principal.mant;
     const ahorroMatricula=mdcCalc.matricula-principal.matricula;
     const ahorroTotal=mdcCalc.total-principal.total;
     
-    // Proyecciones con inflación diferenciada
     const proyData=[1,5,10].map(function(y){
         const meses=y*12;let ahorroE=0,ahorroM=0,ahorroMat=0;
         for(let m=0;m<meses;m++){
@@ -967,7 +945,6 @@ function calculateAll(){
             const mdcMt=mdcCalc.mant*Math.pow(1+state.inflacionMant,yr);
             const pMt=principal.mant*Math.pow(1+state.inflacionMant,yr);
             ahorroE+=(mdcE-pE);ahorroM+=(mdcMt-pMt);
-            // Matrícula MDC se recalcula cada año con depreciación
             const mdcMatYr=calcMatriculaMDC(mdc.price,mdc.year+yr);
             ahorroMat+=(mdcMatYr/12-state.evMatricula/12);
         }
@@ -1015,11 +992,8 @@ function calculateAll(){
     if(state.modF){
         const co2L=2.31,co2Kwh=0.25;
         let principalCO2,mdcCO2;
-        if(principalType==='phev'){
-            principalCO2=principal.kwhElec*co2Kwh+principal.litrosGas*co2L;
-        } else {
-            principalCO2=principal.kwh*co2Kwh;
-        }
+        if(principalType==='phev'){principalCO2=principal.kwhElec*co2Kwh+principal.litrosGas*co2L;}
+        else{principalCO2=principal.kwh*co2Kwh;}
         mdcCO2=mdcCalc.litros*co2L;
         emis={principal:principalCO2,mdc:mdcCO2};
     }
@@ -1045,15 +1019,16 @@ function destroyAllCharts(){
 
 function renderResults(){
     destroyAllCharts();
-    const r=state.results;if(!r)return;
+    const r=state.results;
+    if(!r)return;
     const p=r.principal;
     const m=r.mdcCalc;
+    const mdcData=r.mdc; // ← CORRECCIÓN: usar r.mdc en lugar de 'mdc' no definido
     const isPhevMain=(r.principalType==='phev');
     let html='';
     
-    // AHORRO ENERGÍA
     html+='<div class="section-block"><h4>⛽ vs ⚡ Ahorro mensual solo en combustible/electricidad</h4><div class="result-row">';
-    html+='<div class="result-card"><span class="result-label">'+(isPhevMain?'⚡+ Energía':'⚡ Electricidad')+' '+r.ev.name+'/mes</span><div class="result-value ev-color">$'+p.energia.toFixed(2)+'</div></div>';
+    html+='<div class="result-card"><span class="result-label">'+(isPhevMain?'⚡+⛽ Energía':'⚡ Electricidad')+' '+r.ev.name+'/mes</span><div class="result-value ev-color">$'+p.energia.toFixed(2)+'</div></div>';
     html+='<div class="result-card"><span class="result-label">⛽ Gasolina MDC/mes</span><div class="result-value mdc-color">$'+m.energia.toFixed(2)+'</div></div>';
     html+='<div class="result-card"><span class="result-label">💰 Ahorro/mes</span><div class="result-value" style="color:var(--positive)">$'+Math.max(0,r.ahorroEnergia).toFixed(2)+'</div></div>';
     html+='</div>';
@@ -1064,11 +1039,10 @@ function renderResults(){
     }
     html+='</div>';
     
-    // COMPARACIÓN COMPLETA
     html+='<div class="section-block"><h4>📊 Comparación completa (energía + mantenimiento + matrícula)</h4><div class="compare-grid">';
     const mainBoxClass=isPhevMain?'phev-box':'ev-box';
     const mainColor=isPhevMain?'var(--phev)':'var(--ev)';
-    const mainIcon=isPhevMain?'🔵':'⚡';
+    const mainIcon=isPhevMain?'':'⚡';
     html+='<div class="compare-box '+mainBoxClass+'"><h5>'+mainIcon+' '+r.ev.name+'</h5>';
     if(isPhevMain){
         html+='<div class="compare-row"><span>Consumo eléctrico ('+(p.elecPct*100).toFixed(0)+'%)</span><span>$'+p.costoElec.toFixed(2)+'</span></div>';
@@ -1080,17 +1054,16 @@ function renderResults(){
     html+='<div class="compare-row"><span>Matrícula (mensual)</span><span>$'+p.matricula.toFixed(2)+'</span></div>';
     html+='<div class="compare-row total" style="color:'+mainColor+'"><span>TOTAL/mes</span><span>$'+p.total.toFixed(2)+'</span></div>';
     html+='<div class="compare-row"><span>Costo/km</span><span>$'+p.cpk.toFixed(3)+'</span></div></div>';
-    html+='<div class="compare-box mdc-box"><h5>⛽ '+r.mdc.name+'</h5>';
+    html+='<div class="compare-box mdc-box"><h5>⛽ '+mdcData.name+'</h5>';
     html+='<div class="compare-row"><span>Consumo combustible</span><span>$'+m.energia.toFixed(2)+'</span></div>';
     html+='<div class="compare-row"><span>Mantenimiento</span><span>$'+m.mant.toFixed(2)+'</span></div>';
     html+='<div class="compare-row"><span>Matrícula (mensual)</span><span>$'+m.matricula.toFixed(2)+'</span></div>';
     html+='<div class="compare-row total mdc-total"><span>TOTAL/mes</span><span>$'+m.total.toFixed(2)+'</span></div>';
     html+='<div class="compare-row"><span>Costo/km</span><span>$'+m.cpk.toFixed(3)+'</span></div></div>';
     html+='</div>';
-    html+='<div class="result-row" style="margin-top:12px"><div class="result-card"><span class="result-label">💰 Ahorro total '+r.ev.name+'/mes</span><div class="result-value" style="color:var(--positive)">$'+Math.max(0,r.ahorroTotal).toFixed(2)+'</div></div></div>';
+    html+='<div class="result-row" style="margin-top:12px"><div class="result-card"><span class="result-label"> Ahorro total '+r.ev.name+'/mes</span><div class="result-value" style="color:var(--positive)">$'+Math.max(0,r.ahorroTotal).toFixed(2)+'</div></div></div>';
     html+='</div>';
     
-    // BLOQUE MANTENIMIENTO DETALLADO
     html+='<div class="section-block maint-section"><h4>🔧 Detalle de Mantenimiento</h4>';
     html+='<div class="compare-grid">';
     html+='<div class="compare-box ev-box"><h5>⚡ '+r.ev.name+'</h5>';
@@ -1098,16 +1071,15 @@ function renderResults(){
     html+='<div class="compare-row"><span>Costo por servicio</span><span>$'+state.evMaintCost.toFixed(0)+'</span></div>';
     html+='<div class="compare-row"><span>Servicios/año</span><span>'+((r.km*12)/state.evMaintInterval).toFixed(1)+'</span></div>';
     html+='<div class="compare-row total ev-total"><span>Costo mensual</span><span>$'+p.mant.toFixed(2)+'</span></div></div>';
-    html+='<div class="compare-box mdc-box"><h5>⛽ '+r.mdc.name+'</h5>';
-    html+='<div class="compare-row"><span>Intervalo</span><span>'+mdc.maintInterval.toLocaleString()+' km</span></div>';
-    html+='<div class="compare-row"><span>Costo por servicio</span><span>$'+mdc.maint.toFixed(0)+'</span></div>';
-    html+='<div class="compare-row"><span>Servicios/año</span><span>'+((r.km*12)/mdc.maintInterval).toFixed(1)+'</span></div>';
+    html+='<div class="compare-box mdc-box"><h5>⛽ '+mdcData.name+'</h5>';
+    html+='<div class="compare-row"><span>Intervalo</span><span>'+mdcData.maintInterval.toLocaleString()+' km</span></div>';
+    html+='<div class="compare-row"><span>Costo por servicio</span><span>$'+mdcData.maint.toFixed(0)+'</span></div>';
+    html+='<div class="compare-row"><span>Servicios/año</span><span>'+((r.km*12)/mdcData.maintInterval).toFixed(1)+'</span></div>';
     html+='<div class="compare-row total mdc-total"><span>Costo mensual</span><span>$'+m.mant.toFixed(2)+'</span></div></div>';
     html+='</div>';
-    html+='<div class="panel-info" style="margin-top:10px"> <strong>Ahorro mensual en mantenimiento:</strong> $'+Math.max(0,r.ahorroMant).toFixed(2)+' | <strong>Anual:</strong> $'+(Math.max(0,r.ahorroMant)*12).toFixed(0)+'</div>';
+    html+='<div class="panel-info" style="margin-top:10px">💰 <strong>Ahorro mensual en mantenimiento:</strong> $'+Math.max(0,r.ahorroMant).toFixed(2)+' | <strong>Anual:</strong> $'+(Math.max(0,r.ahorroMant)*12).toFixed(0)+'</div>';
     html+='</div>';
     
-    // BLOQUE MATRÍCULA
     html+='<div class="section-block mat-section"><h4>📋 Impuestos y Matrícula</h4>';
     html+='<div class="compare-grid">';
     html+='<div class="compare-box ev-box"><h5> Matrícula EV</h5>';
@@ -1115,14 +1087,15 @@ function renderResults(){
     html+='<div class="compare-row"><span>Valor mensual</span><span>$'+p.matricula.toFixed(2)+'</span></div>';
     html+='<div class="compare-row"><span style="font-size:0.75rem;color:var(--text2)">Exoneración especial</span><span style="font-size:0.75rem;color:var(--ev)">✅ Aplica</span></div></div>';
     html+='<div class="compare-box mdc-box"><h5>⛽ Matrícula MDC</h5>';
-    html+='<div class="compare-row"><span>Avalúo estimado</span><span>$'+Math.max(mdc.price*0.10,mdc.price*Math.pow(0.80,Math.min(2026-mdc.year,1))*Math.pow(0.85,Math.max(0,Math.min(2026-mdc.year-1,1)))*Math.pow(0.90,Math.max(0,2026-mdc.year-2))).toFixed(0)+'</span></div>';
+    const depAnios=Math.max(0,2026-mdcData.year);
+    const avaluoEst=mdcData.price*Math.pow(0.80,Math.min(depAnios,1))*Math.pow(0.85,Math.max(0,Math.min(depAnios-1,1)))*Math.pow(0.90,Math.max(0,depAnios-2));
+    html+='<div class="compare-row"><span>Avalúo estimado</span><span>$'+Math.max(avaluoEst,mdcData.price*0.10).toFixed(0)+'</span></div>';
     html+='<div class="compare-row"><span>Valor anual</span><span style="color:var(--mdc);font-weight:700">$'+m.matriculaAnnual.toFixed(0)+'</span></div>';
     html+='<div class="compare-row"><span>Valor mensual</span><span>$'+m.matricula.toFixed(2)+'</span></div></div>';
     html+='</div>';
-    html+='<div class="panel-info" style="margin-top:10px"> <strong>Ahorro anual en matrícula:</strong> $'+Math.max(0,r.ahorroMatricula*12).toFixed(0)+' (EV: $'+state.evMatricula+' vs MDC: $'+m.matriculaAnnual.toFixed(0)+')</div>';
+    html+='<div class="panel-info" style="margin-top:10px">💰 <strong>Ahorro anual en matrícula:</strong> $'+Math.max(0,r.ahorroMatricula*12).toFixed(0)+' (EV: $'+state.evMatricula+' vs MDC: $'+m.matriculaAnnual.toFixed(0)+')</div>';
     html+='</div>';
     
-    // PROYECCIONES
     html+='<div class="section-block proj-section"><h4>📈 Proyecciones de ahorro total (1, 5 y 10 años) <span class="tooltip">ℹ️<span class="tooltip-text">Inflación combustibles: '+(state.inflacionComb*100).toFixed(1)+'%/año | Eléctrica: '+(state.inflacionElec*100).toFixed(1)+'%/año | Mantenimiento: '+(state.inflacionMant*100).toFixed(1)+'%/año</span></span></h4><table class="proy-table"><tr><th>Período</th><th style="color:var(--ev)">Ahorro energía</th><th>Ahorro mant.</th><th>Ahorro matrícula</th><th style="color:var(--ev)">TOTAL</th></tr>';
     for(let i=0;i<r.proyData.length;i++){
         const pd=r.proyData[i];
@@ -1130,7 +1103,6 @@ function renderResults(){
     }
     html+='</table></div>';
     
-    // TRANSPORTE COMERCIAL
     if(state.modC&&r.comm){
         const c=r.comm;
         html+='<div class="section-block comm-section"><h4>🚕 Transporte Comercial</h4>';
@@ -1145,7 +1117,7 @@ function renderResults(){
         html+='<div class="result-row"><div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:#F59E0B">'+(!isFinite(c.roiAbsDias)?'∞':Math.round(c.roiAbsDias))+'</div></div>';
         html+='<div class="result-card"><span class="result-label">En meses</span><div class="result-value" style="color:#F59E0B">'+formatROI(c.roiAbsMeses)+'</div></div></div></div>';
         html+='<div style="background:var(--input-bg);border-radius:10px;padding:12px;margin:10px 0;border:1px solid var(--border)"><p style="font-size:0.85rem;margin-bottom:8px"><strong>💡 Ahorro mensual vs MDC ($'+c.ahorroMensual.toFixed(0)+'/mes):</strong></p>';
-        html+='<div class="result-row"><div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:var(--ev)">'+(!isFinite(c.roiVsDias)?'∞':Math.round(c.roiVsDias))+'</div></div>';
+        html+='<div class="result-row"><div class="result-card"><span class="result-label">En días</span><div class="result-value" style="color:var(--ev)">'+(!isFinite(c.roiVsDias)?'':Math.round(c.roiVsDias))+'</div></div>';
         html+='<div class="result-card"><span class="result-label">En meses</span><div class="result-value" style="color:var(--ev)">'+formatROI(c.roiVsMeses)+'</div></div></div></div></div>';
         html+='<div class="section-block proj-section"><h4>📈 Proyecciones comerciales (1, 5 y 10 años)</h4><table class="proy-table"><tr><th>Período</th><th style="color:var(--ev)">Ahorro acumulado vs MDC</th></tr>';
         for(let i=0;i<c.proyComm.length;i++){
@@ -1155,7 +1127,6 @@ function renderResults(){
         html+='</table></div>';
     }
     
-    // AUTONOMÍA (mejorada para PHEV)
     if(state.modD&&r.aut){
         html+='<div class="section-block"><h4>🔋 Autonomía Real</h4>';
         if(isPhevMain){
@@ -1170,7 +1141,6 @@ function renderResults(){
         html+='</div>';
     }
     
-    // EMISIONES
     if(state.modF&&r.emis){
         const arbolesEV=Math.round(r.emis.principal*12/22);
         const arbolesMDC=Math.round(r.emis.mdc*12/22);
@@ -1207,7 +1177,7 @@ function renderCharts(r){
     if(c2){
         if(state.chartInstances.c2)state.chartInstances.c2.destroy();
         const labels=[r.ev.name,'MDC'],data=[r.principal.total,r.mdcCalc.total],colors=[r.principalType==='phev'?'#4A90E2':'#00C896','#E57373'];
-        state.chartInstances.c2=new Chart(c2,{type:'bar',data:{labels:labels,datasets:[{label:'Total ($/mes)',data:data,backgroundColor:colors,borderRadius:10,barThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:'💰 Costo mensual TOTAL',color:textColor,font:{size:14}}},scales:{y:{ticks:{color:text2Color,callback:function(v){return'$'+v.toFixed(0);}},grid:{color:borderColor}},x:{ticks:{color:textColor}}}}});
+        state.chartInstances.c2=new Chart(c2,{type:'bar',data:{labels:labels,datasets:[{label:'Total ($/mes)',data:data,backgroundColor:colors,borderRadius:10,barThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:' Costo mensual TOTAL',color:textColor,font:{size:14}}},scales:{y:{ticks:{color:text2Color,callback:function(v){return'$'+v.toFixed(0);}},grid:{color:borderColor}},x:{ticks:{color:textColor}}}}});
     }
     const c3=$('#chartProyecciones');
     if(c3){
@@ -1231,7 +1201,6 @@ function animateResults(){
     }
 }
 
-// ===== IMAGEN RESUMEN =====
 function generateSummaryImage(){
     const r=state.results;if(!r)return null;
     const S=2080;
@@ -1251,7 +1220,7 @@ function generateSummaryImage(){
     hdrGrad.addColorStop(0,'#00C896');hdrGrad.addColorStop(0.5,'#4A90E2');hdrGrad.addColorStop(1,'#6366F1');
     ctx.fillStyle=hdrGrad;ctx.beginPath();ctx.roundRect(pad,pad,W,220,28);ctx.fill();
     ctx.fillStyle='#000';ctx.font='800 80px Inter, sans-serif';ctx.textAlign='center';
-    ctx.fillText('⚡ SIMULADOR EV',S/2,pad+100);
+    ctx.fillText(' SIMULADOR EV',S/2,pad+100);
     ctx.font='600 56px Inter, sans-serif';
     ctx.fillText(r.ev.name+'  vs  MDC',S/2,pad+165);
     ctx.font='400 42px Inter, sans-serif';
@@ -1273,7 +1242,7 @@ function generateSummaryImage(){
         }
         y+=blockH+gap;
     }
-    drawFullBlock('⛽ vs ⚡ AHORRO MENSUAL ENERGÍA','#00C896',[
+    drawFullBlock('⛽ vs  AHORRO MENSUAL ENERGÍA','#00C896',[
         {text:r.ev.name+': $'+r.principal.energia.toFixed(2)+'/mes',color:'#00C896'},
         {text:'MDC: $'+r.mdcCalc.energia.toFixed(2)+'/mes',color:'#E57373'},
         {text:'Ahorro: $'+Math.max(0,r.ahorroEnergia).toFixed(2)+'/mes',color:'#00C896'}
@@ -1358,7 +1327,7 @@ function shareWhatsApp(){
     msg+='*⚡ Ahorro mensual:* $'+ahorroMensual.toFixed(2)+'\n';
     msg+='*📅 Ahorro anual:* $'+ahorroAnual.toFixed(2)+'\n';
     msg+='*📈 Ahorro en 5 años:* $'+ahorro5Anios.toLocaleString()+'\n\n';
-    msg+='Cualquier inquietud estoy al pendiente. ✌️';
+    msg+='Cualquier inquietud estoy al pendiente. ️';
     window.open('https://wa.me/'+pre.replace('+','')+ph+'?text='+encodeURIComponent(msg),'_blank');
 }
 
@@ -1410,7 +1379,6 @@ function setupEvents(){
     syncSlider('cityPctSlider','cityPctNum',function(){updateCityContext();updatePhevModeInfo();updateMaintPreview();});
     syncSlider('batteryPctSlider','batteryPctNum',updateChargeLive);
     
-    // Listeners para campos de mantenimiento y matrícula
     ['evMaintInterval','evMaintCost','mdcMaintInterval','mdcMaintCost','evMatricula','mdcPrice','mdcYear'].forEach(function(id){
         const el=$('#'+id);
         if(el)el.addEventListener('input',function(){updateMaintPreview();updateMatriculaPreview();});
@@ -1473,3 +1441,14 @@ document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
+
+
+
+              <script>
+                              const mdcData = r.mdc; // ← CORRECCIÓN: usar r.mdc en lugar de 'mdc' no definido
+
+
+              </script>
+                        </body>
+                        </html>
+                    
